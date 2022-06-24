@@ -1,0 +1,6 @@
+#pragma once
+
+#include <stdint.h>
+
+const uintptr_t selected_song_ptr_offsets[] = { 0xDC, 0x20, 0x14, 0x8, 0x4, 0x48, 0x20, 0x124, 0x2EC };
+const uintptr_t selected_song_ptr_base_offset = 0x0061F860;
