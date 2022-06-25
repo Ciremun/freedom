@@ -3,14 +3,17 @@
 
 #include "stdafx.h"
 #include <atlbase.h>
-#include <atlexcept.h>
 #include <atlconv.h>
+#include <atlexcept.h>
 
-#include "dotnet_data_collector.h"
-#include "hook.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_win32.h"
+#include "imgui_internal.h"
+#include "stb_sprintf.h"
+
+#include "dotnet_data_collector.h"
+#include "hook.h"
 #include "offsets.h"
 #include "utility.h"
 
@@ -45,6 +48,7 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
 
 BOOL __stdcall freedom_update(HDC hDc)
 {
+    static ImFont *font = 0;
     static bool init = false;
     if (!init)
     {
@@ -57,10 +61,23 @@ BOOL __stdcall freedom_update(HDC hDc)
         io.IniFilename = 0;
 
         ImFontConfig config;
-        config.SizePixels = 24;
         config.OversampleH = config.OversampleV = 1;
         config.PixelSnapH = true;
-        ImFont *default_font = io.Fonts->AddFontDefault(&config);
+
+        config.SizePixels = 32;
+        io.Fonts->AddFontDefault(&config);
+
+        config.SizePixels = 28;
+        io.Fonts->AddFontDefault(&config);
+
+        config.SizePixels = 24;
+        font = io.Fonts->AddFontDefault(&config);
+
+        config.SizePixels = 18;
+        io.Fonts->AddFontDefault(&config);
+
+        config.SizePixels = 14;
+        io.Fonts->AddFontDefault(&config);
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_HWND);
@@ -95,45 +112,72 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
+    ImGuiIO &io = ImGui::GetIO();
+
+    ImGui::PushFont(font);
+
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
-    static bool params_visible = true;
     static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(GetCurrentProcess(), osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
+    static char song_name_u8[128] = {0};
     if (current_song_ptr)
     {
-        uint32_t song_struct = *(uint32_t *)current_song_ptr;
+        uintptr_t song_name_ptr = *(uint32_t *)current_song_ptr + 0x80;
         static uintptr_t prev_song_name_ptr = 0;
-        uintptr_t song_name_ptr = song_struct + 0x80;
-        static char song_name_u8[128] = {0};
         if (song_name_ptr != prev_song_name_ptr)
         {
             uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
             char *song_name_u16 = *(char **)song_name_ptr + 0x8;
             ATL::CW2A utf8((wchar_t *)song_name_u16, CP_UTF8);
-            memcpy(song_name_u8, utf8.m_psz, 128);
+            memcpy(song_name_u8, utf8.m_psz, 127);
         }
         prev_song_name_ptr = song_name_ptr;
-        ImGui::Text("%s\n", song_name_u8);
-        if (ImGui::IsItemClicked())
-            params_visible = !params_visible;
     }
     else
     {
         current_song_ptr = internal_multi_level_pointer_dereference(GetCurrentProcess(), osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     }
 
-    if (params_visible)
+    ImGui::Text("%s", song_name_u8);
+
+    if (ImGui::BeginPopupContextItem("##settings"))
     {
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
-        ImGui::PushItemWidth(200.0f);
+        ImGuiContext &g = *ImGui::GetCurrentContext();
+        static char preview_font_size[8] = {0};
+        stbsp_snprintf(preview_font_size, 4, "%d", (int)g.Font->ConfigData->SizePixels);
+        ImGui::Text("Settings");
+        ImGui::Dummy(ImVec2(0.0f, 4.0f));
+
+        ImGui::PushItemWidth(220.0f);
         ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
         ImGui::PopItemWidth();
+
+        ImGui::Dummy(ImVec2(0.0f, 2.0f));
+        ImGui::Text("Font Size:");
+        ImGui::SameLine();
+        ImGui::PushItemWidth(75.0f);
+        if (ImGui::BeginCombo("##font_size", preview_font_size))
+        {
+            for (const auto &f : io.Fonts->Fonts)
+            {
+                char font_size[8] = {0};
+                stbsp_snprintf(font_size, 4, "%d", (int)f->ConfigData->SizePixels);
+                const bool is_selected = f == font;
+                if (ImGui::Selectable(font_size, is_selected))
+                    font = f;
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::PopItemWidth();
+        ImGui::EndPopup();
     }
 
     ImGui::End();
+    ImGui::PopFont();
 
-    ImGuiIO &io = ImGui::GetIO();
     io.MouseDrawCursor = io.WantCaptureMouse;
 
     ImGui::EndFrame();
