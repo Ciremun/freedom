@@ -87,6 +87,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 
 #define BLACK ImVec4(0.05f, 0.05f, 0.05f, 1.0f)
+#define WHITE ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
 #define BLACK_TRANSPARENT ImVec4(0.05f, 0.05f, 0.05f, 0.7f)
 #define PURPLE ImVec4(0.28f, 0.05f, 0.66f, 1.0f)
 #define MAGENTA ImVec4(0.34f, 0.04f, 0.68f, 1.0f)
@@ -104,6 +105,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         style.Colors[ImGuiCol_FrameBgActive] = MAGENTA;
         style.Colors[ImGuiCol_SliderGrab] = BLACK_TRANSPARENT;
         style.Colors[ImGuiCol_SliderGrabActive] = BLACK_TRANSPARENT;
+        style.Colors[ImGuiCol_CheckMark] = WHITE;
 
         init = true;
     }
@@ -144,19 +146,31 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (ImGui::BeginPopupContextItem("##settings"))
     {
         ImGuiContext &g = *ImGui::GetCurrentContext();
-        static char preview_font_size[8] = {0};
-        stbsp_snprintf(preview_font_size, 4, "%d", (int)g.Font->ConfigData->SizePixels);
+        static char preview_font_size[16] = {0};
+        stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
+
+        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - ImGui::CalcTextSize("Settings").x) * 0.5f);
         ImGui::Text("Settings");
-        ImGui::Dummy(ImVec2(0.0f, 4.0f));
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
-        ImGui::PushItemWidth(220.0f);
-        ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
-        ImGui::PopItemWidth();
-
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
-        ImGui::Text("Font Size:");
+#define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
+        static bool ar_lock = false;
+        if (!ar_lock)
+        {
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
+            ImGui::PopStyleColor();
+            ImGui::PopItemFlag();
+        }
+        else
+        {
+            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
+        }
         ImGui::SameLine();
-        ImGui::PushItemWidth(75.0f);
+        ImGui::Checkbox("##ar_lock", &ar_lock);
+
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         if (ImGui::BeginCombo("##font_size", preview_font_size))
         {
             for (const auto &f : io.Fonts->Fonts)
@@ -171,7 +185,6 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             ImGui::EndCombo();
         }
-        ImGui::PopItemWidth();
         ImGui::EndPopup();
     }
 
