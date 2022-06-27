@@ -37,6 +37,8 @@ BYTE *trampoline_32(BYTE *src, BYTE *dst, const uintptr_t len)
     return gateway;
 }
 
+Hook::Hook() {}
+
 Hook::Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len)
 {
     this->src = src;
