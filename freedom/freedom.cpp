@@ -84,10 +84,10 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (!init)
     {
         parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
-        parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + 0x14C6;
+        parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + 0x14C5;
 
-        ApproachRateHook146D = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x146D, (BYTE *)set_approach_rate_146C, (BYTE *)&ar_trampoline, 5);
-        ApproachRateHook14BD = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x14BD, (BYTE *)set_approach_rate_14BC, (BYTE *)&ar_trampoline, 9);
+        ApproachRateHook146D = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x146C, (BYTE *)set_approach_rate_146C, (BYTE *)&ar_trampoline, 5);
+        ApproachRateHook14BD = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x14BC, (BYTE *)set_approach_rate_14BC, (BYTE *)&ar_trampoline, 9);
 
         if (ar_lock)
         {
