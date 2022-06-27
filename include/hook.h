@@ -19,6 +19,7 @@ struct Hook
 
     BYTE originalBytes[10] = {0};
 
+    Hook();
     Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayPtr, uintptr_t len);
     Hook(const char *exportName, const char *modName, BYTE *dst, BYTE *PtrToGatewayPtr, uintptr_t len);
 

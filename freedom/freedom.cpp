@@ -18,11 +18,40 @@
 #include "utility.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
-typedef BOOL(__stdcall *tdefaultGateway)();
+typedef void(__stdcall *void_trampoline)();
 twglSwapBuffers wglSwapBuffersGateway;
+void_trampoline ar_trampoline;
+
+// NOTE(Ciremun): move outside of this file
+uintptr_t parse_beatmap_metadata_code_start = 0;
+uintptr_t parse_beatmap_metadata_jump_back = 0;
 
 HWND g_HWND = NULL;
+
 float ar_value = 10.0f;
+bool ar_lock = true;
+
+// NOTE(Ciremun): move outside of this file
+__declspec(naked) void set_approach_rate_146C()
+{
+    __asm {
+        fstp dword ptr [eax+0x2C]
+        mov ebx, ar_value
+        mov dword ptr [eax+0x2C], ebx
+        jmp [parse_beatmap_metadata_jump_back]
+    }
+}
+
+__declspec(naked) void set_approach_rate_14BC()
+{
+    __asm {
+        mov eax, dword ptr [ebp-0x00000150]
+        fstp dword ptr [eax+0x2C]
+        mov ebx, ar_value
+        mov dword ptr [eax+0x2C], ebx
+        jmp [parse_beatmap_metadata_jump_back]
+    }
+}
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -48,10 +77,24 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
 
 BOOL __stdcall freedom_update(HDC hDc)
 {
+    static Hook ApproachRateHook146D;
+    static Hook ApproachRateHook14BD;
     static ImFont *font = 0;
     static bool init = false;
     if (!init)
     {
+        parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
+        parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + 0x14C6;
+
+        ApproachRateHook146D = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x146D, (BYTE *)set_approach_rate_146C, (BYTE *)&ar_trampoline, 5);
+        ApproachRateHook14BD = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x14BD, (BYTE *)set_approach_rate_14BC, (BYTE *)&ar_trampoline, 9);
+
+        if (ar_lock)
+        {
+            ApproachRateHook146D.Enable();
+            ApproachRateHook14BD.Enable();
+        }
+
         EnumWindows(EnumWindowsProcMy, GetCurrentProcessId());
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_HWND, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
@@ -122,14 +165,14 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(GetCurrentProcess(), osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
-    static char song_name_u8[128] = {0};
+    static char song_name_u8[128] = {'N', 'o', ' ', 'S', 'o', 'n', 'g', '\0'};
     if (current_song_ptr)
     {
-        uintptr_t song_name_ptr = *(uint32_t *)current_song_ptr + 0x80;
+        uintptr_t song_name_ptr = *(uintptr_t *)current_song_ptr + 0x80;
         static uintptr_t prev_song_name_ptr = 0;
         if (song_name_ptr != prev_song_name_ptr)
         {
-            uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
+            // uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
             char *song_name_u16 = *(char **)song_name_ptr + 0x8;
             ATL::CW2A utf8((wchar_t *)song_name_u16, CP_UTF8);
             memcpy(song_name_u8, utf8.m_psz, 127);
@@ -154,7 +197,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
-        static bool ar_lock = false;
         if (!ar_lock)
         {
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -168,7 +210,19 @@ BOOL __stdcall freedom_update(HDC hDc)
             ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
         }
         ImGui::SameLine();
-        ImGui::Checkbox("##ar_lock", &ar_lock);
+        if (ImGui::Checkbox("##ar_lock", &ar_lock))
+        {
+            if (ar_lock)
+            {
+                ApproachRateHook146D.Enable();
+                ApproachRateHook14BD.Enable();
+            }
+            else
+            {
+                ApproachRateHook146D.Disable();
+                ApproachRateHook14BD.Disable();
+            }
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
         if (ImGui::BeginCombo("##font_size", preview_font_size))
@@ -200,31 +254,6 @@ BOOL __stdcall freedom_update(HDC hDc)
     return wglSwapBuffersGateway(hDc);
 }
 
-uintptr_t parse_beatmap_metadata_code_start = 0;
-uintptr_t parse_beatmap_metadata_jump_back_146C = 0;
-uintptr_t parse_beatmap_metadata_jump_back_14BC = 0;
-
-__declspec(naked) void set_approach_rate_146C()
-{
-    __asm {
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back_146C]
-    }
-}
-
-__declspec(naked) void set_approach_rate_14BC()
-{
-    __asm {
-        mov eax, dword ptr [ebp-0x00000150]
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back_14BC]
-    }
-}
-
 DWORD WINAPI freedom_main(HMODULE hModule)
 {
     // AllocConsole();
@@ -234,13 +263,8 @@ DWORD WINAPI freedom_main(HMODULE hModule)
     Hook SwapBuffersHook("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.Enable();
 
-    while ((parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata()) == 0)
-        Sleep(1000);
-    parse_beatmap_metadata_jump_back_146C = parse_beatmap_metadata_code_start + 0x14C5;
-    parse_beatmap_metadata_jump_back_14BC = parse_beatmap_metadata_code_start + 0x14C5;
-
-    detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x146C, (BYTE *)&set_approach_rate_146C, 5);
-    detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x14BC, (BYTE *)&set_approach_rate_14BC, 9);
+    // detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x146D, (BYTE *)set_approach_rate_146C, 5);
+    // detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x14BD, (BYTE *)set_approach_rate_14BC, 9);
 
     return 0;
 }
