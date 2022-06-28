@@ -155,12 +155,18 @@ BOOL __stdcall freedom_update(HDC hDc)
         init = true;
     }
 
+    static bool is_main_window_visible = true;
+    if (GetAsyncKeyState(VK_F11) & 1)
+        is_main_window_visible = !is_main_window_visible;
+
+    if (!is_main_window_visible)
+        return wglSwapBuffersGateway(hDc);
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
     ImGuiIO &io = ImGui::GetIO();
-
     ImGui::PushFont(font);
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
