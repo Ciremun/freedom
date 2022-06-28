@@ -26,7 +26,8 @@ void_trampoline ar_trampoline;
 uintptr_t parse_beatmap_metadata_code_start = 0;
 uintptr_t parse_beatmap_metadata_jump_back = 0;
 
-HWND g_HWND = NULL;
+HWND g_hwnd = NULL;
+HANDLE g_process = 0;
 
 float ar_value = 10.0f;
 bool ar_lock = true;
@@ -69,7 +70,7 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
     GetWindowThreadProcessId(hwnd, &lpdwProcessId);
     if (lpdwProcessId == lParam)
     {
-        g_HWND = hwnd;
+        g_hwnd = hwnd;
         return FALSE;
     }
     return TRUE;
@@ -83,6 +84,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     static bool init = false;
     if (!init)
     {
+        g_process = GetCurrentProcess();
         parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
         parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + 0x14C5;
 
@@ -96,7 +98,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
 
         EnumWindows(EnumWindowsProcMy, GetCurrentProcessId());
-        oWndProc = (WNDPROC)SetWindowLongPtrA(g_HWND, GWLP_WNDPROC, (LONG_PTR)WndProc);
+        oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -123,7 +125,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         io.Fonts->AddFontDefault(&config);
 
         ImGui::StyleColorsDark();
-        ImGui_ImplWin32_Init(g_HWND);
+        ImGui_ImplWin32_Init(g_hwnd);
         ImGui_ImplOpenGL3_Init();
 
         ImGuiStyle &style = ImGui::GetStyle();
@@ -164,24 +166,32 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
-    static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(GetCurrentProcess(), osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
-    static char song_name_u8[128] = {'N', 'o', ' ', 'S', 'o', 'n', 'g', '\0'};
+    static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
+    static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (current_song_ptr)
     {
-        uintptr_t song_name_ptr = *(uintptr_t *)current_song_ptr + 0x80;
-        static uintptr_t prev_song_name_ptr = 0;
-        if (song_name_ptr != prev_song_name_ptr)
+        uintptr_t song_name_ptr = 0;
+        if (internal_memory_read(g_process, current_song_ptr, &song_name_ptr))
         {
-            // uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
-            char *song_name_u16 = *(char **)song_name_ptr + 0x8;
-            ATL::CW2A utf8((wchar_t *)song_name_u16, CP_UTF8);
-            memcpy(song_name_u8, utf8.m_psz, 127);
+            song_name_ptr += 0x80;
+            static uintptr_t prev_song_name_ptr = 0;
+            if (song_name_ptr != prev_song_name_ptr)
+            {
+                char *song_name_u16 = 0;
+                if (internal_memory_read(g_process, song_name_ptr, &song_name_u16))
+                {
+                    // uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
+                    song_name_u16 += 0x8;
+                    ATL::CW2A utf8((wchar_t *)song_name_u16, CP_UTF8);
+                    memcpy(song_name_u8, utf8.m_psz, 127);
+                }
+            }
+            prev_song_name_ptr = song_name_ptr;
         }
-        prev_song_name_ptr = song_name_ptr;
     }
     else
     {
-        current_song_ptr = internal_multi_level_pointer_dereference(GetCurrentProcess(), osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
+        current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     }
 
     ImGui::Text("%s", song_name_u8);
