@@ -12,47 +12,14 @@
 #include "imgui_internal.h"
 #include "stb_sprintf.h"
 
-#include "dotnet_data_collector.h"
 #include "hook.h"
 #include "offsets.h"
 #include "utility.h"
-
-typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
-typedef void(__stdcall *void_trampoline)();
-twglSwapBuffers wglSwapBuffersGateway;
-void_trampoline ar_trampoline;
-
-// NOTE(Ciremun): move outside of this file
-uintptr_t parse_beatmap_metadata_code_start = 0;
-uintptr_t parse_beatmap_metadata_jump_back = 0;
+#include "detours.h"
+#include "config.h"
 
 HWND g_hwnd = NULL;
 HANDLE g_process = 0;
-
-float ar_value = 10.0f;
-bool ar_lock = true;
-
-// NOTE(Ciremun): move outside of this file
-__declspec(naked) void set_approach_rate_146C()
-{
-    __asm {
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back]
-    }
-}
-
-__declspec(naked) void set_approach_rate_14BC()
-{
-    __asm {
-        mov eax, dword ptr [ebp-0x00000150]
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back]
-    }
-}
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -64,7 +31,7 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
-BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
+BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
 {
     DWORD lpdwProcessId;
     GetWindowThreadProcessId(hwnd, &lpdwProcessId);
@@ -78,27 +45,16 @@ BOOL CALLBACK EnumWindowsProcMy(HWND hwnd, LPARAM lParam)
 
 BOOL __stdcall freedom_update(HDC hDc)
 {
-    static Hook ApproachRateHook146D;
-    static Hook ApproachRateHook14BD;
     static ImFont *font = 0;
     static bool init = false;
     if (!init)
     {
         g_process = GetCurrentProcess();
-        parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
-        parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + 0x14C5;
-
-        ApproachRateHook146D = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x146C, (BYTE *)set_approach_rate_146C, (BYTE *)&ar_trampoline, 5);
-        ApproachRateHook14BD = Hook((BYTE *)parse_beatmap_metadata_code_start + 0x14BC, (BYTE *)set_approach_rate_14BC, (BYTE *)&ar_trampoline, 9);
-
-        if (ar_lock)
-        {
-            ApproachRateHook146D.Enable();
-            ApproachRateHook14BD.Enable();
-        }
-
-        EnumWindows(EnumWindowsProcMy, GetCurrentProcessId());
+        EnumWindows(find_osu_window, GetCurrentProcessId());
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+
+        init_hooks();
+        if (ar_lock) enable_ar_hooks();
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -109,20 +65,13 @@ BOOL __stdcall freedom_update(HDC hDc)
         config.OversampleH = config.OversampleV = 1;
         config.PixelSnapH = true;
 
-        config.SizePixels = 32;
-        io.Fonts->AddFontDefault(&config);
+        for (int i = 32; i > 16; i -= 2)
+        {
+            config.SizePixels = i;
+            io.Fonts->AddFontDefault(&config);
+        }
 
-        config.SizePixels = 28;
-        io.Fonts->AddFontDefault(&config);
-
-        config.SizePixels = 24;
-        font = io.Fonts->AddFontDefault(&config);
-
-        config.SizePixels = 18;
-        io.Fonts->AddFontDefault(&config);
-
-        config.SizePixels = 14;
-        io.Fonts->AddFontDefault(&config);
+        font = io.Fonts->Fonts[3];
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -155,11 +104,11 @@ BOOL __stdcall freedom_update(HDC hDc)
         init = true;
     }
 
-    static bool is_main_window_visible = true;
+    static bool main_window_visible = true;
     if (GetAsyncKeyState(VK_F11) & 1)
-        is_main_window_visible = !is_main_window_visible;
+        main_window_visible = !main_window_visible;
 
-    if (!is_main_window_visible)
+    if (!main_window_visible)
         return wglSwapBuffersGateway(hDc);
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -237,18 +186,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("##ar_lock", &ar_lock))
-        {
-            if (ar_lock)
-            {
-                ApproachRateHook146D.Enable();
-                ApproachRateHook14BD.Enable();
-            }
-            else
-            {
-                ApproachRateHook146D.Disable();
-                ApproachRateHook14BD.Disable();
-            }
-        }
+            ar_lock ? enable_ar_hooks() : disable_ar_hooks();
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
         if (ImGui::BeginCombo("##font_size", preview_font_size))

@@ -61,19 +61,9 @@ void Hook::Enable()
 {
     memcpy(originalBytes, src, len);
     *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
-    bStatus = true;
 }
 
 void Hook::Disable()
 {
     internal_memory_patch(src, originalBytes, len);
-    bStatus = false;
-}
-
-void Hook::Toggle()
-{
-    if (!bStatus)
-        Enable();
-    else
-        Disable();
 }

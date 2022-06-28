@@ -11,7 +11,6 @@ BYTE *trampoline_32(BYTE *src, BYTE *dst, const uintptr_t len);
 
 struct Hook
 {
-    bool bStatus = false;
     BYTE *src = nullptr;
     BYTE *dst = nullptr;
     BYTE *PtrToGatewayFnPtr = nullptr;
@@ -25,5 +24,4 @@ struct Hook
 
     void Enable();
     void Disable();
-    void Toggle();
 };
