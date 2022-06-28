@@ -8,11 +8,11 @@
 ## Controls
 
 |    Keys     |   Description  |
-|-------------|----------------|
+|:-----------:|:--------------:|
 | Right Mouse |    Settings    |
 | F11         |  Hide Mod Menu |
 
 |      Settings      |
-|--------------------|
+|:------------------:|
 | Approach Rate      |
 | Mod Menu Font Size |
