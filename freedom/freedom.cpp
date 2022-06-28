@@ -19,7 +19,7 @@
 #include "config.h"
 
 HWND g_hwnd = NULL;
-HANDLE g_process = 0;
+HANDLE g_process = NULL;
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -59,7 +59,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
-        io.IniFilename = 0;
+        io.IniFilename = NULL;
 
         ImFontConfig config;
         config.OversampleH = config.OversampleV = 1;
