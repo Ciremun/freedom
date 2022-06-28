@@ -210,6 +210,15 @@ BOOL __stdcall freedom_update(HDC hDc)
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
         if (!ar_lock)
         {
+            if (current_song_ptr)
+            {
+                uintptr_t current_song_ar_ptr = 0;
+                if (internal_memory_read(g_process, current_song_ptr, &current_song_ar_ptr))
+                {
+                    current_song_ar_ptr += 0x2C;
+                    internal_memory_read(g_process, current_song_ar_ptr, &ar_value);
+                }
+            }
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
@@ -273,9 +282,6 @@ DWORD WINAPI freedom_main(HMODULE hModule)
 
     Hook SwapBuffersHook("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.Enable();
-
-    // detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x146D, (BYTE *)set_approach_rate_146C, 5);
-    // detour_32((BYTE *)parse_beatmap_metadata_code_start + 0x14BD, (BYTE *)set_approach_rate_14BC, 9);
 
     return 0;
 }
