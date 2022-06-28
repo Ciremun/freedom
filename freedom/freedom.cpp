@@ -2,9 +2,6 @@
 #pragma comment(lib, "CorGuids.lib")
 
 #include "stdafx.h"
-#include <atlbase.h>
-#include <atlconv.h>
-#include <atlexcept.h>
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -132,23 +129,27 @@ BOOL __stdcall freedom_update(HDC hDc)
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (current_song_ptr)
     {
-        uintptr_t song_name_ptr = 0;
-        if (internal_memory_read(g_process, current_song_ptr, &song_name_ptr))
+        uintptr_t song_str_ptr = 0;
+        if (internal_memory_read(g_process, current_song_ptr, &song_str_ptr))
         {
-            song_name_ptr += 0x80;
-            static uintptr_t prev_song_name_ptr = 0;
-            if (song_name_ptr != prev_song_name_ptr)
+            song_str_ptr += 0x80;
+            static uintptr_t prev_song_str_ptr = 0;
+            if (song_str_ptr != prev_song_str_ptr)
             {
-                char *song_name_u16 = 0;
-                if (internal_memory_read(g_process, song_name_ptr, &song_name_u16))
+                uintptr_t song_str = 0;
+                if (internal_memory_read(g_process, song_str_ptr, &song_str))
                 {
-                    // uint32_t song_name_length = *(uint32_t *)(*(char **)song_name_ptr + 0x4);
-                    song_name_u16 += 0x8;
-                    ATL::CW2A utf8((wchar_t *)song_name_u16, CP_UTF8);
-                    memcpy(song_name_u8, utf8.m_psz, 127);
+                    song_str += 0x4;
+                    uint32_t song_str_length = 0;
+                    if (internal_memory_read(g_process, song_str, &song_str_length))
+                    {
+                        song_str += 0x4;
+                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 127, 0, 0);
+                        song_name_u8[bytes_written] = '\0';
+                    }
                 }
             }
-            prev_song_name_ptr = song_name_ptr;
+            prev_song_str_ptr = song_str_ptr;
         }
     }
     else
