@@ -174,7 +174,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         if (!ar_hooks_init)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
-            ImGui::Text("Failed to find AR offsets\n");
+            ImGui::Text("Failed to find AR offsets");
             ImGui::PopStyleColor();
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
