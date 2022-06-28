@@ -47,14 +47,20 @@ BOOL __stdcall freedom_update(HDC hDc)
 {
     static ImFont *font = 0;
     static bool init = false;
+    static bool ar_hooks_init = false;
     if (!init)
     {
         g_process = GetCurrentProcess();
         EnumWindows(find_osu_window, GetCurrentProcessId());
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
-        init_hooks();
-        if (ar_lock) enable_ar_hooks();
+        ar_hooks_init = init_ar_hooks();
+
+        if (ar_hooks_init && ar_lock)
+            enable_ar_hooks();
+
+        if (!ar_hooks_init)
+            ar_lock = false;
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -163,6 +169,17 @@ BOOL __stdcall freedom_update(HDC hDc)
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
+#define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+
+        if (!ar_hooks_init)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+            ImGui::Text("Failed to find AR offsets\n");
+            ImGui::PopStyleColor();
+            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        }
+
         if (!ar_lock)
         {
             if (current_song_ptr)
@@ -187,6 +204,12 @@ BOOL __stdcall freedom_update(HDC hDc)
         ImGui::SameLine();
         if (ImGui::Checkbox("##ar_lock", &ar_lock))
             ar_lock ? enable_ar_hooks() : disable_ar_hooks();
+
+        if (!ar_hooks_init)
+        {
+            ImGui::PopStyleColor();
+            ImGui::PopItemFlag();
+        }
 
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
         if (ImGui::BeginCombo("##font_size", preview_font_size))

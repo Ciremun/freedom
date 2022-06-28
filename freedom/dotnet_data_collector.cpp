@@ -242,7 +242,6 @@ uintptr_t code_start_for_parse_beatmap_metadata()
                                             ICorDebugFunction *df = NULL;
 
                                             CORDB_ADDRESS NativeCode = 0;
-                                            CodeChunkInfo codechunks[8];
 
                                             methodnamesize = 0;
                                             MetaData->GetMethodProps(methods[i], &classdef, methodname, 255, &methodnamesize, &dwAttr, &sig, &sigsize, &CodeRVA, &dwImplFlags);

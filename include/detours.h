@@ -11,7 +11,7 @@ extern void_trampoline ar_trampoline;
 extern uintptr_t parse_beatmap_metadata_code_start;
 extern uintptr_t parse_beatmap_metadata_jump_back;
 
-void init_hooks();
+bool init_ar_hooks();
 void enable_ar_hooks();
 void disable_ar_hooks();
 
