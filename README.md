@@ -1,11 +1,18 @@
 # Freedom
 
-Displays current song title and difficulty  
-Locks approach rate at specified value in range 0.0 - 10.0  
-Right click to open settings menu  
-F11 to hide mod menu
-
 ## Build
 
     vcvarsall x86
     build.bat
+
+## Controls
+
+|    Keys     |   Description  |
+|-------------|----------------|
+| Right Mouse |    Settings    |
+| F11         |  Hide Mod Menu |
+
+|      Settings      |
+|--------------------|
+| Approach Rate      |
+| Mod Menu Font Size |
