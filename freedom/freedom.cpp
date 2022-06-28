@@ -163,6 +163,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     ImGui::PushFont(font);
 
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
