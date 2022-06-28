@@ -193,13 +193,13 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
+            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 11.0f, "AR: %.1f");
             ImGui::PopStyleColor();
             ImGui::PopItemFlag();
         }
         else
         {
-            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 10.0f, "AR: %.1f");
+            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 11.0f, "AR: %.1f");
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("##ar_lock", &ar_lock))
