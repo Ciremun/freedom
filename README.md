@@ -7,9 +7,9 @@
 
 ## Required Visual Studio Components
 
-    MSVC x64/x86 build tools
-    Windows SDK
-    .NET Framework SDK
+* MSVC x64/x86 build tools
+* Windows SDK
+* .NET Framework SDK
 
 ## Controls
 
