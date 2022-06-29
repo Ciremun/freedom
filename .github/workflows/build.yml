@@ -1,0 +1,32 @@
+name: build-freedom
+on:
+  push:
+    paths:
+    - 'freedom/**'
+    - 'imgui/**'
+    - 'include/**'
+  workflow_dispatch:
+    paths:
+      - 'freedom/**'
+      - 'imgui/**'
+      - 'include/**'
+
+jobs:
+  windows-msvc:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-vsdevenv@master
+        with:
+          arch: 'x86'
+      - name: build
+        shell: cmd
+        run: |
+          build.bat
+      - name: freedom
+        uses: actions/upload-artifact@v3
+        with:
+          name: freedom
+          path: |
+            freedom.exe
+            freedom.dll
