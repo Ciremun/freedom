@@ -45,7 +45,7 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         return 1;
     }
 
-    static wchar_t module_path[MAX_PATH * 2 * sizeof(wchar_t)];
+    static wchar_t module_path[MAX_PATH * 2];
     DWORD module_path_length = GetFullPathNameW(L"freedom.dll", MAX_PATH * 2, module_path, NULL);
     if (module_path_length == 0)
     {
@@ -60,7 +60,7 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         void *loc = VirtualAllocEx(hProc, 0, MAX_PATH * 2 * sizeof(wchar_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (loc)
         {
-            if (WriteProcessMemory(hProc, loc, module_path, module_path_length * sizeof(wchar_t) + 1, 0) != 0)
+            if (WriteProcessMemory(hProc, loc, module_path, module_path_length * sizeof(wchar_t), 0) != 0)
             {
                 HANDLE hThread = CreateRemoteThread(hProc, 0, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, loc, 0, 0);
                 if (hThread)
