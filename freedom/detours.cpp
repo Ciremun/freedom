@@ -1,7 +1,4 @@
-#include "config.h"
 #include "detours.h"
-#include "hook.h"
-#include "dotnet_data_collector.h"
 
 twglSwapBuffers wglSwapBuffersGateway;
 void_trampoline ar_trampoline;
@@ -11,6 +8,8 @@ uintptr_t parse_beatmap_metadata_jump_back = 0;
 
 uintptr_t approach_rate_offset_1 = 0;
 uintptr_t approach_rate_offset_2 = 0;
+
+Hook SwapBuffersHook;
 
 Hook ApproachRateHook1;
 Hook ApproachRateHook2;

@@ -48,17 +48,15 @@ BOOL __stdcall freedom_update(HDC hDc)
     static bool ar_hooks_init = false;
     if (!init)
     {
+#ifndef NDEBUG
+        AllocConsole();
+        FILE* f;
+        freopen_s(&f, "CONOUT$", "w", stdout);
+        freopen_s(&f, "CONOUT$", "w", stderr);
+#endif // NDEBUG
         g_process = GetCurrentProcess();
         EnumWindows(find_osu_window, GetCurrentProcessId());
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
-
-        ar_hooks_init = init_ar_hooks();
-
-        if (ar_hooks_init && ar_lock)
-            enable_ar_hooks();
-
-        if (!ar_hooks_init)
-            ar_lock = false;
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -66,6 +64,8 @@ BOOL __stdcall freedom_update(HDC hDc)
 
         set_imgui_ini_handler();
         io.IniFilename = get_imgui_ini_filename(g_module);
+
+        ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
         ImFontConfig config;
         config.OversampleH = config.OversampleV = 1;
@@ -78,6 +78,14 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
 
         font = io.Fonts->Fonts[3];
+
+        ar_hooks_init = init_ar_hooks();
+
+        if (ar_hooks_init && ar_lock)
+            enable_ar_hooks();
+
+        if (!ar_hooks_init)
+            ar_lock = false;
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -110,11 +118,13 @@ BOOL __stdcall freedom_update(HDC hDc)
         init = true;
     }
 
-    static bool main_window_visible = true;
     if (GetAsyncKeyState(VK_F11) & 1)
-        main_window_visible = !main_window_visible;
+    {
+        mod_menu_visible = !mod_menu_visible;
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
 
-    if (!main_window_visible)
+    if (!mod_menu_visible)
         return wglSwapBuffersGateway(hDc);
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -204,10 +214,15 @@ BOOL __stdcall freedom_update(HDC hDc)
         else
         {
             ImGui::SliderFloat("##AR", &ar_value, 0.0f, 11.0f, "AR: %.1f");
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
         ImGui::SameLine();
         if (ImGui::Checkbox("##ar_lock", &ar_lock))
+        {
             ar_lock ? enable_ar_hooks() : disable_ar_hooks();
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        }
 
         if (!ar_hooks_init)
         {
@@ -247,11 +262,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 
 DWORD WINAPI freedom_main(HMODULE hModule)
 {
-    // AllocConsole();
-    // FILE* f;
-    // freopen_s(&f, "CONOUT$", "w", stdout);
-
-    Hook SwapBuffersHook("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
+    SwapBuffersHook = Hook("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.Enable();
 
     return 0;
