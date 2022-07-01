@@ -17,6 +17,7 @@
 
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
+HMODULE g_module = NULL;
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -62,7 +63,9 @@ BOOL __stdcall freedom_update(HDC hDc)
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
-        io.IniFilename = NULL;
+
+        set_imgui_ini_handler();
+        io.IniFilename = get_imgui_ini_filename(g_module);
 
         ImFontConfig config;
         config.OversampleH = config.OversampleV = 1;
@@ -260,8 +263,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+    {
+        g_module = hModule;
         CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)freedom_main,
                                  hModule, 0, nullptr));
+    } break;
     default:
         break;
     }
