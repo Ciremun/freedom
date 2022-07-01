@@ -61,7 +61,7 @@ __declspec(naked) void set_approach_rate_1()
 {
     __asm {
         fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
+        mov ebx, cfg_ar_value
         mov dword ptr [eax+0x2C], ebx
         jmp [parse_beatmap_metadata_jump_back]
     }
@@ -72,7 +72,7 @@ __declspec(naked) void set_approach_rate_2()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+0x2C]
-        mov ebx, ar_value
+        mov ebx, cfg_ar_value
         mov dword ptr [eax+0x2C], ebx
         jmp [parse_beatmap_metadata_jump_back]
     }

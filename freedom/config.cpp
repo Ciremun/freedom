@@ -1,8 +1,9 @@
 #include "config.h"
 
-bool ar_lock = true;
-float ar_value = 10.0f;
-bool mod_menu_visible = true;
+bool cfg_ar_lock = true;
+float cfg_ar_value = 10.0f;
+int cfg_font_size = 26;
+bool cfg_mod_menu_visible = true;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
@@ -36,22 +37,25 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
 {
     buf->reserve(buf->size() + (1 + 4) * 2);
     buf->appendf("[%s][%s]\n", handler->TypeName, "Settings");
-    buf->appendf("ar_lock=%d\n", (int)ar_lock);
-    buf->appendf("ar_value=%.1f\n", ar_value);
-    buf->appendf("visible=%d\n", mod_menu_visible);
+    buf->appendf("ar_lock=%d\n", (int)cfg_ar_lock);
+    buf->appendf("ar_value=%.1f\n", cfg_ar_value);
+    buf->appendf("visible=%d\n", cfg_mod_menu_visible);
+    buf->appendf("font_size=%d\n", cfg_font_size);
     buf->append("\n");
 }
 
 static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
-    int ar_lock_i, mod_menu_visible_i;
+    int ar_lock_i, mod_menu_visible_i, font_size_i;
     float ar_value_f;
     if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)
-        ar_lock = ar_lock_i;
+        cfg_ar_lock = ar_lock_i;
     else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)
-        ar_value = ar_value_f;
+        cfg_ar_value = ar_value_f;
     else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)
-        mod_menu_visible = mod_menu_visible_i;
+        cfg_mod_menu_visible = mod_menu_visible_i;
+    else if (sscanf(line, "font_size=%d", &font_size_i) == 1)
+        cfg_font_size = font_size_i;
 }
 
 void set_imgui_ini_handler()

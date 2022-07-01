@@ -71,21 +71,21 @@ BOOL __stdcall freedom_update(HDC hDc)
         config.OversampleH = config.OversampleV = 1;
         config.PixelSnapH = true;
 
-        for (int i = 32; i > 16; i -= 2)
+        for (int size = 34; size > 16; size -= 2)
         {
-            config.SizePixels = i;
-            io.Fonts->AddFontDefault(&config);
+            config.SizePixels = size;
+            ImFont *f = io.Fonts->AddFontDefault(&config);
+            if (size == cfg_font_size)
+                font = f;
         }
-
-        font = io.Fonts->Fonts[3];
 
         ar_hooks_init = init_ar_hooks();
 
-        if (ar_hooks_init && ar_lock)
+        if (ar_hooks_init && cfg_ar_lock)
             enable_ar_hooks();
 
         if (!ar_hooks_init)
-            ar_lock = false;
+            cfg_ar_lock = false;
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -120,11 +120,11 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     if (GetAsyncKeyState(VK_F11) & 1)
     {
-        mod_menu_visible = !mod_menu_visible;
+        cfg_mod_menu_visible = !cfg_mod_menu_visible;
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
 
-    if (!mod_menu_visible)
+    if (!cfg_mod_menu_visible)
         return wglSwapBuffersGateway(hDc);
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -194,7 +194,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
         }
 
-        if (!ar_lock)
+        if (!cfg_ar_lock)
         {
             if (current_song_ptr)
             {
@@ -202,25 +202,25 @@ BOOL __stdcall freedom_update(HDC hDc)
                 if (internal_memory_read(g_process, current_song_ptr, &current_song_ar_ptr))
                 {
                     current_song_ar_ptr += 0x2C;
-                    internal_memory_read(g_process, current_song_ar_ptr, &ar_value);
+                    internal_memory_read(g_process, current_song_ar_ptr, &cfg_ar_value);
                 }
             }
             ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 11.0f, "AR: %.1f");
+            ImGui::SliderFloat("##AR", &cfg_ar_value, 0.0f, 11.0f, "AR: %.1f");
             ImGui::PopStyleColor();
             ImGui::PopItemFlag();
         }
         else
         {
-            ImGui::SliderFloat("##AR", &ar_value, 0.0f, 11.0f, "AR: %.1f");
+            ImGui::SliderFloat("##AR", &cfg_ar_value, 0.0f, 11.0f, "AR: %.1f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
         ImGui::SameLine();
-        if (ImGui::Checkbox("##ar_lock", &ar_lock))
+        if (ImGui::Checkbox("##ar_lock", &cfg_ar_lock))
         {
-            ar_lock ? enable_ar_hooks() : disable_ar_hooks();
+            cfg_ar_lock ? enable_ar_hooks() : disable_ar_hooks();
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
 
@@ -239,7 +239,11 @@ BOOL __stdcall freedom_update(HDC hDc)
                 stbsp_snprintf(font_size, 4, "%d", (int)f->ConfigData->SizePixels);
                 const bool is_selected = f == font;
                 if (ImGui::Selectable(font_size, is_selected))
+                {
                     font = f;
+                    cfg_font_size = (int)f->ConfigData->SizePixels;
+                    ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                }
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();
             }
