@@ -175,14 +175,6 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))
     {
-        ImGuiContext &g = *ImGui::GetCurrentContext();
-        static char preview_font_size[16] = {0};
-        stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
-
-        ImGui::SetCursorPosX((ImGui::GetWindowSize().x - ImGui::CalcTextSize("Settings").x) * 0.5f);
-        ImGui::Text("Settings");
-        ImGui::Dummy(ImVec2(0.0f, 5.0f));
-
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
@@ -230,9 +222,12 @@ BOOL __stdcall freedom_update(HDC hDc)
             ImGui::PopStyleColor();
             ImGui::PopItemFlag();
         }
-
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
-        if (ImGui::BeginCombo("##font_size", preview_font_size))
+
+        ImGuiContext &g = *ImGui::GetCurrentContext();
+        static char preview_font_size[16] = {0};
+        stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
+        if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
         {
             for (const auto &f : io.Fonts->Fonts)
             {
