@@ -172,6 +172,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     ImGui::Text("%s", song_name_u8);
 
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))
     {
         ImGuiContext &g = *ImGui::GetCurrentContext();
