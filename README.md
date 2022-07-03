@@ -15,7 +15,7 @@
 
 |    Keys     |   Description  |
 |:-----------:|:--------------:|
-| Right Mouse |    Settings    |
+| Right Click |    Settings    |
 | F11         |  Hide Mod Menu |
 
 |      Settings      |
