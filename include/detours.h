@@ -15,7 +15,7 @@ extern void_trampoline empty_trampoline;
 extern bool ar_offsets_found;
 
 extern uintptr_t parse_beatmap_metadata_code_start;
-extern uintptr_t parse_beatmap_metadata_jump_back;
+extern uintptr_t ar_hook_jump_back;
 
 extern Hook SwapBuffersHook;
 

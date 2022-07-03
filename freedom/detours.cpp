@@ -6,7 +6,7 @@ void_trampoline empty_trampoline;
 bool ar_offsets_found = false;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
-uintptr_t parse_beatmap_metadata_jump_back = 0;
+uintptr_t ar_hook_jump_back = 0;
 
 uintptr_t approach_rate_offset_1 = 0;
 uintptr_t approach_rate_offset_2 = 0;
@@ -32,7 +32,7 @@ void try_find_hook_offsets()
             memcmp((uint8_t *)start, approach_rate_2_signature, sizeof(approach_rate_2_signature)) == 0)
                 approach_rate_offset_2 = start - parse_beatmap_metadata_code_start;
     }
-    parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + approach_rate_offset_2 + 0x9;
+    ar_hook_jump_back = parse_beatmap_metadata_code_start + approach_rate_offset_2 + 0x9;
     ar_offsets_found = approach_rate_offset_1 && approach_rate_offset_2;
 }
 
@@ -63,7 +63,7 @@ __declspec(naked) void set_approach_rate_1()
         fstp dword ptr [eax+0x2C]
         mov ebx, cfg_ar_value
         mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back]
+        jmp [ar_hook_jump_back]
     }
 }
 
@@ -74,6 +74,6 @@ __declspec(naked) void set_approach_rate_2()
         fstp dword ptr [eax+0x2C]
         mov ebx, cfg_ar_value
         mov dword ptr [eax+0x2C], ebx
-        jmp [parse_beatmap_metadata_jump_back]
+        jmp [ar_hook_jump_back]
     }
 }
