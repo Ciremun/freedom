@@ -45,7 +45,6 @@ BOOL __stdcall freedom_update(HDC hDc)
 {
     static ImFont *font = 0;
     static bool init = false;
-    static bool ar_hooks_init = false;
     if (!init)
     {
 #ifndef NDEBUG
@@ -79,12 +78,13 @@ BOOL __stdcall freedom_update(HDC hDc)
                 font = f;
         }
 
-        ar_hooks_init = init_ar_hooks();
+        try_find_hook_offsets();
+        init_ar_hooks();
 
-        if (ar_hooks_init && cfg_ar_lock)
+        if (ar_offsets_found && cfg_ar_lock)
             enable_ar_hooks();
 
-        if (!ar_hooks_init)
+        if (!ar_offsets_found)
             cfg_ar_lock = false;
 
         ImGui::StyleColorsDark();
@@ -185,7 +185,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
-        if (!ar_hooks_init)
+        if (!ar_offsets_found)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
             ImGui::Text("Failed to find AR offsets");
@@ -224,7 +224,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
 
-        if (!ar_hooks_init)
+        if (!ar_offsets_found)
         {
             ImGui::PopStyleColor();
             ImGui::PopItemFlag();

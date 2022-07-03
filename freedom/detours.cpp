@@ -1,7 +1,9 @@
 #include "detours.h"
 
 twglSwapBuffers wglSwapBuffersGateway;
-void_trampoline ar_trampoline;
+void_trampoline empty_trampoline;
+
+bool ar_offsets_found = false;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
 uintptr_t parse_beatmap_metadata_jump_back = 0;
@@ -14,11 +16,11 @@ Hook SwapBuffersHook;
 Hook ApproachRateHook1;
 Hook ApproachRateHook2;
 
-static bool find_approach_rate_offsets()
+void try_find_hook_offsets()
 {
     parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
     if (!parse_beatmap_metadata_code_start)
-        return false;
+        return;
     const uint8_t approach_rate_1_signature[] = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C, 0xEB };
     const uint8_t approach_rate_2_signature[] = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C, 0xC7, 0x45, 0xB0, 0x01, 0x00, 0x00, 0x00 };
     for (uintptr_t start = parse_beatmap_metadata_code_start + 0x1000; start - parse_beatmap_metadata_code_start <= 0x1CFF; ++start)
@@ -31,18 +33,16 @@ static bool find_approach_rate_offsets()
                 approach_rate_offset_2 = start - parse_beatmap_metadata_code_start;
     }
     parse_beatmap_metadata_jump_back = parse_beatmap_metadata_code_start + approach_rate_offset_2 + 0x9;
-    return approach_rate_offset_1 && approach_rate_offset_2;
+    ar_offsets_found = approach_rate_offset_1 && approach_rate_offset_2;
 }
 
-bool init_ar_hooks()
+void init_ar_hooks()
 {
-    if (!find_approach_rate_offsets())
-        return false;
-
-    ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_1, (BYTE *)set_approach_rate_1, (BYTE *)&ar_trampoline, 5);
-    ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_2, (BYTE *)set_approach_rate_2, (BYTE *)&ar_trampoline, 9);
-
-    return true;
+    if (ar_offsets_found)
+    {
+        ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_1, (BYTE *)set_approach_rate_1, (BYTE *)&empty_trampoline, 5);
+        ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_2, (BYTE *)set_approach_rate_2, (BYTE *)&empty_trampoline, 9);
+    }
 }
 
 void enable_ar_hooks()
