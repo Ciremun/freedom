@@ -29,15 +29,13 @@ void parameter_slider(G &found, bool &lock, uintptr_t current_song_ptr, uintptr_
 {
     if (!found)
     {
-        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
-        ImGui::Text(error_message);
-        ImGui::PopStyleColor();
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        slider_fmt = error_message;
     }
     if (!lock)
     {
-        if (current_song_ptr)
+        if (found && current_song_ptr)
         {
             uintptr_t param_ptr = 0;
             if (internal_memory_read(g_process, current_song_ptr, &param_ptr))
@@ -47,7 +45,7 @@ void parameter_slider(G &found, bool &lock, uintptr_t current_song_ptr, uintptr_
             }
         }
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        ImGui::PushStyleColor(ImGuiCol_Text, found ? ITEM_DISABLED : ITEM_UNAVAILABLE);
         ImGui::SliderFloat(slider_id, &value, min, max, slider_fmt);
         ImGui::PopStyleColor();
         ImGui::PopItemFlag();
@@ -64,7 +62,6 @@ void parameter_slider(G &found, bool &lock, uintptr_t current_song_ptr, uintptr_
         lock ? enable() : disable();
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
-
     if (!found)
     {
         ImGui::PopStyleColor();
