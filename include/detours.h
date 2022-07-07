@@ -13,6 +13,7 @@ extern twglSwapBuffers wglSwapBuffersGateway;
 extern void_trampoline empty_trampoline;
 
 extern bool ar_offsets_found;
+extern bool cs_offsets_found;
 
 extern uintptr_t parse_beatmap_metadata_code_start;
 extern uintptr_t ar_hook_jump_back;
@@ -21,9 +22,15 @@ extern Hook SwapBuffersHook;
 
 void try_find_hook_offsets();
 
-void init_ar_hooks();
+void init_hooks();
+
 void enable_ar_hooks();
 void disable_ar_hooks();
 
+void enable_cs_hooks();
+void disable_cs_hooks();
+
 void set_approach_rate_1();
 void set_approach_rate_2();
+
+void set_circle_size();

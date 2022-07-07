@@ -7,6 +7,10 @@
 
 extern bool cfg_ar_lock;
 extern float cfg_ar_value;
+
+extern bool cfg_cs_lock;
+extern float cfg_cs_value;
+
 extern bool cfg_mod_menu_visible;
 extern int cfg_font_size;
 

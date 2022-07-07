@@ -9,15 +9,69 @@
 #include "imgui_internal.h"
 #include "stb_sprintf.h"
 
+#include "config.h"
+#include "detours.h"
 #include "hook.h"
 #include "offsets.h"
 #include "utility.h"
-#include "detours.h"
-#include "config.h"
+
+#define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
+#define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
+
+template <typename G, typename T, typename F>
+void parameter_slider(G &found, bool &lock, uintptr_t current_song_ptr, uintptr_t param_offset,
+                      float &value, float min, float max, const char *checkbox_id, const char *slider_id,
+                      const char *slider_fmt, const char *error_message, T enable, F disable)
+{
+    if (!found)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+        ImGui::Text(error_message);
+        ImGui::PopStyleColor();
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+    }
+    if (!lock)
+    {
+        if (current_song_ptr)
+        {
+            uintptr_t param_ptr = 0;
+            if (internal_memory_read(g_process, current_song_ptr, &param_ptr))
+            {
+                param_ptr += param_offset;
+                internal_memory_read(g_process, param_ptr, &value);
+            }
+        }
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        ImGui::SliderFloat(slider_id, &value, min, max, slider_fmt);
+        ImGui::PopStyleColor();
+        ImGui::PopItemFlag();
+    }
+    else
+    {
+        ImGui::SliderFloat(slider_id, &value, min, max, slider_fmt);
+        if (ImGui::IsItemDeactivatedAfterEdit())
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
+    ImGui::SameLine();
+    if (ImGui::Checkbox(checkbox_id, &lock))
+    {
+        lock ? enable() : disable();
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
+
+    if (!found)
+    {
+        ImGui::PopStyleColor();
+        ImGui::PopItemFlag();
+    }
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+}
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -49,7 +103,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     {
 #ifndef NDEBUG
         AllocConsole();
-        FILE* f;
+        FILE *f;
         freopen_s(&f, "CONOUT$", "w", stdout);
         freopen_s(&f, "CONOUT$", "w", stderr);
 #endif // NDEBUG
@@ -79,13 +133,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
 
         try_find_hook_offsets();
-        init_ar_hooks();
-
-        if (ar_offsets_found && cfg_ar_lock)
-            enable_ar_hooks();
-
-        if (!ar_offsets_found)
-            cfg_ar_lock = false;
+        init_hooks();
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -175,54 +223,9 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))
     {
-#define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
-#define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
-        if (!ar_offsets_found)
-        {
-            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
-            ImGui::Text("Failed to find AR offsets");
-            ImGui::PopStyleColor();
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-        }
-
-        if (!cfg_ar_lock)
-        {
-            if (current_song_ptr)
-            {
-                uintptr_t current_song_ar_ptr = 0;
-                if (internal_memory_read(g_process, current_song_ptr, &current_song_ar_ptr))
-                {
-                    current_song_ar_ptr += 0x2C;
-                    internal_memory_read(g_process, current_song_ar_ptr, &cfg_ar_value);
-                }
-            }
-            ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-            ImGui::SliderFloat("##AR", &cfg_ar_value, 0.0f, 11.0f, "AR: %.1f");
-            ImGui::PopStyleColor();
-            ImGui::PopItemFlag();
-        }
-        else
-        {
-            ImGui::SliderFloat("##AR", &cfg_ar_value, 0.0f, 11.0f, "AR: %.1f");
-            if (ImGui::IsItemDeactivatedAfterEdit())
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-        }
-        ImGui::SameLine();
-        if (ImGui::Checkbox("##ar_lock", &cfg_ar_lock))
-        {
-            cfg_ar_lock ? enable_ar_hooks() : disable_ar_hooks();
-            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-        }
-
-        if (!ar_offsets_found)
-        {
-            ImGui::PopStyleColor();
-            ImGui::PopItemFlag();
-        }
-        ImGui::Dummy(ImVec2(0.0f, 5.0f));
+        parameter_slider(ar_offsets_found, cfg_ar_lock, current_song_ptr, 0x2C, cfg_ar_value, 0.0f, 11.0f, "##ar_lock", "##AR", "AR: %.1f", "Failed to find AR offsets", enable_ar_hooks, disable_ar_hooks);
+        parameter_slider(cs_offsets_found, cfg_cs_lock, current_song_ptr, 0x30, cfg_cs_value, 0.0f, 10.0f, "##cs_lock", "##CS", "CS: %.1f", "Failed to find CS offsets", enable_cs_hooks, disable_cs_hooks);
 
         ImGuiContext &g = *ImGui::GetCurrentContext();
         static char preview_font_size[16] = {0};
@@ -278,7 +281,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
         g_module = hModule;
         CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)freedom_main,
                                  hModule, 0, nullptr));
-    } break;
+    }
+    break;
     default:
         break;
     }
