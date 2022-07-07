@@ -3,7 +3,7 @@
 bool cfg_ar_lock = true;
 float cfg_ar_value = 10.0f;
 
-bool cfg_cs_lock = true;
+bool cfg_cs_lock = false;
 float cfg_cs_value = 4.0f;
 
 int cfg_font_size = 26;
