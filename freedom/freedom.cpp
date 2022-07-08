@@ -102,10 +102,11 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (!init)
     {
         EnumWindows(find_osu_window, GetCurrentProcessId());
-        oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
-        if (g_hwnd != GetForegroundWindow())
+        if (!IsWindowVisible(g_hwnd))
             return wglSwapBuffersGateway(hDc);
+
+        oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 #ifndef NDEBUG
         AllocConsole();
