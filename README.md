@@ -1,6 +1,6 @@
 # Freedom
 
-![preview](https://user-images.githubusercontent.com/38132413/177057678-69f3961b-e7ef-45d0-a1f6-af11eaf3d752.png)
+![preview](https://user-images.githubusercontent.com/38132413/178036552-a3335edc-c49e-407c-8f9d-77c6f466b44b.png)
 
 ## Build
 
