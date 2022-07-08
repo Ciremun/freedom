@@ -22,47 +22,50 @@ HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
 
-template <typename G, typename T, typename F>
-void parameter_slider(G &found, bool &lock, uintptr_t current_song_ptr, uintptr_t param_offset,
-                      float &value, float min, float max, const char *checkbox_id, const char *slider_id,
-                      const char *slider_fmt, const char *error_message, T enable, F disable)
+void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
 {
-    if (!found)
+    if (!p->found)
     {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-        slider_fmt = error_message;
+        p->slider_fmt = p->error_message;
     }
-    if (!lock)
+    if (!p->lock)
     {
-        if (found && current_song_ptr)
+        if (p->found && current_song_ptr)
         {
             uintptr_t param_ptr = 0;
             if (internal_memory_read(g_process, current_song_ptr, &param_ptr))
             {
-                param_ptr += param_offset;
-                internal_memory_read(g_process, param_ptr, &value);
+                param_ptr += p->offset;
+                internal_memory_read(g_process, param_ptr, &p->value);
             }
         }
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleColor(ImGuiCol_Text, found ? ITEM_DISABLED : ITEM_UNAVAILABLE);
-        ImGui::SliderFloat(slider_id, &value, min, max, slider_fmt);
+        ImGui::PushStyleColor(ImGuiCol_Text, p->found ? ITEM_DISABLED : ITEM_UNAVAILABLE);
+        ImGui::PushID(p->slider_fmt);
+        ImGui::SliderFloat("", &p->value, .0f, 11.0f, p->slider_fmt);
+        ImGui::PopID();
         ImGui::PopStyleColor();
         ImGui::PopItemFlag();
     }
     else
     {
-        ImGui::SliderFloat(slider_id, &value, min, max, slider_fmt);
+        ImGui::PushID(p->slider_fmt);
+        ImGui::SliderFloat("", &p->value, .0f, 11.0f, p->slider_fmt);
+        ImGui::PopID();
         if (ImGui::IsItemDeactivatedAfterEdit())
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
     ImGui::SameLine();
-    if (ImGui::Checkbox(checkbox_id, &lock))
+    ImGui::PushID(p->offset);
+    if (ImGui::Checkbox("", &p->lock))
     {
-        lock ? enable() : disable();
+        p->lock ? p->enable() : p->disable();
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
-    if (!found)
+    ImGui::PopID();
+    if (!p->found)
     {
         ImGui::PopStyleColor();
         ImGui::PopItemFlag();
@@ -98,15 +101,20 @@ BOOL __stdcall freedom_update(HDC hDc)
     static bool init = false;
     if (!init)
     {
+        EnumWindows(find_osu_window, GetCurrentProcessId());
+        oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+
+        if (g_hwnd != GetForegroundWindow())
+            return wglSwapBuffersGateway(hDc);
+
 #ifndef NDEBUG
         AllocConsole();
         FILE *f;
         freopen_s(&f, "CONOUT$", "w", stdout);
         freopen_s(&f, "CONOUT$", "w", stderr);
 #endif // NDEBUG
+
         g_process = GetCurrentProcess();
-        EnumWindows(find_osu_window, GetCurrentProcessId());
-        oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -220,9 +228,8 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))
     {
-
-        parameter_slider(ar_offsets_found, cfg_ar_lock, current_song_ptr, 0x2C, cfg_ar_value, 0.0f, 11.0f, "##ar_lock", "##AR", "AR: %.1f", "Failed to find AR offsets", enable_ar_hooks, disable_ar_hooks);
-        parameter_slider(cs_offsets_found, cfg_cs_lock, current_song_ptr, 0x30, cfg_cs_value, 0.0f, 10.0f, "##cs_lock", "##CS", "CS: %.1f", "Failed to find CS offsets", enable_cs_hooks, disable_cs_hooks);
+        parameter_slider(current_song_ptr, &ar_parameter);
+        parameter_slider(current_song_ptr, &cs_parameter);
 
         ImGuiContext &g = *ImGui::GetCurrentContext();
         static char preview_font_size[16] = {0};

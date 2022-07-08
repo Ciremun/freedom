@@ -1,10 +1,29 @@
 #include "detours.h"
 
+Parameter ar_parameter = {
+    true,                        // lock
+    10.0f,                       // value
+    0x2C,                        // offset
+    "AR: %.1f",                  // slider_fmt
+    "Failed to find AR offsets", // error_message
+    enable_ar_hooks,             // enable
+    disable_ar_hooks,            // disable
+    // bool found = false
+};
+
+Parameter cs_parameter = {
+    false,                       // lock
+    4.0f,                        // value
+    0x30,                        // offset
+    "CS: %.1f",                  // slider_fmt
+    "Failed to find CS offsets", // error_message
+    enable_cs_hooks,             // enable
+    disable_cs_hooks,            // disable
+    // bool found = false
+};
+
 twglSwapBuffers wglSwapBuffersGateway;
 void_trampoline empty_trampoline;
-
-bool ar_offsets_found = false;
-bool cs_offsets_found = false;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
 
@@ -48,35 +67,35 @@ void try_find_hook_offsets()
     }
     ar_hook_jump_back = parse_beatmap_metadata_code_start + approach_rate_offset_2 + 0x9;
     cs_hook_jump_back = parse_beatmap_metadata_code_start + circle_size_offsets[0] + 0x9;
-    ar_offsets_found = approach_rate_offset_1 && approach_rate_offset_2;
-    cs_offsets_found = (bool)circle_size_offsets[2];
+    ar_parameter.found = approach_rate_offset_1 && approach_rate_offset_2;
+    cs_parameter.found = (bool)circle_size_offsets[2];
 }
 
 void init_hooks()
 {
-    if (ar_offsets_found)
+    if (ar_parameter.found)
     {
         ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_1, (BYTE *)set_approach_rate_1, (BYTE *)&empty_trampoline, 5);
         ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_2, (BYTE *)set_approach_rate_2, (BYTE *)&empty_trampoline, 9);
-        if (cfg_ar_lock)
+        if (ar_parameter.lock)
             enable_ar_hooks();
     }
     else
     {
-        cfg_ar_lock = false;
+        ar_parameter.lock = false;
     }
 
-    if (cs_offsets_found)
+    if (cs_parameter.found)
     {
         CircleSizeHook_1 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, (BYTE *)&empty_trampoline, 9);
         CircleSizeHook_2 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, (BYTE *)&empty_trampoline, 9);
         CircleSizeHook_3 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, (BYTE *)&empty_trampoline, 9);
-        if (cfg_cs_lock)
+        if (cs_parameter.lock)
             enable_cs_hooks();
     }
     else
     {
-        cfg_cs_lock = false;
+        cs_parameter.lock = false;
     }
 }
 
@@ -110,7 +129,7 @@ __declspec(naked) void set_approach_rate_1()
 {
     __asm {
         fstp dword ptr [eax+0x2C]
-        mov ebx, cfg_ar_value
+        mov ebx, ar_parameter.value
         mov dword ptr [eax+0x2C], ebx
         jmp [ar_hook_jump_back]
     }
@@ -121,7 +140,7 @@ __declspec(naked) void set_approach_rate_2()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+0x2C]
-        mov ebx, cfg_ar_value
+        mov ebx, ar_parameter.value
         mov dword ptr [eax+0x2C], ebx
         jmp [ar_hook_jump_back]
     }
@@ -132,7 +151,7 @@ __declspec(naked) void set_circle_size()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+0x30]
-        mov ebx, cfg_cs_value
+        mov ebx, cs_parameter.value
         mov dword ptr [eax+0x30], ebx
         jmp [cs_hook_jump_back]
     }

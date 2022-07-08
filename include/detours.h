@@ -2,21 +2,31 @@
 
 #include <windows.h>
 
-#include "config.h"
+#include <stdint.h>
+
 #include "hook.h"
 #include "dotnet_data_collector.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
 typedef void(__stdcall *void_trampoline)();
 
+struct Parameter
+{
+    bool lock;
+    float value;
+    uintptr_t offset;
+    const char *slider_fmt;
+    const char *error_message;
+    void (*enable)();
+    void (*disable)();
+    bool found = false;
+};
+
+extern Parameter ar_parameter;
+extern Parameter cs_parameter;
+
 extern twglSwapBuffers wglSwapBuffersGateway;
 extern void_trampoline empty_trampoline;
-
-extern bool ar_offsets_found;
-extern bool cs_offsets_found;
-
-extern uintptr_t parse_beatmap_metadata_code_start;
-extern uintptr_t ar_hook_jump_back;
 
 extern Hook SwapBuffersHook;
 
