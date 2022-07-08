@@ -23,4 +23,5 @@
 |      Settings      |
 |:------------------:|
 | Approach Rate      |
+| Circle Size        |
 | Mod Menu Font Size |
