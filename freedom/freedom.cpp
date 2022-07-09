@@ -231,6 +231,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     {
         parameter_slider(current_song_ptr, &ar_parameter);
         parameter_slider(current_song_ptr, &cs_parameter);
+        parameter_slider(current_song_ptr, &od_parameter);
 
         ImGuiContext &g = *ImGui::GetCurrentContext();
         static char preview_font_size[16] = {0};

@@ -24,6 +24,7 @@ struct Parameter
 
 extern Parameter ar_parameter;
 extern Parameter cs_parameter;
+extern Parameter od_parameter;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 extern void_trampoline empty_trampoline;
@@ -40,7 +41,9 @@ void disable_ar_hooks();
 void enable_cs_hooks();
 void disable_cs_hooks();
 
-void set_approach_rate_1();
-void set_approach_rate_2();
+void enable_od_hooks();
+void disable_od_hooks();
 
+void set_approach_rate();
 void set_circle_size();
+void set_overall_difficulty();

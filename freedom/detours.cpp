@@ -5,7 +5,7 @@ Parameter ar_parameter = {
     10.0f,                       // value
     0x2C,                        // offset
     "AR: %.1f",                  // slider_fmt
-    "Failed to find AR offsets", // error_message
+    "AR Offsets Not Found",      // error_message
     enable_ar_hooks,             // enable
     disable_ar_hooks,            // disable
     // bool found = false
@@ -16,9 +16,20 @@ Parameter cs_parameter = {
     4.0f,                        // value
     0x30,                        // offset
     "CS: %.1f",                  // slider_fmt
-    "Failed to find CS offsets", // error_message
+    "CS Offsets Not Found",      // error_message
     enable_cs_hooks,             // enable
     disable_cs_hooks,            // disable
+    // bool found = false
+};
+
+Parameter od_parameter = {
+    false,                       // lock
+    8.0f,                        // value
+    0x38,                        // offset
+    "OD: %.1f",                  // slider_fmt
+    "OD Offsets Not Found",      // error_message
+    enable_od_hooks,             // enable
+    disable_od_hooks,            // disable
     // bool found = false
 };
 
@@ -27,12 +38,14 @@ void_trampoline empty_trampoline;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
 
-uintptr_t approach_rate_offset_1 = 0;
-uintptr_t approach_rate_offset_2 = 0;
+uintptr_t approach_rate_offsets[2] = {0};
 uintptr_t ar_hook_jump_back = 0;
 
 uintptr_t circle_size_offsets[3] = {0};
 uintptr_t cs_hook_jump_back = 0;
+
+uintptr_t overall_difficulty_offsets[2] = {0};
+uintptr_t od_hook_jump_back = 0;
 
 Hook SwapBuffersHook;
 
@@ -43,47 +56,51 @@ Hook CircleSizeHook_1;
 Hook CircleSizeHook_2;
 Hook CircleSizeHook_3;
 
+Hook OverallDifficultyHook_1;
+Hook OverallDifficultyHook_2;
+
 void try_find_hook_offsets()
 {
     parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
     if (!parse_beatmap_metadata_code_start)
         return;
-    const uint8_t approach_rate_1_signature[] = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C, 0xEB };
-    const uint8_t approach_rate_2_signature[] = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C, 0xC7, 0x45, 0xB0, 0x01, 0x00, 0x00, 0x00 };
-    const uint8_t circle_size_signature[]     = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x30, 0xE9 };
+    const uint8_t approach_rate_signature[]      = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C };
+    const uint8_t circle_size_signature[]        = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x30 };
+    const uint8_t overall_difficulty_signature[] = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x38 };
+    int approach_rate_offsets_idx = 0;
     int circle_size_offsets_idx = 0;
-
+    int overall_difficulty_offsets_idx = 0;
     for (uintptr_t start = parse_beatmap_metadata_code_start + 0x1000; start - parse_beatmap_metadata_code_start <= 0x1CFF; ++start)
     {
-        if (!approach_rate_offset_1 &&
-            memcmp((uint8_t *)start, approach_rate_1_signature, sizeof(approach_rate_1_signature)) == 0)
-                approach_rate_offset_1 = start - parse_beatmap_metadata_code_start + 0x6;
-        if (!approach_rate_offset_2 &&
-            memcmp((uint8_t *)start, approach_rate_2_signature, sizeof(approach_rate_2_signature)) == 0)
-                approach_rate_offset_2 = start - parse_beatmap_metadata_code_start;
-        if (circle_size_offsets_idx != 3 &&
+        if (approach_rate_offsets_idx < 2 &&
+            memcmp((uint8_t *)start, approach_rate_signature, sizeof(approach_rate_signature)) == 0)
+                approach_rate_offsets[approach_rate_offsets_idx++] = start - parse_beatmap_metadata_code_start;
+        if (circle_size_offsets_idx < 3 &&
             memcmp((uint8_t *)start, circle_size_signature, sizeof(circle_size_signature)) == 0)
                 circle_size_offsets[circle_size_offsets_idx++] = start - parse_beatmap_metadata_code_start;
+        if (overall_difficulty_offsets_idx < 2 &&
+            memcmp((uint8_t *)start, overall_difficulty_signature, sizeof(overall_difficulty_signature)) == 0)
+                overall_difficulty_offsets[overall_difficulty_offsets_idx++] = start - parse_beatmap_metadata_code_start;
     }
-    ar_hook_jump_back = parse_beatmap_metadata_code_start + approach_rate_offset_2 + 0x9;
+    ar_hook_jump_back = parse_beatmap_metadata_code_start + approach_rate_offsets[1] + 0x9;
     cs_hook_jump_back = parse_beatmap_metadata_code_start + circle_size_offsets[0] + 0x9;
-    ar_parameter.found = approach_rate_offset_1 && approach_rate_offset_2;
-    cs_parameter.found = (bool)circle_size_offsets[2];
+    od_hook_jump_back = parse_beatmap_metadata_code_start + overall_difficulty_offsets[1] + 0x9;
+    ar_parameter.found = approach_rate_offsets[1] > 0;
+    cs_parameter.found = circle_size_offsets[2] > 0;
+    od_parameter.found = overall_difficulty_offsets[1] > 0;
 }
 
 void init_hooks()
 {
     if (ar_parameter.found)
     {
-        ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_1, (BYTE *)set_approach_rate_1, (BYTE *)&empty_trampoline, 5);
-        ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offset_2, (BYTE *)set_approach_rate_2, (BYTE *)&empty_trampoline, 9);
+        ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, (BYTE *)&empty_trampoline, 9);
+        ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, (BYTE *)&empty_trampoline, 9);
         if (ar_parameter.lock)
             enable_ar_hooks();
     }
     else
-    {
         ar_parameter.lock = false;
-    }
 
     if (cs_parameter.found)
     {
@@ -94,9 +111,29 @@ void init_hooks()
             enable_cs_hooks();
     }
     else
-    {
         cs_parameter.lock = false;
+
+    if (od_parameter.found)
+    {
+        OverallDifficultyHook_1 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, (BYTE *)&empty_trampoline, 9);
+        OverallDifficultyHook_2 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, (BYTE *)&empty_trampoline, 9);
+        if (od_parameter.lock)
+            enable_od_hooks();
     }
+    else
+        od_parameter.lock = false;
+}
+
+void enable_od_hooks()
+{
+    OverallDifficultyHook_1.Enable();
+    OverallDifficultyHook_2.Enable();
+}
+
+void disable_od_hooks()
+{
+    OverallDifficultyHook_1.Disable();
+    OverallDifficultyHook_2.Disable();
 }
 
 void enable_cs_hooks()
@@ -125,17 +162,7 @@ void disable_ar_hooks()
     ApproachRateHook2.Disable();
 }
 
-__declspec(naked) void set_approach_rate_1()
-{
-    __asm {
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_parameter.value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [ar_hook_jump_back]
-    }
-}
-
-__declspec(naked) void set_approach_rate_2()
+__declspec(naked) void set_approach_rate()
 {
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
@@ -154,5 +181,16 @@ __declspec(naked) void set_circle_size()
         mov ebx, cs_parameter.value
         mov dword ptr [eax+0x30], ebx
         jmp [cs_hook_jump_back]
+    }
+}
+
+__declspec(naked) void set_overall_difficulty()
+{
+    __asm {
+        mov eax, dword ptr [ebp-0x00000150]
+        fstp dword ptr [eax+0x38]
+        mov ebx, od_parameter.value
+        mov dword ptr [eax+0x38], ebx
+        jmp [od_hook_jump_back]
     }
 }
