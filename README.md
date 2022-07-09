@@ -1,6 +1,6 @@
 # Freedom
 
-![preview](https://user-images.githubusercontent.com/38132413/178036552-a3335edc-c49e-407c-8f9d-77c6f466b44b.png)
+![preview](https://user-images.githubusercontent.com/38132413/178118333-5d139c7f-2fcc-4eb8-ac6b-ca273071fcf9.png)
 
 ## Build
 
@@ -24,4 +24,5 @@
 |:------------------:|
 | Approach Rate      |
 | Circle Size        |
+| Overall Difficulty |
 | Mod Menu Font Size |
