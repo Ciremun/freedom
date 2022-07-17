@@ -264,7 +264,6 @@ BOOL __stdcall freedom_update(HDC hDc)
             {
                 playback_start_time = ImGui::GetTime();
                 hit_objects_ms_idx = 0;
-                // printf("playback started!\n");
             }
             prev_song_select_ui_ptr = song_select_ui_ptr;
         }
@@ -274,91 +273,58 @@ BOOL __stdcall freedom_update(HDC hDc)
         current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     }
 
-    // static float delay = 2.5f;
-    // ImGui::SliderFloat("#delay", &delay, 0.0f, 6.0f, "%.2f");
-
     static double true_playback_start_time = 0.0;
     if (GetAsyncKeyState('D') & 1)
     {
-        true_playback_start_time = ImGui::GetTime();
+        true_playback_start_time = ImGui::GetTime() - hit_objects_ms[0] / 1000.0;
         hit_objects_ms_idx++;
-        // printf("set true_playback_start_time\n");
     }
 
     if (playback_start_time && true_playback_start_time)
     {
         double current_time = ImGui::GetTime();
         double diff = current_time - true_playback_start_time - io.DeltaTime;
-        // 1.75 for auto
-        if (diff * 1000.0 >= hit_objects_ms[0])
+        static double delayed_keyup = 0.0;
+        static bool last = false;
+        if (diff * 1000.0 >= hit_objects_ms[hit_objects_ms_idx])
         {
-            // printf("now!\n");
-            // playback_start_time = 0.0;
-            static double delayed_keyup = 0.0;
-            static bool last = false;
-            if (diff * 1000.0 >= hit_objects_ms[hit_objects_ms_idx])
+            printf("hit %d!\n", hit_objects_ms_idx);
+
+            INPUT inputs[1];
+            inputs[0].type = INPUT_KEYBOARD;
+            inputs[0].ki.wVk = 0;
+            inputs[0].ki.wScan = 0;
+            inputs[0].ki.time = 0;
+            inputs[0].ki.dwExtraInfo = 0;
+            inputs[0].ki.dwFlags = 0;
+            inputs[0].ki.wVk = 'S';
+            SendInput(1, inputs, sizeof(INPUT));
+            delayed_keyup = ImGui::GetTime();
+
+            hit_objects_ms_idx++;
+            if (hit_objects_ms_idx == 414)
+                last = true;
+        }
+        if (delayed_keyup && ((current_time - delayed_keyup) > 0.0005))
+        {
+            delayed_keyup = 0.0;
+
+            INPUT inputs[1];
+            inputs[0].type = INPUT_KEYBOARD;
+            inputs[0].ki.wVk = 0;
+            inputs[0].ki.wScan = 0;
+            inputs[0].ki.time = 0;
+            inputs[0].ki.dwExtraInfo = 0;
+            inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+            inputs[0].ki.wVk = 'S';
+            SendInput(1, inputs, sizeof(INPUT));
+            if (last)
             {
-                printf("hit %d!\n", hit_objects_ms_idx);
-                // send_input("S", 1);
-
-                INPUT inputs[1];
-                inputs[0].type = INPUT_KEYBOARD;
-                inputs[0].ki.wVk = 0;
-                inputs[0].ki.wScan = 0;
-                inputs[0].ki.time = 0;
-                inputs[0].ki.dwExtraInfo = 0;
-                inputs[0].ki.dwFlags = 0;
-                inputs[0].ki.wVk = 'S';
-                SendInput(1, inputs, sizeof(INPUT));
-                delayed_keyup = ImGui::GetTime();
-
-                hit_objects_ms_idx++;
-                if (hit_objects_ms_idx == 414)
-                {
-                    // printf("end!\n");
-                    last = true;
-                }
-            }
-            if (delayed_keyup && ((current_time - delayed_keyup) > 0.0005))
-            {
-                // printf("keyup!\n");
-                delayed_keyup = 0.0;
-
-                INPUT inputs[1];
-                inputs[0].type = INPUT_KEYBOARD;
-                inputs[0].ki.wVk = 0;
-                inputs[0].ki.wScan = 0;
-                inputs[0].ki.time = 0;
-                inputs[0].ki.dwExtraInfo = 0;
-                inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                inputs[0].ki.wVk = 'S';
-                SendInput(1, inputs, sizeof(INPUT));
-                if (last)
-                {
-                    playback_start_time = 0.0;
-                    true_playback_start_time = 0.0;
-                    last = false;
-                }
+                playback_start_time = 0.0;
+                true_playback_start_time = 0.0;
+                last = false;
             }
         }
-
-        // static DWORD last_dwFlags = KEYEVENTF_KEYUP;
-        // if (diff > 0.517392)
-        // {
-        //     printf("keypress!\n");
-        //     playback_start_time = ImGui::GetTime();
-
-        //     INPUT inputs[1];
-        //     inputs[0].type = INPUT_KEYBOARD;
-        //     inputs[0].ki.wVk = 0;
-        //     inputs[0].ki.wScan = 0;
-        //     inputs[0].ki.time = 0;
-        //     inputs[0].ki.dwExtraInfo = 0;
-        //     inputs[0].ki.dwFlags = last_dwFlags == KEYEVENTF_KEYUP ? 0 : KEYEVENTF_KEYUP;
-        //     last_dwFlags = inputs[0].ki.dwFlags;
-        //     inputs[0].ki.wVk = 'S';
-        //     SendInput(1, inputs, sizeof(INPUT));
-        // }
     }
 
     ImGui::Text("%s", song_name_u8);
