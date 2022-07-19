@@ -33,6 +33,12 @@ Parameter od_parameter = {
     // bool found = false
 };
 
+std::vector<CodeStartTarget> code_starts = {
+    // class, method
+    {L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", L"#=zyO2ZBz4="}, // parse_beatmap
+    {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="}, // beatmap_onload
+};
+
 twglSwapBuffers wglSwapBuffersGateway;
 void_trampoline empty_trampoline;
 
@@ -61,7 +67,10 @@ Hook OverallDifficultyHook_2;
 
 void try_find_hook_offsets()
 {
-    parse_beatmap_metadata_code_start = code_start_for_parse_beatmap_metadata();
+    code_start_for_class_methods(code_starts);
+    parse_beatmap_metadata_code_start = code_starts[0].start;
+    FR_INFO_FMT("parse_beatmap code: 0x%X", parse_beatmap_metadata_code_start);
+    FR_INFO_FMT("beatmap_onload code: 0x%X", code_starts[1].start);
     if (!parse_beatmap_metadata_code_start)
         return;
     const uint8_t approach_rate_signature[]      = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C };

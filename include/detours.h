@@ -4,8 +4,11 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "hook.h"
 #include "dotnet_data_collector.h"
+#include "code_start_target.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
 typedef void(__stdcall *void_trampoline)();
