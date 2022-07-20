@@ -305,7 +305,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
     }
 
-    ImGui::Text("Scene: %d", current_scene);
     ImGui::Text("%s", song_name_u8);
 
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);

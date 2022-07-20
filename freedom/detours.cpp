@@ -139,6 +139,7 @@ void try_find_hook_offsets()
             {
                 current_scene_offset = start - current_scene_code_start + 0xF;
                 current_scene_hook_jump_back = current_scene_code_start + current_scene_offset + 0x5;
+                notify_on_scene_change_original_mov_address = *(uintptr_t *)(current_scene_code_start + current_scene_offset + 0x1);
                 break;
             }
         }
@@ -189,7 +190,6 @@ void init_hooks()
     {
         SceneChangeHook = Hook((BYTE *)current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, (BYTE *)&empty_gateway, 5);
         SceneChangeHook.Enable();
-        notify_on_scene_change_original_mov_address = *(uintptr_t *)(SceneChangeHook.originalBytes + 0x1);
     }
 }
 
