@@ -15,43 +15,18 @@
 #include "offsets.h"
 #include "utility.h"
 
-int hit_objects_ms[] = { 107, 380, 516, 789, 925, 1198, 1334, 1607, 1743, 2016, 2152, 2289, 2561, 2698, 2970, 3107, 3380, 3516, 3789, 3925, 4198, 4334, 4470, 4743, 4880, 5152, 5289, 5561, 5698, 5970, 6107, 6380, 6516, 6652, 6925, 7061, 7334, 7470, 7743, 7880, 8152, 8289, 8425, 8561, 8698, 8834, 8970, 18652, 20834, 22198, 22470, 22743, 22880, 23016, 23152, 23698, 25743, 26561, 26970, 28061, 28743, 30925, 31880, 32425, 33789, 33925, 34061, 34470, 34607, 35152, 40743, 40811, 40880, 40948, 41016, 41084, 41152, 41220, 41289, 41357, 41425, 41493, 41561, 41630, 41698, 41766, 41834, 41902, 41970, 42039, 42107, 42175, 42243, 42311, 42380, 42448, 42516, 42584, 42652, 42720, 42789, 42857, 44016, 44084, 44152, 44220, 44289, 44357, 44425, 44493, 44561, 44630, 44698, 44766, 44834, 44902, 44970, 45039, 45380, 45789, 45925, 46061, 46743, 46880, 48380, 48516, 48789, 48925, 48993, 49061, 49130, 49198, 49266, 49334, 49402, 50970, 51516, 58198, 65834, 65970, 66243, 66380, 66652, 66789, 67743, 67880, 68425, 70198, 70607, 75925, 76334, 76470, 76607, 77016, 77698, 77834, 77902, 77970, 78039, 78107, 78175, 78243, 78311, 78380, 78448, 78516, 78584, 78652, 78720, 78789, 78857, 79198, 79880, 80289, 80834, 80970, 82198, 82266, 82334, 82402, 82470, 82539, 82607, 82675, 82743, 82811, 82880, 82948, 83016, 83084, 83152, 83220, 83289, 83425, 83698, 83834, 84107, 84243, 85061, 85334, 86152, 86425, 86561, 86630, 86698, 86766, 86834, 86902, 86970, 87039, 87107, 87175, 87243, 87311, 87380, 87448, 87516, 87584, 88743, 88811, 88879, 88947, 89015, 89084, 89152, 89220, 89288, 89356, 89425, 89493, 89561, 89629, 89697, 89765, 89834, 89902, 89970, 90038, 90106, 90175, 90243, 90311, 90379, 90447, 90516, 90584, 90652, 90720, 90788, 90856, 90925, 90993, 91061, 91129, 91197, 91266, 91334, 91402, 91470, 91538, 91607, 91675, 91743, 91811, 91879, 91947, 92016, 92084, 92152, 92220, 92289, 92357, 92834, 92970, 93243, 93380, 93652, 93789, 94061, 94334, 94470, 94743, 94880, 95152, 95425, 95561, 95834, 95970, 96243, 96516, 96652, 96925, 97061, 97334, 97607, 97743, 98016, 98152, 98425, 98561, 98630, 98698, 98766, 98834, 98902, 98970, 99039, 99107, 99175, 99243, 99311, 99380, 99448, 99516, 99584, 99652, 99720, 99789, 99857, 99925, 99993, 100061, 100130, 100198, 100266, 100334, 100402, 100470, 100539, 100607, 100675, 100743, 100811, 100880, 100948, 101016, 101084, 101152, 101220, 101289, 101357, 101425, 101493, 101561, 101630, 101698, 110561, 110970, 111380, 111789, 112198, 112470, 112743, 113152, 113561, 113970, 114380, 114516, 114652, 115334, 115470, 116152, 116561, 117107, 117652, 118334, 118743, 119016, 119289, 119834, 120516, 120925, 121198, 121470, 122016, 122561, 122834, 122970, 123243, 123380, 123516, 132380, 132448, 132516, 132584, 132652, 132720, 132789, 132857, 132925, 132993, 133061, 133130, 133198, 133266, 133334, 133402, 133470, 133539, 133607, 133675, 133743, 133811, 133880, 133948, 134016, 134084, 134152, 134220, 134289, 134357, 134425, 134493, 135652 };
-int hit_objects_ms_idx = 0;
-bool beatmap_loaded = false;
-Scene current_scene = Scene::MAIN_MENU;
-
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+
+bool beatmap_loaded = false;
+bool start_parse_beatmap = false;
+Scene current_scene = Scene::MAIN_MENU;
+uintptr_t osu_auth_base = 0;
+BeatmapData current_beatmap;
 
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
-
-void send_input(const char *msg, int size)
-{
-    INPUT *inputs = (INPUT *)alloca(size * 2 * sizeof(INPUT));
-    INPUT input;
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = 0;
-    input.ki.wScan = 0;
-    input.ki.time = 0;
-    input.ki.dwExtraInfo = 0;
-    input.ki.dwFlags = 0;
-
-    for (int i = 0; i < size; i++)
-    {
-        input.ki.wVk = msg[i];
-        inputs[i] = input;
-    }
-    for (int i = 0; i < size; i++)
-    {
-        input.ki.dwFlags = KEYEVENTF_KEYUP;
-        input.ki.wVk = msg[i];
-        inputs[i + size] = input;
-    }
-
-    SendInput(size * 2, inputs, sizeof(INPUT));
-}
 
 void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
 {
@@ -222,9 +197,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
-    // static double playback_start_time = 0.0;
-
-    static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
+    osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (current_song_ptr)
@@ -232,6 +205,37 @@ BOOL __stdcall freedom_update(HDC hDc)
         uintptr_t song_str_ptr = 0;
         if (internal_memory_read(g_process, current_song_ptr, &song_str_ptr))
         {
+            if (start_parse_beatmap)
+            {
+                bool success = false;
+                uintptr_t folder_name_ptr = 0;
+                if (internal_memory_read(g_process, song_str_ptr + 0x78, &folder_name_ptr))
+                {
+                    const wchar_t *folder_name = (const wchar_t *)(folder_name_ptr + 0x8);
+                    uint32_t folder_name_length = *(uint32_t *)(folder_name_ptr + 0x4);
+                    uintptr_t diff_name_ptr = 0;
+                    if (internal_memory_read(g_process, song_str_ptr + 0x94, &diff_name_ptr))
+                    {
+                        const wchar_t *diff_name = (const wchar_t *)(diff_name_ptr + 0x8);
+                        uint32_t diff_name_length = *(uint32_t *)(diff_name_ptr + 0x4);
+                        static TCHAR osu_path[MAX_PATH * 2];
+                        DWORD osu_path_length = GetModuleFileNameEx(g_process, NULL, osu_path, MAX_PATH);
+                        if (osu_path_length == 0)
+                            FR_ERROR_FMT("GetModuleFileNameEx failed: %d", GetLastError());
+                        DWORD backslash_index = osu_path_length - 1;
+                        while (backslash_index)
+                            if (osu_path[--backslash_index] == '\\')
+                                break;
+                        osu_path[backslash_index] = '\0';
+                        _snwprintf(osu_path, osu_path_length + 7 + folder_name_length + 1 + diff_name_length, L"%s\\Songs\\%s\\%s", osu_path, folder_name, diff_name);
+                        FR_INFO_FMT("parsing beatmap: %S", osu_path);
+                        success = parse_beatmap(osu_path, current_beatmap);
+                    }
+                }
+                if (!success)
+                    FR_ERROR("couldn't parse beatmap");
+                start_parse_beatmap = false;
+            }
             song_str_ptr += 0x80;
             static uintptr_t prev_song_str_ptr = 0;
             if (song_str_ptr != prev_song_str_ptr)
@@ -259,15 +263,16 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
 
-    if (beatmap_loaded && current_scene == Scene::GAMIN)
+    if (beatmap_loaded && current_scene == Scene::GAMIN && current_beatmap.parsed_successfully)
     {
         double current_time = ImGui::GetTime();
         static double delayed_keyup = 0.0;
         static bool last = false;
         int32_t audio_time = *(int32_t *)audio_time_ptr;
-        if (audio_time >= hit_objects_ms[hit_objects_ms_idx])
+        Circle circle = current_beatmap.current_circle();
+        if (circle.type == CircleType::POINT && audio_time >= circle.hit_circle.time)
         {
-            FR_INFO_FMT("hit %d!, %d >= %d", hit_objects_ms_idx, audio_time, hit_objects_ms[hit_objects_ms_idx]);
+            FR_INFO_FMT("hit %d!, %d >= %d", current_beatmap.hit_object_idx, audio_time, circle.hit_circle.time);
 
             INPUT inputs[1];
             inputs[0].type = INPUT_KEYBOARD;
@@ -278,10 +283,11 @@ BOOL __stdcall freedom_update(HDC hDc)
             inputs[0].ki.dwFlags = 0;
             inputs[0].ki.wVk = 'S';
             SendInput(1, inputs, sizeof(INPUT));
+
             delayed_keyup = ImGui::GetTime();
 
-            hit_objects_ms_idx++;
-            if (hit_objects_ms_idx == 414)
+            current_beatmap.hit_object_idx++;
+            if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
                 last = true;
         }
         if (delayed_keyup && ((current_time - delayed_keyup) > 0.0005))
