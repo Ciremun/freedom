@@ -6,6 +6,7 @@
 #include "imgui_internal.h"
 
 #include "detours.h"
+#include "utility.h"
 
 extern bool cfg_mod_menu_visible;
 extern int cfg_font_size;

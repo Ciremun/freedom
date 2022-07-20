@@ -9,6 +9,7 @@
 #include "hook.h"
 #include "dotnet_data_collector.h"
 #include "code_start_target.h"
+#include "imgui.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
 typedef void(__stdcall *void_trampoline)();
@@ -30,7 +31,6 @@ extern Parameter cs_parameter;
 extern Parameter od_parameter;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
-extern void_trampoline empty_trampoline;
 
 extern Hook SwapBuffersHook;
 
@@ -50,3 +50,5 @@ void disable_od_hooks();
 void set_approach_rate();
 void set_circle_size();
 void set_overall_difficulty();
+
+void notify_relax_on_load();

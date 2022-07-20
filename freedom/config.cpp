@@ -24,6 +24,8 @@ const char *get_imgui_ini_filename(HMODULE hMod)
 
     memcpy(module_path_u8 + backslash_index + 1, "freedom.ini", 12);
 
+    FR_INFO_FMT("freedom.ini path: %s", module_path_u8);
+
     return (const char *)&module_path_u8;
 }
 

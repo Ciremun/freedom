@@ -100,7 +100,7 @@ bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets)
 
             memcpy(module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
 
-            FR_INFO_FMT("module_path: %S", module_path);
+            FR_INFO_FMT("prejit.dll path: %S", module_path);
 
             HRESULT result = pClrRuntimeHost->ExecuteInDefaultAppDomain(module_path, L"Freedom.PreJit", L"main", L"", &dwRet);
             if (result != S_OK)
