@@ -24,6 +24,7 @@ namespace Freedom
                         if (method.Name == "#=zaGN2R64=")
                         {
                             System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                            Console.WriteLine("prejit beatmap_onload");
                         }
                     }
                 }
