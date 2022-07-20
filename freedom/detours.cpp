@@ -37,14 +37,11 @@ std::vector<CodeStartTarget> code_starts = {
     // class, method
     {L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", L"#=zyO2ZBz4="}, // parse_beatmap
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
+    {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"}                      // current scene
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
 void_trampoline empty_gateway;
-void_trampoline relax_gateway;
-
-uintptr_t beatmap_onload_code_start = 0;
-uintptr_t beatmap_onload_offset = 0;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
 
@@ -56,6 +53,15 @@ uintptr_t cs_hook_jump_back = 0;
 
 uintptr_t overall_difficulty_offsets[2] = {0};
 uintptr_t od_hook_jump_back = 0;
+
+uintptr_t beatmap_onload_code_start = 0;
+uintptr_t beatmap_onload_offset = 0;
+uintptr_t beatmap_onload_hook_jump_back = 0;
+
+uintptr_t current_scene_code_start = 0;
+uintptr_t current_scene_offset = 0;
+uintptr_t notify_on_scene_change_original_mov_address = 0;
+uintptr_t current_scene_hook_jump_back = 0;
 
 Hook SwapBuffersHook;
 
@@ -69,15 +75,18 @@ Hook CircleSizeHook_3;
 Hook OverallDifficultyHook_1;
 Hook OverallDifficultyHook_2;
 
-Hook RelaxHook;
+Hook BeatmapOnLoadHook;
+Hook SceneChangeHook;
 
 void try_find_hook_offsets()
 {
     code_start_for_class_methods(code_starts);
     parse_beatmap_metadata_code_start = code_starts[0].start;
     beatmap_onload_code_start = code_starts[1].start;
+    current_scene_code_start = code_starts[2].start;
     FR_INFO_FMT("parse_beatmap_metadata_code_start: 0x%X", parse_beatmap_metadata_code_start);
     FR_INFO_FMT("beatmap_onload_code_start: 0x%X", beatmap_onload_code_start);
+    FR_INFO_FMT("current_scene_code_start: 0x%X", current_scene_code_start);
     if (parse_beatmap_metadata_code_start)
     {
         const uint8_t approach_rate_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C};
@@ -113,11 +122,28 @@ void try_find_hook_offsets()
             if (memcmp((uint8_t *)start, beatmap_onload_signature, sizeof(beatmap_onload_signature)) == 0)
             {
                 beatmap_onload_offset = start - beatmap_onload_code_start;
+                beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
                 break;
             }
         }
     }
     FR_INFO_FMT("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
+    if (current_scene_code_start)
+    {
+        const uint8_t current_scene_signature[] = {0xA1, 0xA3, 0xA1, 0xA3};
+        for (uintptr_t start = current_scene_code_start + 0x18; start - current_scene_code_start <= 0x800; ++start)
+        {
+            uint8_t *bytes = (uint8_t *)start;
+            const uint8_t signature[] = {bytes[0], bytes[5], bytes[10], bytes[15]};
+            if (memcmp(signature, current_scene_signature, sizeof(current_scene_signature)) == 0)
+            {
+                current_scene_offset = start - current_scene_code_start + 0xF;
+                current_scene_hook_jump_back = current_scene_code_start + current_scene_offset + 0x5;
+                break;
+            }
+        }
+    }
+    FR_INFO_FMT("current_scene_offset: 0x%X", current_scene_offset);
 }
 
 void init_hooks()
@@ -155,8 +181,15 @@ void init_hooks()
 
     if (beatmap_onload_offset)
     {
-        RelaxHook = Hook((BYTE *)beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_relax_on_load, (BYTE *)&relax_gateway, 6);
-        RelaxHook.Enable();
+        BeatmapOnLoadHook = Hook((BYTE *)beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, (BYTE *)&empty_gateway, 6);
+        BeatmapOnLoadHook.Enable();
+    }
+
+    if (current_scene_offset)
+    {
+        SceneChangeHook = Hook((BYTE *)current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, (BYTE *)&empty_gateway, 5);
+        SceneChangeHook.Enable();
+        notify_on_scene_change_original_mov_address = *(uintptr_t *)(SceneChangeHook.originalBytes + 0x1);
     }
 }
 
@@ -231,9 +264,33 @@ __declspec(naked) void set_overall_difficulty()
     }
 }
 
-void notify_relax_on_load()
+__declspec(naked) void notify_on_beatmap_load()
 {
-    FR_INFO("Hello From notify_relax_on_load!");
-    relax_start_time = ImGui::GetTime();
-    return relax_gateway();
+    __asm {
+        mov beatmap_loaded, 1
+        mov hit_objects_ms_idx, 0
+        mov eax, [esi+0x00000148]
+        jmp [beatmap_onload_hook_jump_back]
+    }
+}
+
+static void set_beatmap_loaded_on_scene_change()
+{
+    if (current_scene != Scene::GAMIN)
+    {
+        beatmap_loaded = false;
+        hit_objects_ms_idx = 0;
+    }
+}
+
+__declspec(naked) void notify_on_scene_change()
+{
+    __asm {
+        mov current_scene, eax
+        mov edx, notify_on_scene_change_original_mov_address
+        mov dword ptr [edx], eax
+        mov edx, 0
+        call set_beatmap_loaded_on_scene_change
+        jmp [current_scene_hook_jump_back]
+    }
 }

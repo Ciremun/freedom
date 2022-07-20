@@ -51,4 +51,5 @@ void set_approach_rate();
 void set_circle_size();
 void set_overall_difficulty();
 
-void notify_relax_on_load();
+void notify_on_beatmap_load();
+void notify_on_scene_change();

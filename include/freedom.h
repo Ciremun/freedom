@@ -2,5 +2,9 @@
 
 #include <windows.h>
 
+#include "enums.h"
+
 extern HMODULE g_module;
-extern double relax_start_time;
+extern int hit_objects_ms_idx;
+extern bool beatmap_loaded;
+extern Scene current_scene;
