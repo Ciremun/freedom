@@ -243,7 +243,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             if (start_parse_beatmap)
             {
                 if (!parse_beatmap(g_process, osu_auth_base, current_beatmap))
-                    FR_ERROR("couldn't parse beatmap");
+                    FR_ERROR("couldn't parse beatmap, replay mode?");
                 start_parse_beatmap = false;
             }
             song_str_ptr += 0x80;
@@ -283,7 +283,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         if (audio_time >= circle.start_time)
         {
             send_input(left_click, 0);
-            // FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+            FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
             keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
             // keyup_delay /= 1.5;
             keydown_time = ImGui::GetTime();

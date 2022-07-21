@@ -18,6 +18,11 @@ bool parse_beatmap(HANDLE hProc, uintptr_t osu_auth_base, BeatmapData &beatmap_d
 
     static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(hProc, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
     uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
+
+    bool replay_mode = *(bool *)(osu_manager_ptr + 0x17A);
+    if (replay_mode)
+        return false;
+
     uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager_ptr + 0x40);
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
