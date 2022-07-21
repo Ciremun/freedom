@@ -17,7 +17,8 @@ enum class BeatmapFileSection
 enum class CircleType
 {
     POINT = 0,
-    SLIDER
+    SLIDER,
+    SPINNER
 };
 
 struct HitCircle
@@ -28,7 +29,14 @@ struct HitCircle
 struct Slider
 {
     int32_t time;
-    float length;
+    int32_t slides;
+    double length;
+};
+
+struct Spinner
+{
+    int32_t time;
+    int32_t end_time;
 };
 
 struct Circle
@@ -37,13 +45,14 @@ struct Circle
     union {
         Slider slider;
         HitCircle hit_circle;
+        Spinner spinner;
     };
 };
 
 struct TimingPoint
 {
     int32_t time;
-    float beat_length;
+    double beat_length;
     bool uninherited;
 };
 
@@ -52,11 +61,13 @@ struct BeatmapData
     std::vector<TimingPoint> timing_points;
     std::vector<Circle> hit_objects;
     uint32_t hit_object_idx = 0;
-    float slider_multiplier = 0.0f;
+    uint32_t timing_point_idx = 0;
+    double slider_multiplier = 0.0;
     bool parsed_successfully = false;
 
     void clear();
     Circle current_circle();
+    TimingPoint current_timing_point();
 };
 
 bool parse_beatmap(const wchar_t *beatmap_path, BeatmapData &beatmap_data);
