@@ -34,8 +34,16 @@ bool parse_beatmap(HANDLE hProc, uintptr_t osu_auth_base, BeatmapData &beatmap_d
         Circle circle;
         circle.start_time = *(int32_t *)(hit_object_ptr + 0x10);
         circle.end_time = *(int32_t *)(hit_object_ptr + 0x14);
+        circle.type = *(HitObjectType *)(hit_object_ptr + 0x18);
+        circle.type &= ~HitObjectType::ComboOffset;
+        circle.type &= ~HitObjectType::NewCombo;
         beatmap_data.hit_objects.push_back(circle);
     }
+
+    uintptr_t mods_ptr = *(uintptr_t *)(hit_manager_ptr + 0x34);
+    int32_t encrypted_value = *(int32_t *)(mods_ptr + 0x08);
+    int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
+    beatmap_data.mods = (Mods)(encrypted_value ^ decryption_key);
 
     beatmap_data.ready = true;
     return true;

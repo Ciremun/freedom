@@ -285,7 +285,13 @@ BOOL __stdcall freedom_update(HDC hDc)
             send_input(left_click, 0);
             FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
             keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
-            // keyup_delay /= 1.5;
+            if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+            {
+                if (current_beatmap.mods & Mods::DoubleTime)
+                    keyup_delay /= 1.5;
+                else if (current_beatmap.mods & Mods::HalfTime)
+                    keyup_delay /= 0.75;
+            }
             keydown_time = ImGui::GetTime();
             current_beatmap.hit_object_idx++;
             if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
