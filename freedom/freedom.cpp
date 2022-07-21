@@ -24,6 +24,8 @@ bool start_parse_beatmap = false;
 TCHAR osu_path[MAX_PATH] = {0};
 DWORD osu_path_length = 0;
 uintptr_t osu_auth_base = 0;
+char left_click = 'Z';
+char right_click = 'X';
 
 BeatmapData current_beatmap;
 Scene current_scene = Scene::MAIN_MENU;
@@ -126,6 +128,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 #endif // NDEBUG
 
         g_process = GetCurrentProcess();
+        osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -150,6 +153,35 @@ BOOL __stdcall freedom_update(HDC hDc)
 
         try_find_hook_offsets();
         init_hooks();
+
+        uintptr_t binding_manager_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + binding_manager_base_offset, binding_manager_ptr_offsets);
+        if (binding_manager_ptr)
+        {
+            uintptr_t binding_keys_ptr = *(uintptr_t *)(binding_manager_ptr + 0x8);
+            uintptr_t binding_values_ptr = *(uintptr_t *)(binding_manager_ptr + 0x10);
+            int32_t binding_keys_count = *(int32_t *)(binding_keys_ptr + 0x4);
+            bool left_click_found = false;
+            bool right_click_found = false;
+            for (int32_t i = 0; i < binding_keys_count; ++i)
+            {
+                uintptr_t key_str_object = *(uintptr_t *)(binding_keys_ptr + 0x8 + 0x4 * i);
+                const wchar_t *key_str = (const wchar_t *)(key_str_object + 0x8);
+                if (wmemcmp(key_str, L"Left Click", 10) == 0)
+                {
+                    left_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
+                    left_click_found = true;
+                }
+                else if (wmemcmp(key_str, L"Right Click", 11) == 0)
+                {
+                    right_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
+                    right_click_found = true;
+                }
+                if (left_click_found && right_click_found)
+                    break;
+            }
+            FR_INFO_FMT("left_click: %c", left_click);
+            FR_INFO_FMT("right_click: %c", right_click);
+        }
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -201,7 +233,6 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
-    osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (current_song_ptr)
@@ -251,9 +282,10 @@ BOOL __stdcall freedom_update(HDC hDc)
         Circle circle = current_beatmap.current_circle();
         if (audio_time >= circle.start_time)
         {
-            send_input('S', 0);
-            FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+            send_input(left_click, 0);
+            // FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
             keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
+            // keyup_delay /= 1.5;
             keydown_time = ImGui::GetTime();
             current_beatmap.hit_object_idx++;
             if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
@@ -263,7 +295,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
-        send_input('S', KEYEVENTF_KEYUP);
+        send_input(left_click, KEYEVENTF_KEYUP);
     }
 
     ImGui::Text("%s", song_name_u8);
