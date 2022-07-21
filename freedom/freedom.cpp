@@ -19,7 +19,6 @@
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
-bool beatmap_loaded = false;
 bool start_parse_beatmap = false;
 
 TCHAR osu_path[MAX_PATH] = {0};
@@ -212,36 +211,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         {
             if (start_parse_beatmap)
             {
-                bool success = false;
-                uintptr_t folder_name_ptr = 0;
-                if (internal_memory_read(g_process, song_str_ptr + 0x78, &folder_name_ptr))
-                {
-                    const wchar_t *folder_name = (const wchar_t *)(folder_name_ptr + 0x8);
-                    uint32_t folder_name_length = *(uint32_t *)(folder_name_ptr + 0x4);
-                    uintptr_t diff_name_ptr = 0;
-                    if (internal_memory_read(g_process, song_str_ptr + 0x94, &diff_name_ptr))
-                    {
-                        const wchar_t *diff_name = (const wchar_t *)(diff_name_ptr + 0x8);
-                        uint32_t diff_name_length = *(uint32_t *)(diff_name_ptr + 0x4);
-                        if (osu_path[0] == 0)
-                        {
-                            osu_path_length = GetModuleFileNameEx(g_process, NULL, osu_path, MAX_PATH);
-                            if (osu_path_length == 0)
-                                FR_ERROR_FMT("GetModuleFileNameEx failed: %d", GetLastError());
-                            DWORD backslash_index = osu_path_length - 1;
-                            while (backslash_index)
-                                if (osu_path[--backslash_index] == '\\')
-                                    break;
-                            osu_path[backslash_index] = '\0';
-                            FR_INFO_FMT("osu_path: %S", osu_path);
-                        }
-                        static TCHAR beatmap_path[MAX_PATH * 2];
-                        _snwprintf(beatmap_path, osu_path_length + 7 + folder_name_length + 1 + diff_name_length, L"%s\\Songs\\%s\\%s", osu_path, folder_name, diff_name);
-                        FR_INFO_FMT("parsing beatmap: %S", beatmap_path);
-                        success = parse_beatmap(beatmap_path, current_beatmap);
-                    }
-                }
-                if (!success)
+                if (!parse_beatmap(g_process, osu_auth_base, current_beatmap))
                     FR_ERROR("couldn't parse beatmap");
                 start_parse_beatmap = false;
             }
@@ -272,67 +242,28 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
 
-    if (beatmap_loaded && current_scene == Scene::GAMIN && current_beatmap.parsed_successfully)
+    static double keydown_time = 0.0;
+    static double keyup_delay = 0.0;
+    if (current_scene == Scene::GAMIN && current_beatmap.ready)
     {
         double current_time = ImGui::GetTime();
-        static double keydown_time = 0.0;
-        static double keyup_delay = 0.0;
-        bool was_hit = false;
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle circle = current_beatmap.current_circle();
-        TimingPoint timing_point = current_beatmap.current_timing_point();
-        if (audio_time >= timing_point.time)
-        {
-            current_beatmap.timing_point_idx++;
-            timing_point = current_beatmap.current_timing_point();
-        }
-        if (circle.type == CircleType::POINT && audio_time >= circle.hit_circle.time)
+        if (audio_time >= circle.start_time)
         {
             send_input('S', 0);
-            FR_INFO_FMT("hit %d!, %d >= %d", current_beatmap.hit_object_idx, audio_time, circle.hit_circle.time);
-            keyup_delay = 0.5;
-            was_hit = true;
-        }
-        else if (circle.type == CircleType::SPINNER && audio_time >= circle.spinner.time)
-        {
-            send_input('S', 0);
-            FR_INFO_FMT("spinner %d!, %d - %d", current_beatmap.hit_object_idx, circle.spinner.time, circle.spinner.end_time);
-            keyup_delay = circle.spinner.end_time - circle.spinner.time;
-            was_hit = true;
-        }
-        else if (circle.type == CircleType::SLIDER && audio_time >= circle.slider.time)
-        {
-            send_input('S', 0);
-            static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
-            uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
-            uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager_ptr + 0x40);
-            uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
-            uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
-            uintptr_t current_hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
-            int32_t slider_start_time = *(int32_t *)(current_hit_object_ptr + 0x10);
-            int32_t slider_end_time = *(int32_t *)(current_hit_object_ptr + 0x14);
-            // double slider_velocity = timing_point.uninherited ? 1.0 : (100.0 / std::abs(timing_point.beat_length));
-            // FR_INFO_FMT("slider_multiplier: %.12lf, slider_velocity: %.12lf, beat_length: %.12lf", current_beatmap.slider_multiplier, slider_velocity, current_beatmap.timing_points[0].beat_length);
-            // keyup_delay = circle.slider.length / (current_beatmap.slider_multiplier * 100.0 * slider_velocity) * current_beatmap.timing_points[0].beat_length;
-            // if (circle.slider.slides > 1)
-            //     keyup_delay *= circle.slider.slides;
-            // FR_INFO_FMT("slider %d!, %d, delay: %lf", current_beatmap.hit_object_idx, circle.slider.time, keyup_delay);
-            keyup_delay = slider_end_time - slider_start_time;
-            // FR_INFO_FMT("slider keyup_delay: %.12lf", keyup_delay);
-            was_hit = true;
-        }
-        if (was_hit)
-        {
+            FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+            keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
             keydown_time = ImGui::GetTime();
             current_beatmap.hit_object_idx++;
-        }
-        if (keydown_time && ((current_time - keydown_time) * 1000.0 > keyup_delay))
-        {
-            keydown_time = 0.0;
-            send_input('S', KEYEVENTF_KEYUP);
             if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
-                beatmap_loaded = false;
+                current_beatmap.ready = false;
         }
+    }
+    if (keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
+    {
+        keydown_time = 0.0;
+        send_input('S', KEYEVENTF_KEYUP);
     }
 
     ImGui::Text("%s", song_name_u8);

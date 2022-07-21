@@ -267,23 +267,9 @@ __declspec(naked) void set_overall_difficulty()
 __declspec(naked) void notify_on_beatmap_load()
 {
     __asm {
-        mov beatmap_loaded, 1
-        mov current_beatmap.hit_object_idx, 0
+        mov start_parse_beatmap, 1
         mov eax, [esi+0x00000148]
         jmp [beatmap_onload_hook_jump_back]
-    }
-}
-
-static void set_beatmap_loaded_on_scene_change()
-{
-    if (current_scene == Scene::GAMIN)
-    {
-        start_parse_beatmap = true;
-    }
-    else
-    {
-        beatmap_loaded = false;
-        current_beatmap.hit_object_idx = 0;
     }
 }
 
@@ -294,7 +280,6 @@ __declspec(naked) void notify_on_scene_change()
         mov edx, notify_on_scene_change_original_mov_address
         mov dword ptr [edx], eax
         mov edx, 0
-        call set_beatmap_loaded_on_scene_change
         jmp [current_scene_hook_jump_back]
     }
 }
