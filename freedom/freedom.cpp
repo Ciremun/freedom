@@ -12,9 +12,10 @@
 #include "config.h"
 #include "detours.h"
 #include "hook.h"
+#include "input.h"
 #include "offsets.h"
 #include "utility.h"
-#include "input.h"
+#include "window.h"
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
@@ -275,14 +276,66 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     static double keydown_time = 0.0;
     static double keyup_delay = 0.0;
+    static float fraction_modifier = 0.04f;
+    static float distance_modifier = 0.01f;
+    static float distance = 0.0f;
+    static float fraction_of_the_distance = 0.0f;
+    static Vector2 direction(0.0f, 0.0f);
+    static Vector2 mouse_position(0.0f, 0.0f);
+    static Vector2 circle_position_on_screen(0.0f, 0.0f);
     if (current_scene == Scene::GAMIN && current_beatmap.ready)
     {
+        static bool target_first_circle = true;
         double current_time = ImGui::GetTime();
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle circle = current_beatmap.current_circle();
+        if (fraction_of_the_distance)
+        {
+            if (fraction_of_the_distance > 1.0f)
+            {
+                fraction_of_the_distance = 0.0f;
+            }
+            else
+            {
+                Vector2 next_mouse_position = mouse_position + direction * fraction_of_the_distance;
+                move_mouse_to(next_mouse_position.x, next_mouse_position.y);
+                fraction_of_the_distance += fraction_modifier;
+            }
+        }
+        if (target_first_circle)
+        {
+            static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
+            uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
+            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager_ptr + 0x60);
+            float mouse_x = *(float *)(osu_ruleset_ptr + 0x80);
+            float mouse_y = *(float *)(osu_ruleset_ptr + 0x84);
+            mouse_position.x = mouse_x;
+            mouse_position.y = mouse_y;
+            circle_position_on_screen = playfield_to_screen(circle.position);
+            direction = circle_position_on_screen - mouse_position;
+            distance = sqrt(pow(circle_position_on_screen.x - mouse_position.x, 2) + pow(circle_position_on_screen.y - mouse_position.y, 2) * 1.0);
+            fraction_of_the_distance = fraction_modifier;
+            target_first_circle = false;
+        }
         if (audio_time >= circle.start_time)
         {
-            send_input(left_click, 0);
+            if ((current_beatmap.hit_object_idx + 1 < current_beatmap.hit_objects.size()) &&
+                current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1].type != HitObjectType::Spinner)
+            {
+                Circle circle_to_aim = current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1];
+                static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
+                uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
+                uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager_ptr + 0x60);
+                float mouse_x = *(float *)(osu_ruleset_ptr + 0x80);
+                float mouse_y = *(float *)(osu_ruleset_ptr + 0x84);
+                mouse_position.x = mouse_x;
+                mouse_position.y = mouse_y;
+                circle_position_on_screen = playfield_to_screen(circle_to_aim.position);
+                direction = circle_position_on_screen - mouse_position;
+                distance = sqrt(pow(circle_position_on_screen.x - mouse_position.x, 2) + pow(circle_position_on_screen.y - mouse_position.y, 2) * 1.0);
+                fraction_of_the_distance = fraction_modifier;
+            }
+            send_keyboard_input(left_click, 0);
             FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
             keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
             if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
@@ -301,8 +354,12 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
-        send_input(left_click, KEYEVENTF_KEYUP);
+        send_keyboard_input(left_click, KEYEVENTF_KEYUP);
     }
+
+    // ImGui::SliderFloat("##fraction_of_the_distance", &fraction_of_the_distance, 0.001f, 1.0f, "fraction_of_the_distance: %.3f");
+    // ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.000f, 0.5f, "fraction_modifier: %.3f");
+    // ImGui::SliderFloat("##distance_modifier", &distance_modifier, 0.000f, 0.5f, "distance_modifier: %.3f");
 
     ImGui::Text("%s", song_name_u8);
 

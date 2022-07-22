@@ -37,6 +37,9 @@ bool parse_beatmap(HANDLE hProc, uintptr_t osu_auth_base, BeatmapData &beatmap_d
         circle.type = *(HitObjectType *)(hit_object_ptr + 0x18);
         circle.type &= ~HitObjectType::ComboOffset;
         circle.type &= ~HitObjectType::NewCombo;
+        float circle_x = *(float *)(hit_object_ptr + 0x38);
+        float circle_y = *(float *)(hit_object_ptr + 0x3C);
+        circle.position = Vector2(circle_x, circle_y);
         beatmap_data.hit_objects.push_back(circle);
     }
 

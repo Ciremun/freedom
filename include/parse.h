@@ -8,6 +8,7 @@
 
 #include "utility.h"
 #include "offsets.h"
+#include "vector.h"
 
 enum class HitObjectType
 {
@@ -32,6 +33,7 @@ struct Circle
 {
     int32_t start_time;
     int32_t end_time;
+    Vector2<float> position;
     HitObjectType type;
 };
 
