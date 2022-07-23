@@ -187,9 +187,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             FR_INFO_FMT("right_click: %c", right_click);
         }
 
-        RECT rect;
-        if (GetWindowRect(g_hwnd, &rect))
-            calc_playfield((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+        calc_playfield(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
