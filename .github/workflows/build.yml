@@ -30,3 +30,4 @@ jobs:
           path: |
             freedom.exe
             freedom.dll
+            prejit.dll
