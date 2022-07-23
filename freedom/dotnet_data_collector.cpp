@@ -1,8 +1,10 @@
 #include "dotnet_data_collector.h"
 
-uintptr_t code_start_for_parse_beatmap_metadata()
+bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets)
 {
     ICLRMetaHost *pMetaHost;
+    ICLRRuntimeInfo *pRuntimeInfo;
+    ICLRRuntimeHost *pClrRuntimeHost;
     IEnumUnknown *RuntimeEnum;
     HANDLE ths;
     MODULEENTRY32 m;
@@ -27,15 +29,15 @@ uintptr_t code_start_for_parse_beatmap_metadata()
 
     DWORD processid = GetCurrentProcessId();
     if (processid == 0)
-        return 0;
+        return false;
 
     HANDLE processhandle = GetCurrentProcess();
     if (processhandle == 0)
-        return 0;
+        return false;
 
     HMODULE hMscoree = GetModuleHandleA("mscoree.dll");
     if (hMscoree == 0)
-        return 0;
+        return false;
 
     CLRCreateInstanceFnPtr CLRCreateInstance = NULL, CLRCreateInstanceDotNetCore = NULL;
 
@@ -68,7 +70,7 @@ uintptr_t code_start_for_parse_beatmap_metadata()
         libprovider = new CMyICLRDebuggingLibraryProvider(NULL, dotnetcorepath);
 
     if (!result)
-        return 0;
+        return false;
 
     if (CLRCreateInstance)
         CLRCreateInstance(CLSID_CLRDebugging, IID_ICLRDebugging, (void **)&CLRDebugging);
@@ -76,9 +78,41 @@ uintptr_t code_start_for_parse_beatmap_metadata()
     if (CLRCreateInstanceDotNetCore)
         CLRCreateInstanceDotNetCore(CLSID_CLRDebugging, IID_ICLRDebugging, (void **)&CLRDebuggingCore);
 
+    ICLRMetaHost *pMetaHost_2;
+    CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (void **)&pMetaHost_2);
+
+    if (pMetaHost_2->GetRuntime(L"v4.0.30319", IID_ICLRRuntimeInfo, (void **)&pRuntimeInfo) == S_OK)
+    {
+        if (pRuntimeInfo->GetInterface(CLSID_CLRRuntimeHost, IID_ICLRRuntimeHost, (void **)&pClrRuntimeHost) == S_OK)
+        {
+            pClrRuntimeHost->Start();
+            DWORD dwRet = 0;
+
+            wchar_t module_path[MAX_PATH * 2];
+            DWORD module_path_length = GetModuleFileNameW(g_module, module_path, MAX_PATH * 2);
+            if (module_path_length == 0)
+                return false;
+
+            DWORD backslash_index = module_path_length - 1;
+            while (backslash_index)
+                if (module_path[--backslash_index] == '\\')
+                    break;
+
+            memcpy(module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
+
+            FR_INFO_FMT("prejit.dll path: %S", module_path);
+
+            HRESULT result = pClrRuntimeHost->ExecuteInDefaultAppDomain(module_path, L"Freedom.PreJit", L"main", L"", &dwRet);
+            if (result != S_OK)
+                FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+            pClrRuntimeHost->Stop();
+            pClrRuntimeHost->Release();
+        }
+    }
+
     ths = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processid);
     if (ths == INVALID_HANDLE_VALUE)
-        return 0;
+        return false;
 
     ZeroMemory(&m, sizeof(m));
     m.dwSize = sizeof(m);
@@ -138,7 +172,7 @@ uintptr_t code_start_for_parse_beatmap_metadata()
             std::vector<ICorDebugModule *> modulelist;
 
             if ((!domain) || (domain->EnumerateAssemblies(&pAssemblies) != S_OK))
-                return 0;
+                return false;
 
             if (domains)
                 free(domains);
@@ -196,12 +230,12 @@ uintptr_t code_start_for_parse_beatmap_metadata()
                         mdToken extends;
 
                         if (module == NULL)
-                            return 0;
+                            return false;
 
                         module->GetMetaDataInterface(IID_IMetaDataImport, (IUnknown **)&MetaData);
 
                         if (MetaData == NULL)
-                            return 0;
+                            return false;
 
                         MetaData->EnumTypeDefs(&henum, typedefs, 0, &typedefcount);
 
@@ -213,68 +247,70 @@ uintptr_t code_start_for_parse_beatmap_metadata()
                             {
                                 typedefnamesize = 0;
                                 MetaData->GetTypeDefProps(typedefs[i], typedefname, 255, &typedefnamesize, &typedefflags, &extends);
-                                if (wmemcmp(typedefname, L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", 47) == 0)
+                                for (auto &target : targets)
                                 {
-                                    mdTypeDef TypeDef = typedefs[i];
-                                    HRESULT r;
-                                    unsigned int i;
-                                    HCORENUM henum = 0;
-                                    ULONG count = 0;
-                                    mdMethodDef methods[32];
-                                    TCHAR methodname[255];
-                                    ULONG methodnamesize;
-
-                                    r = MetaData->EnumMethods(&henum, TypeDef, methods, 0, &count);
-                                    MetaData->CountEnum(henum, &count);
-
-                                    do
+                                    if (wmemcmp(typedefname, target.class_, typedefnamesize) == 0)
                                     {
-                                        r = MetaData->EnumMethods(&henum, TypeDef, methods, 32, &count);
-                                        for (i = 0; i < count; i++)
+                                        mdTypeDef TypeDef = typedefs[i];
+                                        HRESULT r;
+                                        unsigned int i;
+                                        HCORENUM henum = 0;
+                                        ULONG count = 0;
+                                        mdMethodDef methods[32];
+                                        TCHAR methodname[255];
+                                        ULONG methodnamesize;
+
+                                        r = MetaData->EnumMethods(&henum, TypeDef, methods, 0, &count);
+                                        MetaData->CountEnum(henum, &count);
+
+                                        do
                                         {
-                                            mdTypeDef classdef;
-                                            unsigned int j;
-                                            DWORD dwAttr;
-                                            PCCOR_SIGNATURE sig;
-                                            ULONG sigsize;
-                                            ULONG CodeRVA;
-                                            DWORD dwImplFlags;
-                                            ICorDebugFunction *df = NULL;
-
-                                            CORDB_ADDRESS NativeCode = 0;
-
-                                            methodnamesize = 0;
-                                            MetaData->GetMethodProps(methods[i], &classdef, methodname, 255, &methodnamesize, &dwAttr, &sig, &sigsize, &CodeRVA, &dwImplFlags);
-
-                                            methodnamesize = sizeof(TCHAR) * methodnamesize;
-
-                                            if (wmemcmp(methodname, L"#=zyO2ZBz4=", 11) == 0)
+                                            r = MetaData->EnumMethods(&henum, TypeDef, methods, 32, &count);
+                                            for (i = 0; i < count; i++)
                                             {
-                                                if (module->GetFunctionFromToken(methods[i], &df) == S_OK)
+                                                mdTypeDef classdef;
+                                                unsigned int j;
+                                                DWORD dwAttr;
+                                                PCCOR_SIGNATURE sig;
+                                                ULONG sigsize;
+                                                ULONG CodeRVA;
+                                                DWORD dwImplFlags;
+                                                ICorDebugFunction *df = NULL;
+
+                                                CORDB_ADDRESS NativeCode = 0;
+
+                                                methodnamesize = 0;
+                                                MetaData->GetMethodProps(methods[i], &classdef, methodname, 255, &methodnamesize, &dwAttr, &sig, &sigsize, &CodeRVA, &dwImplFlags);
+
+                                                if (wmemcmp(methodname, target.method, methodnamesize) == 0)
                                                 {
-                                                    ICorDebugCode *Code;
-                                                    if (df->GetNativeCode(&Code) == S_OK)
+                                                    if (module->GetFunctionFromToken(methods[i], &df) == S_OK)
                                                     {
-                                                        Code->GetAddress(&NativeCode);
-                                                        Code->Release();
-                                                        if (henum)
-                                                            MetaData->CloseEnum(henum);
-                                                        return (uintptr_t)NativeCode;
+                                                        ICorDebugCode *Code;
+                                                        if (df->GetNativeCode(&Code) == S_OK)
+                                                        {
+                                                            Code->GetAddress(&NativeCode);
+                                                            Code->Release();
+                                                            if (henum)
+                                                                MetaData->CloseEnum(henum);
+                                                            target.start = NativeCode;
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                    } while (r == S_OK);
-                                    if (henum)
-                                        MetaData->CloseEnum(henum);
+                                        } while (r == S_OK);
+                                        if (henum)
+                                            MetaData->CloseEnum(henum);
+                                    }
                                 }
                             }
                         } while (r == S_OK);
                         MetaData->CloseEnum(henum);
+                        return true;
                     }
                 }
             }
         }
     }
-    return 0;
+    return false;
 }

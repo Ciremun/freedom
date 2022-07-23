@@ -9,14 +9,30 @@
 #include "imgui_internal.h"
 #include "stb_sprintf.h"
 
+#include "aimbot.h"
 #include "config.h"
 #include "detours.h"
 #include "hook.h"
+#include "input.h"
 #include "offsets.h"
+#include "tabs.h"
 #include "utility.h"
+#include "window.h"
+#include "font.h"
 
+#define FR_VERSION "v0.4"
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+
+bool start_parse_beatmap = false;
+bool target_first_circle = true;
+
+uintptr_t osu_auth_base = 0;
+char left_click = 'Z';
+char right_click = 'X';
+
+BeatmapData current_beatmap;
+Scene current_scene = Scene::MAIN_MENU;
 
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
@@ -116,6 +132,7 @@ BOOL __stdcall freedom_update(HDC hDc)
 #endif // NDEBUG
 
         g_process = GetCurrentProcess();
+        osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -133,13 +150,46 @@ BOOL __stdcall freedom_update(HDC hDc)
         for (int size = 34; size > 16; size -= 2)
         {
             config.SizePixels = size;
-            ImFont *f = io.Fonts->AddFontDefault(&config);
+            ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
             if (size == cfg_font_size)
                 font = f;
         }
 
         try_find_hook_offsets();
         init_hooks();
+
+        uintptr_t binding_manager_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + binding_manager_base_offset, binding_manager_ptr_offsets);
+        if (binding_manager_ptr)
+        {
+            uintptr_t binding_keys_ptr = *(uintptr_t *)(binding_manager_ptr + 0x8);
+            uintptr_t binding_values_ptr = *(uintptr_t *)(binding_manager_ptr + 0x10);
+            int32_t binding_keys_count = *(int32_t *)(binding_keys_ptr + 0x4);
+            bool left_click_found = false;
+            bool right_click_found = false;
+            for (int32_t i = 0; i < binding_keys_count; ++i)
+            {
+                uintptr_t key_str_object = *(uintptr_t *)(binding_keys_ptr + 0x8 + 0x4 * i);
+                const wchar_t *key_str = (const wchar_t *)(key_str_object + 0x8);
+                if (wmemcmp(key_str, L"Left Click", 10) == 0)
+                {
+                    left_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
+                    left_click_found = true;
+                }
+                else if (wmemcmp(key_str, L"Right Click", 11) == 0)
+                {
+                    right_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
+                    right_click_found = true;
+                }
+                if (left_click_found && right_click_found)
+                    break;
+            }
+            FR_INFO_FMT("left_click: %c", left_click);
+            FR_INFO_FMT("right_click: %c", right_click);
+        }
+
+        RECT rect;
+        if (GetWindowRect(g_hwnd, &rect))
+            calc_playfield((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
 
         ImGui::StyleColorsDark();
         ImGui_ImplWin32_Init(g_hwnd);
@@ -172,26 +222,10 @@ BOOL __stdcall freedom_update(HDC hDc)
         init = true;
     }
 
-    if (GetAsyncKeyState(VK_F11) & 1)
-    {
-        cfg_mod_menu_visible = !cfg_mod_menu_visible;
-        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-    }
-
-    if (!cfg_mod_menu_visible)
-        return wglSwapBuffersGateway(hDc);
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiIO &io = ImGui::GetIO();
-    ImGui::PushFont(font);
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-    ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
-
-    static uintptr_t osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (current_song_ptr)
@@ -199,6 +233,15 @@ BOOL __stdcall freedom_update(HDC hDc)
         uintptr_t song_str_ptr = 0;
         if (internal_memory_read(g_process, current_song_ptr, &song_str_ptr))
         {
+            if (start_parse_beatmap)
+            {
+                if (!parse_beatmap(g_process, osu_auth_base, current_beatmap))
+                {
+                    FR_ERROR("couldn't parse beatmap, replay mode?");
+                }
+                target_first_circle = true;
+                start_parse_beatmap = false;
+            }
             song_str_ptr += 0x80;
             static uintptr_t prev_song_str_ptr = 0;
             if (song_str_ptr != prev_song_str_ptr)
@@ -224,36 +267,208 @@ BOOL __stdcall freedom_update(HDC hDc)
         current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     }
 
+    static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
+    static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
+
+    static double keydown_time = 0.0;
+    static double keyup_delay = 0.0;
+    static float fraction_modifier = 0.04f;
+    static float fraction_of_the_distance = 0.0f;
+    static Vector2 direction(0.0f, 0.0f);
+    static Vector2 mouse_position(0.0f, 0.0f);
+    if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAMIN && current_beatmap.ready)
+    {
+        double current_time = ImGui::GetTime();
+        int32_t audio_time = *(int32_t *)audio_time_ptr;
+        Circle circle = current_beatmap.current_circle();
+        if (cfg_aimbot_lock)
+        {
+            if (fraction_of_the_distance)
+            {
+                if (fraction_of_the_distance > 1.0f)
+                {
+                    fraction_of_the_distance = 0.0f;
+                }
+                else
+                {
+                    Vector2 next_mouse_position = mouse_position + direction * fraction_of_the_distance;
+                    move_mouse_to(next_mouse_position.x, next_mouse_position.y);
+                    fraction_of_the_distance += fraction_modifier;
+                }
+            }
+            if (target_first_circle)
+            {
+                direction = prepare_hitcircle_target(osu_player_ptr, circle, mouse_position);
+                fraction_of_the_distance = fraction_modifier;
+                target_first_circle = false;
+            }
+        }
+        if (audio_time >= circle.start_time)
+        {
+            if (cfg_aimbot_lock && (current_beatmap.hit_object_idx + 1 < current_beatmap.hit_objects.size()) &&
+                current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1].type != HitObjectType::Spinner)
+            {
+                Circle circle_to_aim = current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1];
+                direction = prepare_hitcircle_target(osu_player_ptr, circle_to_aim, mouse_position);
+                fraction_of_the_distance = fraction_modifier;
+            }
+            if (cfg_relax_lock)
+            {
+                send_keyboard_input(left_click, 0);
+                FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
+                if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                {
+                    if (current_beatmap.mods & Mods::DoubleTime)
+                        keyup_delay /= 1.5;
+                    else if (current_beatmap.mods & Mods::HalfTime)
+                        keyup_delay /= 0.75;
+                }
+                keydown_time = ImGui::GetTime();
+            }
+            current_beatmap.hit_object_idx++;
+            if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
+                current_beatmap.ready = false;
+        }
+    }
+    if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
+    {
+        keydown_time = 0.0;
+        send_keyboard_input(left_click, KEYEVENTF_KEYUP);
+    }
+
+    if (GetAsyncKeyState(VK_F11) & 1)
+    {
+        cfg_mod_menu_visible = !cfg_mod_menu_visible;
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
+
+    if (!cfg_mod_menu_visible)
+        goto frame_end;
+
+    ImGuiIO &io = ImGui::GetIO();
+    ImGui::PushFont(font);
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+    ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+
     ImGui::Text("%s", song_name_u8);
 
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))
     {
-        parameter_slider(current_song_ptr, &ar_parameter);
-        parameter_slider(current_song_ptr, &cs_parameter);
-        parameter_slider(current_song_ptr, &od_parameter);
+        static MenuTab selected_tab = MenuTab::Difficulty;
 
-        ImGuiContext &g = *ImGui::GetCurrentContext();
-        static char preview_font_size[16] = {0};
-        stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
-        if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
+        if (ImGui::Selectable("Difficulty", selected_tab == MenuTab::Difficulty, ImGuiSelectableFlags_DontClosePopups))
         {
-            for (const auto &f : io.Fonts->Fonts)
-            {
-                char font_size[8] = {0};
-                stbsp_snprintf(font_size, 4, "%d", (int)f->ConfigData->SizePixels);
-                const bool is_selected = f == font;
-                if (ImGui::Selectable(font_size, is_selected))
-                {
-                    font = f;
-                    cfg_font_size = (int)f->ConfigData->SizePixels;
-                    ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                }
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
+            selected_tab = MenuTab::Difficulty;
+            ImGui::SetNextWindowFocus();
         }
+
+        if (ImGui::Selectable("Relax", selected_tab == MenuTab::Relax, ImGuiSelectableFlags_DontClosePopups))
+        {
+            selected_tab = MenuTab::Relax;
+            ImGui::SetNextWindowFocus();
+        }
+
+        if (ImGui::Selectable("Aimbot", selected_tab == MenuTab::Aimbot, ImGuiSelectableFlags_DontClosePopups))
+        {
+            selected_tab = MenuTab::Aimbot;
+            ImGui::SetNextWindowFocus();
+        }
+
+        if (ImGui::Selectable("Other", selected_tab == MenuTab::Other, ImGuiSelectableFlags_DontClosePopups))
+        {
+            selected_tab = MenuTab::Other;
+            ImGui::SetNextWindowFocus();
+        }
+
+        if (ImGui::Selectable("About", selected_tab == MenuTab::About, ImGuiSelectableFlags_DontClosePopups))
+        {
+            selected_tab = MenuTab::About;
+            ImGui::SetNextWindowFocus();
+        }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImVec2(0.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
+        ImGui::Begin("##tab_content", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+        ImGui::PopStyleVar();
+        if (selected_tab == MenuTab::Difficulty)
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(7.5f, 7.5f));
+            parameter_slider(current_song_ptr, &ar_parameter);
+            parameter_slider(current_song_ptr, &cs_parameter);
+            parameter_slider(current_song_ptr, &od_parameter);
+            ImGui::PopStyleVar();
+        }
+        if (selected_tab == MenuTab::Relax)
+        {
+            ImGui::Text("Enable");
+            ImGui::SameLine();
+            if (ImGui::Checkbox("##relax_checkbox", &cfg_relax_lock))
+            {
+                cfg_relax_lock ? enable_notify_hooks() : disable_notify_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() * 2);
+            ImGui::Text("Singletap only!");
+            ImGui::Text("Keys: %c %c", left_click, right_click);
+        }
+        if (selected_tab == MenuTab::Aimbot)
+        {
+            ImGui::Text("Enable");
+            ImGui::SameLine();
+            if (ImGui::Checkbox("##aimbot_checkbox", &cfg_aimbot_lock))
+            {
+                cfg_aimbot_lock ? enable_notify_hooks() : disable_notify_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            if (ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f"))
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            // ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
+            ImGui::Text("HitCircles only!");
+        }
+        if (selected_tab == MenuTab::Other)
+        {
+            ImGui::Text("Other Settings");
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            ImGuiContext &g = *ImGui::GetCurrentContext();
+            static char preview_font_size[16] = {0};
+            stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
+            if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
+            {
+                for (const auto &f : io.Fonts->Fonts)
+                {
+                    char font_size[8] = {0};
+                    stbsp_snprintf(font_size, 4, "%d", (int)f->ConfigData->SizePixels);
+                    const bool is_selected = f == font;
+                    if (ImGui::Selectable(font_size, is_selected))
+                    {
+                        font = f;
+                        cfg_font_size = (int)f->ConfigData->SizePixels;
+                        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                    }
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+        }
+        if (selected_tab == MenuTab::About)
+        {
+            ImGui::Text("Ciremun's Freedom " FR_VERSION);
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            ImGui::Text("Special Thanks to Maple Syrup");
+            ImGui::Text("@mrflashstudio");
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            ImGui::Text("Discord: Ciremun#8516");
+        }
+        ImGui::End();
         ImGui::EndPopup();
     }
 
@@ -261,6 +476,8 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::PopFont();
 
     io.MouseDrawCursor = io.WantCaptureMouse;
+
+frame_end:
 
     ImGui::EndFrame();
     ImGui::Render();

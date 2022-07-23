@@ -4,8 +4,12 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "hook.h"
 #include "dotnet_data_collector.h"
+#include "code_start_target.h"
+#include "imgui.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
 typedef void(__stdcall *void_trampoline)();
@@ -26,8 +30,10 @@ extern Parameter ar_parameter;
 extern Parameter cs_parameter;
 extern Parameter od_parameter;
 
+extern bool cfg_relax_lock;
+extern bool cfg_aimbot_lock;
+
 extern twglSwapBuffers wglSwapBuffersGateway;
-extern void_trampoline empty_trampoline;
 
 extern Hook SwapBuffersHook;
 
@@ -44,6 +50,12 @@ void disable_cs_hooks();
 void enable_od_hooks();
 void disable_od_hooks();
 
+void enable_notify_hooks();
+void disable_notify_hooks();
+
 void set_approach_rate();
 void set_circle_size();
 void set_overall_difficulty();
+
+void notify_on_beatmap_load();
+void notify_on_scene_change();
