@@ -30,6 +30,9 @@ extern Parameter ar_parameter;
 extern Parameter cs_parameter;
 extern Parameter od_parameter;
 
+extern bool cfg_relax_lock;
+extern bool cfg_aimbot_lock;
+
 extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook SwapBuffersHook;
@@ -46,6 +49,9 @@ void disable_cs_hooks();
 
 void enable_od_hooks();
 void disable_od_hooks();
+
+void enable_notify_hooks();
+void disable_notify_hooks();
 
 void set_approach_rate();
 void set_circle_size();

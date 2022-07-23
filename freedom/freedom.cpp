@@ -9,6 +9,7 @@
 #include "imgui_internal.h"
 #include "stb_sprintf.h"
 
+#include "aimbot.h"
 #include "config.h"
 #include "detours.h"
 #include "hook.h"
@@ -16,7 +17,6 @@
 #include "offsets.h"
 #include "utility.h"
 #include "window.h"
-#include "aimbot.h"
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
@@ -217,24 +217,9 @@ BOOL __stdcall freedom_update(HDC hDc)
         init = true;
     }
 
-    if (GetAsyncKeyState(VK_F11) & 1)
-    {
-        cfg_mod_menu_visible = !cfg_mod_menu_visible;
-        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-    }
-
-    if (!cfg_mod_menu_visible)
-        return wglSwapBuffersGateway(hDc);
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
-
-    ImGuiIO &io = ImGui::GetIO();
-    ImGui::PushFont(font);
-
-    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-    ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
@@ -286,60 +271,87 @@ BOOL __stdcall freedom_update(HDC hDc)
     static float fraction_of_the_distance = 0.0f;
     static Vector2 direction(0.0f, 0.0f);
     static Vector2 mouse_position(0.0f, 0.0f);
-    if (current_scene == Scene::GAMIN && current_beatmap.ready)
+    if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAMIN && current_beatmap.ready)
     {
         double current_time = ImGui::GetTime();
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle circle = current_beatmap.current_circle();
-        if (fraction_of_the_distance)
+        if (cfg_aimbot_lock)
         {
-            if (fraction_of_the_distance > 1.0f)
+            if (fraction_of_the_distance)
             {
-                fraction_of_the_distance = 0.0f;
+                if (fraction_of_the_distance > 1.0f)
+                {
+                    fraction_of_the_distance = 0.0f;
+                }
+                else
+                {
+                    Vector2 next_mouse_position = mouse_position + direction * fraction_of_the_distance;
+                    move_mouse_to(next_mouse_position.x, next_mouse_position.y);
+                    fraction_of_the_distance += fraction_modifier;
+                }
             }
-            else
+            if (target_first_circle)
             {
-                Vector2 next_mouse_position = mouse_position + direction * fraction_of_the_distance;
-                move_mouse_to(next_mouse_position.x, next_mouse_position.y);
-                fraction_of_the_distance += fraction_modifier;
+                direction = prepare_hitcircle_target(osu_player_ptr, circle, mouse_position);
+                fraction_of_the_distance = fraction_modifier;
+                target_first_circle = false;
             }
-        }
-        if (target_first_circle)
-        {
-            direction = prepare_hitcircle_target(osu_player_ptr, circle, mouse_position);
-            fraction_of_the_distance = fraction_modifier;
-            target_first_circle = false;
         }
         if (audio_time >= circle.start_time)
         {
-            if ((current_beatmap.hit_object_idx + 1 < current_beatmap.hit_objects.size()) &&
+            if (cfg_aimbot_lock && (current_beatmap.hit_object_idx + 1 < current_beatmap.hit_objects.size()) &&
                 current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1].type != HitObjectType::Spinner)
             {
                 Circle circle_to_aim = current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1];
                 direction = prepare_hitcircle_target(osu_player_ptr, circle_to_aim, mouse_position);
                 fraction_of_the_distance = fraction_modifier;
             }
-            send_keyboard_input(left_click, 0);
-            // FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-            keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
-            if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+            if (cfg_relax_lock)
             {
-                if (current_beatmap.mods & Mods::DoubleTime)
-                    keyup_delay /= 1.5;
-                else if (current_beatmap.mods & Mods::HalfTime)
-                    keyup_delay /= 0.75;
+                send_keyboard_input(left_click, 0);
+                FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
+                if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                {
+                    if (current_beatmap.mods & Mods::DoubleTime)
+                        keyup_delay /= 1.5;
+                    else if (current_beatmap.mods & Mods::HalfTime)
+                        keyup_delay /= 0.75;
+                }
+                keydown_time = ImGui::GetTime();
             }
-            keydown_time = ImGui::GetTime();
             current_beatmap.hit_object_idx++;
             if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
                 current_beatmap.ready = false;
         }
     }
-    if (keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
+    if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
         send_keyboard_input(left_click, KEYEVENTF_KEYUP);
     }
+
+    if (GetAsyncKeyState(VK_F11) & 1)
+    {
+        cfg_mod_menu_visible = !cfg_mod_menu_visible;
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
+
+    if (!cfg_mod_menu_visible)
+        goto frame_end;
+
+    ImGuiIO &io = ImGui::GetIO();
+    ImGui::PushFont(font);
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+    ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+
+    if (ImGui::Checkbox("Relax", &cfg_relax_lock))
+        cfg_relax_lock ? enable_notify_hooks() : disable_notify_hooks();
+
+    if (ImGui::Checkbox("Aimbot", &cfg_aimbot_lock))
+        cfg_aimbot_lock ? enable_notify_hooks() : disable_notify_hooks();
 
     // ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.000f, 0.5f, "fraction_modifier: %.3f");
 
@@ -380,6 +392,8 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui::PopFont();
 
     io.MouseDrawCursor = io.WantCaptureMouse;
+
+frame_end:
 
     ImGui::EndFrame();
     ImGui::Render();

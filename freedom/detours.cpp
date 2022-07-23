@@ -33,6 +33,9 @@ Parameter od_parameter = {
     // bool found = false
 };
 
+bool cfg_relax_lock = false;
+bool cfg_aimbot_lock = false;
+
 std::vector<CodeStartTarget> code_starts = {
     // class, method
     {L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", L"#=zyO2ZBz4="}, // parse_beatmap
@@ -183,13 +186,15 @@ void init_hooks()
     if (beatmap_onload_offset)
     {
         BeatmapOnLoadHook = Hook((BYTE *)beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, (BYTE *)&empty_gateway, 6);
-        BeatmapOnLoadHook.Enable();
+        if (cfg_relax_lock || cfg_aimbot_lock)
+            BeatmapOnLoadHook.Enable();
     }
 
     if (current_scene_offset)
     {
         SceneChangeHook = Hook((BYTE *)current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, (BYTE *)&empty_gateway, 5);
-        SceneChangeHook.Enable();
+        if (cfg_relax_lock || cfg_aimbot_lock)
+            SceneChangeHook.Enable();
     }
 }
 
@@ -229,6 +234,24 @@ void disable_ar_hooks()
 {
     ApproachRateHook1.Disable();
     ApproachRateHook2.Disable();
+}
+
+void enable_notify_hooks()
+{
+    if (!cfg_relax_lock || !cfg_aimbot_lock)
+    {
+        BeatmapOnLoadHook.Enable();
+        SceneChangeHook.Enable();
+    }
+}
+
+void disable_notify_hooks()
+{
+    if (!cfg_relax_lock && !cfg_aimbot_lock)
+    {
+        BeatmapOnLoadHook.Disable();
+        SceneChangeHook.Disable();
+    }
 }
 
 __declspec(naked) void set_approach_rate()

@@ -8,8 +8,8 @@
 #include "detours.h"
 #include "utility.h"
 
-extern bool cfg_mod_menu_visible;
 extern int cfg_font_size;
+extern bool cfg_mod_menu_visible;
 
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

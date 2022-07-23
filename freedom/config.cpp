@@ -45,12 +45,14 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("od_value=%.1f\n", od_parameter.value);
     buf->appendf("visible=%d\n", cfg_mod_menu_visible);
     buf->appendf("font_size=%d\n", cfg_font_size);
+    buf->appendf("relax=%d\n", cfg_relax_lock);
+    buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->append("\n");
 }
 
 static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
-    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i;
+    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i, relax_lock_i, aimbot_lock_i;
     float ar_value_f, cs_value_f, od_value_f;
     if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)
         ar_parameter.lock = ar_lock_i;
@@ -68,6 +70,10 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
         cfg_mod_menu_visible = mod_menu_visible_i;
     else if (sscanf(line, "font_size=%d", &font_size_i) == 1)
         cfg_font_size = font_size_i;
+    else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)
+        cfg_relax_lock = relax_lock_i;
+    else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)
+        cfg_aimbot_lock = aimbot_lock_i;
 }
 
 void set_imgui_ini_handler()
