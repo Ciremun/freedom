@@ -1,6 +1,6 @@
 #include "config.h"
 
-int cfg_font_size = 26;
+int cfg_font_size = 30;
 bool cfg_mod_menu_visible = true;
 
 const char *get_imgui_ini_filename(HMODULE hMod)

@@ -18,6 +18,7 @@
 #include "tabs.h"
 #include "utility.h"
 #include "window.h"
+#include "font.h"
 
 #define FR_VERSION "v0.4"
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
@@ -149,7 +150,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         for (int size = 34; size > 16; size -= 2)
         {
             config.SizePixels = size;
-            ImFont *f = io.Fonts->AddFontDefault(&config);
+            ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
             if (size == cfg_font_size)
                 font = f;
         }
@@ -388,7 +389,8 @@ BOOL __stdcall freedom_update(HDC hDc)
             ImGui::SetNextWindowFocus();
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(472.0f, 162.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImVec2(0.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
         ImGui::Begin("##tab_content", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
         ImGui::PopStyleVar();
