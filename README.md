@@ -1,6 +1,6 @@
 # Freedom
 
-![preview](https://user-images.githubusercontent.com/38132413/178118333-5d139c7f-2fcc-4eb8-ac6b-ca273071fcf9.png)
+![preview](https://user-images.githubusercontent.com/38132413/180621014-9c1bf2ef-0df4-4582-9dbe-aff71ed9ad31.png)
 
 ## Build
 
@@ -13,16 +13,24 @@
 * Windows SDK
 * .NET Framework SDK
 
+## Features
+
+- Difficulty Changer:
+    * Approach Rate (AR)
+    * Circle Size (CS)
+    * Overall Difficulty (OD)
+
+ - Singletap Relax  
+ - HitCircle Aimbot:
+    * Cursor Speed
+
+- Misc:
+    * Mod Menu Font Size
+    * Hide Mod Menu
+
 ## Controls
 
 |    Keys     |   Description  |
 |:-----------:|:--------------:|
 | Right Click |    Settings    |
 | F11         |  Hide Mod Menu |
-
-|      Settings      |
-|:------------------:|
-| Approach Rate      |
-| Circle Size        |
-| Overall Difficulty |
-| Mod Menu Font Size |
