@@ -28,8 +28,8 @@ bool start_parse_beatmap = false;
 bool target_first_circle = true;
 
 uintptr_t osu_auth_base = 0;
-char left_click = 'Z';
-char right_click = 'X';
+char left_click[2] = { 'Z', '\0' };
+char right_click[2] = { 'X', '\0' };
 
 BeatmapData current_beatmap;
 Scene current_scene = Scene::MAIN_MENU;
@@ -161,11 +161,22 @@ BOOL __stdcall freedom_update(HDC hDc)
         uintptr_t binding_manager_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + binding_manager_base_offset, binding_manager_ptr_offsets);
         if (binding_manager_ptr)
         {
-            left_click = *(char *)(binding_manager_ptr);
-            right_click = *(char *)(binding_manager_ptr + 0x10);
-            FR_INFO_FMT("left_click: %c", left_click);
-            FR_INFO_FMT("right_click: %c", right_click);
+            char sus_left_click = '\0';
+            if (internal_memory_read(g_process, binding_manager_ptr, &sus_left_click))
+            {
+                char sus_right_click = '\0';
+                if (internal_memory_read(g_process, binding_manager_ptr + 0x10, &sus_right_click))
+                {
+                    if (('A' <= sus_left_click && sus_left_click <= 'Z') && ('A' <= sus_right_click && sus_right_click <= 'Z'))
+                    {
+                        left_click[0] = sus_left_click;
+                        right_click[0] = sus_right_click;
+                    }
+                }
+            }
         }
+        FR_INFO_FMT("left_click: %c", left_click);
+        FR_INFO_FMT("right_click: %c", right_click);
 
         calc_playfield(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
@@ -292,7 +303,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             if (cfg_relax_lock)
             {
-                send_keyboard_input(left_click, 0);
+                send_keyboard_input(left_click[0], 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
                 keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
                 if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
@@ -312,7 +323,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
-        send_keyboard_input(left_click, KEYEVENTF_KEYUP);
+        send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
     }
 
     if (GetAsyncKeyState(VK_F11) & 1)
@@ -389,9 +400,12 @@ BOOL __stdcall freedom_update(HDC hDc)
                 cfg_relax_lock ? enable_notify_hooks() : disable_notify_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
-            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() * 2);
+            ImGui::PushItemWidth(24.0f);
+            ImGui::InputText("Left Click",  left_click,  2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
+            ImGui::InputText("Right Click", right_click, 2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
+            ImGui::PopItemWidth();
+            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
             ImGui::Text("Singletap only!");
-            ImGui::Text("Keys: %c %c", left_click, right_click);
         }
         if (selected_tab == MenuTab::Aimbot)
         {
