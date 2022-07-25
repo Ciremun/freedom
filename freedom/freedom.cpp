@@ -161,28 +161,8 @@ BOOL __stdcall freedom_update(HDC hDc)
         uintptr_t binding_manager_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + binding_manager_base_offset, binding_manager_ptr_offsets);
         if (binding_manager_ptr)
         {
-            uintptr_t binding_keys_ptr = *(uintptr_t *)(binding_manager_ptr + 0x8);
-            uintptr_t binding_values_ptr = *(uintptr_t *)(binding_manager_ptr + 0x10);
-            int32_t binding_keys_count = *(int32_t *)(binding_keys_ptr + 0x4);
-            bool left_click_found = false;
-            bool right_click_found = false;
-            for (int32_t i = 0; i < binding_keys_count; ++i)
-            {
-                uintptr_t key_str_object = *(uintptr_t *)(binding_keys_ptr + 0x8 + 0x4 * i);
-                const wchar_t *key_str = (const wchar_t *)(key_str_object + 0x8);
-                if (wmemcmp(key_str, L"Left Click", 10) == 0)
-                {
-                    left_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
-                    left_click_found = true;
-                }
-                else if (wmemcmp(key_str, L"Right Click", 11) == 0)
-                {
-                    right_click = *(char *)(binding_values_ptr + 0x8 + 0x4 * (i - 1));
-                    right_click_found = true;
-                }
-                if (left_click_found && right_click_found)
-                    break;
-            }
+            left_click = *(char *)(binding_manager_ptr);
+            right_click = *(char *)(binding_manager_ptr + 0x10);
             FR_INFO_FMT("left_click: %c", left_click);
             FR_INFO_FMT("right_click: %c", right_click);
         }
