@@ -175,8 +175,8 @@ BOOL __stdcall freedom_update(HDC hDc)
                 }
             }
         }
-        FR_INFO_FMT("left_click: %c", left_click);
-        FR_INFO_FMT("right_click: %c", right_click);
+        FR_INFO_FMT("left_click: %c", left_click[0]);
+        FR_INFO_FMT("right_click: %c", right_click[0]);
 
         calc_playfield(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 

@@ -17,8 +17,8 @@ void move_mouse_to(int x, int y)
 {
     INPUT inputs[1];
     inputs[0].type = INPUT_MOUSE;
-    inputs[0].mi.dx = (x * (0xFFFF / 1920));
-    inputs[0].mi.dy = (y * (0xFFFF / 1080));
+    inputs[0].mi.dx = (x * (0xFFFF / window_size.x));
+    inputs[0].mi.dy = (y * (0xFFFF / window_size.y));
     inputs[0].mi.mouseData = 0;
     inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
     inputs[0].mi.time = 0;
