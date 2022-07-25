@@ -99,6 +99,15 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
+HHOOK hImGuiCharacterInputHook;
+LRESULT CALLBACK ImGui_ImplWin32_CharacterInputHandler(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    KBDLLHOOKSTRUCT cKey = *((KBDLLHOOKSTRUCT *)lParam);
+    if (wParam == WM_KEYDOWN)
+        ImGui::GetIO().AddInputCharacter(cKey.vkCode);
+    return CallNextHookEx(hImGuiCharacterInputHook, nCode, wParam, lParam);
+}
+
 BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
 {
     DWORD lpdwProcessId;
@@ -123,6 +132,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             return wglSwapBuffersGateway(hDc);
 
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+        hImGuiCharacterInputHook = SetWindowsHookEx(WH_KEYBOARD_LL, ImGui_ImplWin32_CharacterInputHandler, NULL, 0);
 
 #ifndef NDEBUG
         AllocConsole();
