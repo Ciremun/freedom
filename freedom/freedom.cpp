@@ -249,15 +249,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         uintptr_t song_str_ptr = 0;
         if (internal_memory_read(g_process, current_song_ptr, &song_str_ptr))
         {
-            if (start_parse_beatmap)
-            {
-                if (!parse_beatmap(g_process, osu_auth_base, current_beatmap))
-                {
-                    FR_ERROR("couldn't parse beatmap, replay mode?");
-                }
-                target_first_circle = true;
-                start_parse_beatmap = false;
-            }
             song_str_ptr += 0x80;
             static uintptr_t prev_song_str_ptr = 0;
             if (song_str_ptr != prev_song_str_ptr)
@@ -285,6 +276,13 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
     static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
+
+    if (start_parse_beatmap)
+    {
+        parse_beatmap(osu_player_ptr, current_beatmap);
+        target_first_circle = true;
+        start_parse_beatmap = false;
+    }
 
     static double keydown_time = 0.0;
     static double keyup_delay = 0.0;
