@@ -38,6 +38,54 @@ HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
 
+HHOOK hImGuiCharacterInputHook;
+LRESULT CALLBACK ImGui_ImplWin32_CharacterInputHandler(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    KBDLLHOOKSTRUCT cKey = *((KBDLLHOOKSTRUCT *)lParam);
+    if (wParam == WM_KEYDOWN)
+        ImGui::GetIO().AddInputCharacter(cKey.vkCode);
+    return CallNextHookEx(hImGuiCharacterInputHook, nCode, wParam, lParam);
+}
+
+WNDPROC oWndProc;
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+        case WM_SIZE:
+        {
+            if (wParam == SIZE_MINIMIZED)
+            {
+                UnhookWindowsHookEx(hImGuiCharacterInputHook);
+            }
+        } break;
+        case WM_SETFOCUS:
+        {
+            hImGuiCharacterInputHook = SetWindowsHookEx(WH_KEYBOARD_LL, ImGui_ImplWin32_CharacterInputHandler, NULL, 0);
+        } break;
+        default:
+            break;
+    }
+
+    if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+        return true;
+
+    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+}
+
+BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
+{
+    DWORD lpdwProcessId;
+    GetWindowThreadProcessId(hwnd, &lpdwProcessId);
+    if (lpdwProcessId == lParam)
+    {
+        g_hwnd = hwnd;
+        return FALSE;
+    }
+    return TRUE;
+}
+
 void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
 {
     if (!p->found)
@@ -87,37 +135,6 @@ void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
         ImGui::PopItemFlag();
     }
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
-}
-
-WNDPROC oWndProc;
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-        return true;
-
-    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-}
-
-HHOOK hImGuiCharacterInputHook;
-LRESULT CALLBACK ImGui_ImplWin32_CharacterInputHandler(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    KBDLLHOOKSTRUCT cKey = *((KBDLLHOOKSTRUCT *)lParam);
-    if (wParam == WM_KEYDOWN)
-        ImGui::GetIO().AddInputCharacter(cKey.vkCode);
-    return CallNextHookEx(hImGuiCharacterInputHook, nCode, wParam, lParam);
-}
-
-BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
-{
-    DWORD lpdwProcessId;
-    GetWindowThreadProcessId(hwnd, &lpdwProcessId);
-    if (lpdwProcessId == lParam)
-    {
-        g_hwnd = hwnd;
-        return FALSE;
-    }
-    return TRUE;
 }
 
 BOOL __stdcall freedom_update(HDC hDc)
