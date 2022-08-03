@@ -86,7 +86,7 @@ BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
     return TRUE;
 }
 
-void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
+void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
 {
     if (!p->found)
     {
@@ -96,10 +96,10 @@ void parameter_slider(uintptr_t current_song_ptr, Parameter *p)
     }
     if (!p->lock)
     {
-        if (p->found && current_song_ptr)
+        if (p->found && selected_song_ptr)
         {
             uintptr_t param_ptr = 0;
-            if (internal_memory_read(g_process, current_song_ptr, &param_ptr))
+            if (internal_memory_read(g_process, selected_song_ptr, &param_ptr))
             {
                 param_ptr += p->offset;
                 internal_memory_read(g_process, param_ptr, &p->value);
@@ -242,12 +242,11 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    static uintptr_t current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
-    if (current_song_ptr)
+    if (selected_song_ptr)
     {
         uintptr_t song_str_ptr = 0;
-        if (internal_memory_read(g_process, current_song_ptr, &song_str_ptr))
+        if (internal_memory_read(g_process, selected_song_ptr, &song_str_ptr))
         {
             song_str_ptr += 0x80;
             static uintptr_t prev_song_str_ptr = 0;
@@ -268,10 +267,6 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             prev_song_str_ptr = song_str_ptr;
         }
-    }
-    else
-    {
-        current_song_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + selected_song_ptr_base_offset, selected_song_ptr_offsets);
     }
 
     static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
@@ -411,9 +406,9 @@ BOOL __stdcall freedom_update(HDC hDc)
         if (selected_tab == MenuTab::Difficulty)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(7.5f, 7.5f));
-            parameter_slider(current_song_ptr, &ar_parameter);
-            parameter_slider(current_song_ptr, &cs_parameter);
-            parameter_slider(current_song_ptr, &od_parameter);
+            parameter_slider(selected_song_ptr, &ar_parameter);
+            parameter_slider(selected_song_ptr, &cs_parameter);
+            parameter_slider(selected_song_ptr, &od_parameter);
             ImGui::PopStyleVar();
         }
         if (selected_tab == MenuTab::Relax)
