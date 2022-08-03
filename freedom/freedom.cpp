@@ -38,36 +38,10 @@ HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
 
-HHOOK hImGuiCharacterInputHook;
-LRESULT CALLBACK ImGui_ImplWin32_CharacterInputHandler(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    KBDLLHOOKSTRUCT cKey = *((KBDLLHOOKSTRUCT *)lParam);
-    if (wParam == WM_KEYDOWN)
-        ImGui::GetIO().AddInputCharacter(cKey.vkCode);
-    return CallNextHookEx(hImGuiCharacterInputHook, nCode, wParam, lParam);
-}
-
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (uMsg)
-    {
-        case WM_SIZE:
-        {
-            if (wParam == SIZE_MINIMIZED)
-            {
-                UnhookWindowsHookEx(hImGuiCharacterInputHook);
-            }
-        } break;
-        case WM_SETFOCUS:
-        {
-            hImGuiCharacterInputHook = SetWindowsHookEx(WH_KEYBOARD_LL, ImGui_ImplWin32_CharacterInputHandler, NULL, 0);
-        } break;
-        default:
-            break;
-    }
-
     if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
         return true;
 
@@ -149,7 +123,6 @@ BOOL __stdcall freedom_update(HDC hDc)
             return wglSwapBuffersGateway(hDc);
 
         oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
-        hImGuiCharacterInputHook = SetWindowsHookEx(WH_KEYBOARD_LL, ImGui_ImplWin32_CharacterInputHandler, NULL, 0);
 
 #ifndef NDEBUG
         AllocConsole();
