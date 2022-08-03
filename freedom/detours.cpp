@@ -41,7 +41,7 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", L"#=zyO2ZBz4="}, // parse_beatmap
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
     {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"},                     // current scene
-    {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song
+    {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
@@ -68,9 +68,10 @@ uintptr_t notify_on_scene_change_original_mov_address = 0;
 uintptr_t current_scene_hook_jump_back = 0;
 
 uintptr_t selected_song_code_start = 0;
-uintptr_t selected_song_offset = 0;
-uintptr_t selected_song_hook_jump_back = 0;
 uintptr_t selected_song_ptr = 0;
+
+uintptr_t audio_time_code_start = 0;
+uintptr_t audio_time_ptr = 0;
 
 Hook SwapBuffersHook;
 
@@ -94,10 +95,12 @@ void try_find_hook_offsets()
     beatmap_onload_code_start = code_starts[1].start;
     current_scene_code_start = code_starts[2].start;
     selected_song_code_start = code_starts[3].start;
+    audio_time_code_start = selected_song_code_start;
     FR_INFO_FMT("parse_beatmap_metadata_code_start: 0x%X", parse_beatmap_metadata_code_start);
     FR_INFO_FMT("beatmap_onload_code_start: 0x%X", beatmap_onload_code_start);
     FR_INFO_FMT("current_scene_code_start: 0x%X", current_scene_code_start);
     FR_INFO_FMT("selected_song_code_start: 0x%X", selected_song_code_start);
+    FR_INFO_FMT("audio_time_code_start: 0x%X", audio_time_code_start);
     if (parse_beatmap_metadata_code_start)
     {
         const uint8_t approach_rate_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C};
@@ -163,8 +166,23 @@ void try_find_hook_offsets()
         {
             if (memcmp((uint8_t *)start, selected_song_signature, sizeof(selected_song_signature)) == 0)
             {
-                selected_song_offset = start - selected_song_code_start;
+                uintptr_t selected_song_offset = start - selected_song_code_start;
                 selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
+                FR_INFO_FMT("selected_song_ptr: 0x%X", selected_song_ptr);
+                break;
+            }
+        }
+    }
+    if (audio_time_code_start)
+    {
+        const uint8_t audio_time_signature[] = { 0xF7, 0xDA, 0x3B, 0xC2 };
+        for (uintptr_t start = audio_time_code_start; start - audio_time_code_start <= 0x5A6; ++start)
+        {
+            if (memcmp((uint8_t *)start, audio_time_signature, sizeof(audio_time_signature)) == 0)
+            {
+                uintptr_t audio_time_offset = start - audio_time_code_start;
+                audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
+                FR_INFO_FMT("audio_time_ptr: 0x%X", audio_time_ptr);
                 break;
             }
         }
