@@ -42,6 +42,7 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
     {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"},                     // current scene
     {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
+    {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=z28e6_TM="},                 // osu manager
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
@@ -73,6 +74,9 @@ uintptr_t selected_song_ptr = 0;
 uintptr_t audio_time_code_start = 0;
 uintptr_t audio_time_ptr = 0;
 
+uintptr_t osu_manager_code_start = 0;
+uintptr_t osu_manager_ptr = 0;
+
 Hook SwapBuffersHook;
 
 Hook ApproachRateHook1;
@@ -95,12 +99,14 @@ void try_find_hook_offsets()
     beatmap_onload_code_start = code_starts[1].start;
     current_scene_code_start = code_starts[2].start;
     selected_song_code_start = code_starts[3].start;
-    audio_time_code_start = selected_song_code_start;
+    audio_time_code_start = code_starts[3].start;
+    osu_manager_code_start = code_starts[4].start;
     FR_INFO_FMT("parse_beatmap_metadata_code_start: 0x%X", parse_beatmap_metadata_code_start);
     FR_INFO_FMT("beatmap_onload_code_start: 0x%X", beatmap_onload_code_start);
     FR_INFO_FMT("current_scene_code_start: 0x%X", current_scene_code_start);
     FR_INFO_FMT("selected_song_code_start: 0x%X", selected_song_code_start);
     FR_INFO_FMT("audio_time_code_start: 0x%X", audio_time_code_start);
+    FR_INFO_FMT("osu_manager_code_start: 0x%X", osu_manager_code_start);
     if (parse_beatmap_metadata_code_start)
     {
         const uint8_t approach_rate_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C};
@@ -183,6 +189,20 @@ void try_find_hook_offsets()
                 uintptr_t audio_time_offset = start - audio_time_code_start;
                 audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
                 FR_INFO_FMT("audio_time_ptr: 0x%X", audio_time_ptr);
+                break;
+            }
+        }
+    }
+    if (osu_manager_code_start)
+    {
+        const uint8_t osu_manager_signature[] = { 0x33, 0xD2, 0x89, 0x15 };
+        for (uintptr_t start = osu_manager_code_start + 0x100; start - osu_manager_code_start <= 0x400; ++start)
+        {
+            if (memcmp((uint8_t *)start, osu_manager_signature, sizeof(osu_manager_signature)) == 0)
+            {
+                uintptr_t osu_manager_offset = start - osu_manager_code_start;
+                osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
+                FR_INFO_FMT("osu_manager_ptr: 0x%X", osu_manager_ptr);
                 break;
             }
         }

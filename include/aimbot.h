@@ -7,10 +7,10 @@
 #include "utility.h"
 
 template <typename T>
-Vector2<T> prepare_hitcircle_target(uintptr_t osu_player_ptr, const Circle &circle, Vector2<T> &mouse_position)
+Vector2<T> prepare_hitcircle_target(uintptr_t osu_manager_ptr, const Circle &circle, Vector2<T> &mouse_position)
 {
-    uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
-    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager_ptr + 0x60);
+    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x60);
     float mouse_x = *(float *)(osu_ruleset_ptr + 0x80);
     float mouse_y = *(float *)(osu_ruleset_ptr + 0x84);
     mouse_position.x = mouse_x;

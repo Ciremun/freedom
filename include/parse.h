@@ -48,4 +48,4 @@ struct BeatmapData
     Circle current_circle();
 };
 
-bool parse_beatmap(uintptr_t osu_player_ptr, BeatmapData &beatmap_data);
+bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);

@@ -242,11 +242,9 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
     }
 
-    static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
-
     if (start_parse_beatmap)
     {
-        parse_beatmap(osu_player_ptr, current_beatmap);
+        parse_beatmap(osu_manager_ptr, current_beatmap);
         target_first_circle = true;
         start_parse_beatmap = false;
     }
@@ -279,7 +277,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             if (target_first_circle)
             {
-                direction = prepare_hitcircle_target(osu_player_ptr, circle, mouse_position);
+                direction = prepare_hitcircle_target(osu_manager_ptr, circle, mouse_position);
                 fraction_of_the_distance = fraction_modifier;
                 target_first_circle = false;
             }
@@ -290,7 +288,7 @@ BOOL __stdcall freedom_update(HDC hDc)
                 current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1].type != HitObjectType::Spinner)
             {
                 Circle circle_to_aim = current_beatmap.hit_objects[current_beatmap.hit_object_idx + 1];
-                direction = prepare_hitcircle_target(osu_player_ptr, circle_to_aim, mouse_position);
+                direction = prepare_hitcircle_target(osu_manager_ptr, circle_to_aim, mouse_position);
                 fraction_of_the_distance = fraction_modifier;
             }
             if (cfg_relax_lock)

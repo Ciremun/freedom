@@ -12,23 +12,23 @@ void BeatmapData::clear()
     hit_objects.clear();
 }
 
-bool parse_beatmap(uintptr_t osu_player_ptr, BeatmapData &beatmap_data)
+bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 {
     beatmap_data.clear();
 
-    if (osu_player_ptr == 0)
+    if (osu_manager_ptr == 0)
         return false;
 
-    uintptr_t osu_manager_ptr = **(uintptr_t **)(osu_player_ptr + 0x8);
+    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
 
-    bool replay_mode = *(bool *)(osu_manager_ptr + 0x17A);
+    bool replay_mode = *(bool *)(osu_manager + 0x17A);
     if (replay_mode)
     {
         FR_INFO_FMT("skipping current beatmap: replay mode");
         return false;
     }
 
-    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager_ptr + 0x40);
+    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x40);
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
     int32_t hit_objects_count = *(int32_t *)(hit_manager_ptr + 0x90);
