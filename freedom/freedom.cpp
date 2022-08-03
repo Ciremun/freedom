@@ -242,7 +242,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
     }
 
-    static uintptr_t audio_time_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + audio_time_ptr_base_offset, audio_time_ptr_offsets);
     static uintptr_t osu_player_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + osu_player_ptr_base_offset, osu_player_ptr_offsets);
 
     if (start_parse_beatmap)
