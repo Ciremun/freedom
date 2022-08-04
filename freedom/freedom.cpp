@@ -213,6 +213,8 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
+    ImGuiIO &io = ImGui::GetIO();
+
     if (start_parse_beatmap)
     {
         parse_beatmap(osu_manager_ptr, current_beatmap);
@@ -290,6 +292,8 @@ BOOL __stdcall freedom_update(HDC hDc)
     if (GetAsyncKeyState(VK_F11) & 1)
     {
         cfg_mod_menu_visible = !cfg_mod_menu_visible;
+        if (!cfg_mod_menu_visible)
+            io.MouseDrawCursor = false;
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
 
@@ -323,7 +327,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         }
     }
 
-    ImGuiIO &io = ImGui::GetIO();
     ImGui::PushFont(font);
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
