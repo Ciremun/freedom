@@ -213,33 +213,6 @@ BOOL __stdcall freedom_update(HDC hDc)
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
-    if (selected_song_ptr)
-    {
-        uintptr_t song_str_ptr = 0;
-        if (internal_memory_read(g_process, selected_song_ptr, &song_str_ptr))
-        {
-            song_str_ptr += 0x80;
-            static uintptr_t prev_song_str_ptr = 0;
-            if (song_str_ptr != prev_song_str_ptr)
-            {
-                uintptr_t song_str = 0;
-                if (internal_memory_read(g_process, song_str_ptr, &song_str))
-                {
-                    song_str += 0x4;
-                    uint32_t song_str_length = 0;
-                    if (internal_memory_read(g_process, song_str, &song_str_length))
-                    {
-                        song_str += 0x4;
-                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 127, 0, 0);
-                        song_name_u8[bytes_written] = '\0';
-                    }
-                }
-            }
-            prev_song_str_ptr = song_str_ptr;
-        }
-    }
-
     if (start_parse_beatmap)
     {
         parse_beatmap(osu_manager_ptr, current_beatmap);
@@ -322,6 +295,33 @@ BOOL __stdcall freedom_update(HDC hDc)
 
     if (!cfg_mod_menu_visible)
         goto frame_end;
+
+    static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
+    if (selected_song_ptr)
+    {
+        uintptr_t song_str_ptr = 0;
+        if (internal_memory_read(g_process, selected_song_ptr, &song_str_ptr))
+        {
+            song_str_ptr += 0x80;
+            static uintptr_t prev_song_str_ptr = 0;
+            if (song_str_ptr != prev_song_str_ptr)
+            {
+                uintptr_t song_str = 0;
+                if (internal_memory_read(g_process, song_str_ptr, &song_str))
+                {
+                    song_str += 0x4;
+                    uint32_t song_str_length = 0;
+                    if (internal_memory_read(g_process, song_str, &song_str_length))
+                    {
+                        song_str += 0x4;
+                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 127, 0, 0);
+                        song_name_u8[bytes_written] = '\0';
+                    }
+                }
+            }
+            prev_song_str_ptr = song_str_ptr;
+        }
+    }
 
     ImGuiIO &io = ImGui::GetIO();
     ImGui::PushFont(font);
