@@ -336,35 +336,20 @@ BOOL __stdcall freedom_update(HDC hDc)
     {
         static MenuTab selected_tab = MenuTab::Difficulty;
 
-        if (ImGui::Selectable("Difficulty", selected_tab == MenuTab::Difficulty, ImGuiSelectableFlags_DontClosePopups))
+        const auto update_tab = [](const char *tab_name, MenuTab tab_type)
         {
-            selected_tab = MenuTab::Difficulty;
-            ImGui::SetNextWindowFocus();
-        }
+            if (ImGui::Selectable(tab_name, selected_tab == tab_type, ImGuiSelectableFlags_DontClosePopups))
+            {
+                selected_tab = tab_type;
+                ImGui::SetNextWindowFocus();
+            }
+        };
 
-        if (ImGui::Selectable("Relax", selected_tab == MenuTab::Relax, ImGuiSelectableFlags_DontClosePopups))
-        {
-            selected_tab = MenuTab::Relax;
-            ImGui::SetNextWindowFocus();
-        }
-
-        if (ImGui::Selectable("Aimbot", selected_tab == MenuTab::Aimbot, ImGuiSelectableFlags_DontClosePopups))
-        {
-            selected_tab = MenuTab::Aimbot;
-            ImGui::SetNextWindowFocus();
-        }
-
-        if (ImGui::Selectable("Other", selected_tab == MenuTab::Other, ImGuiSelectableFlags_DontClosePopups))
-        {
-            selected_tab = MenuTab::Other;
-            ImGui::SetNextWindowFocus();
-        }
-
-        if (ImGui::Selectable("About", selected_tab == MenuTab::About, ImGuiSelectableFlags_DontClosePopups))
-        {
-            selected_tab = MenuTab::About;
-            ImGui::SetNextWindowFocus();
-        }
+        update_tab("Difficulty", MenuTab::Difficulty);
+        update_tab("Relax", MenuTab::Relax);
+        update_tab("Aimbot", MenuTab::Aimbot);
+        update_tab("Other", MenuTab::Other);
+        update_tab("About", MenuTab::About);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
         ImGui::SetNextWindowSize(ImVec2(0.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
