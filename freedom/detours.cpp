@@ -133,6 +133,9 @@ void try_find_hook_offsets()
         ar_parameter.found = approach_rate_offsets[1] > 0;
         cs_parameter.found = circle_size_offsets[2] > 0;
         od_parameter.found = overall_difficulty_offsets[1] > 0;
+        FR_INFO_FMT("ar_parameter.found: %d", ar_parameter.found);
+        FR_INFO_FMT("cs_parameter.found: %d", cs_parameter.found);
+        FR_INFO_FMT("od_parameter.found: %d", od_parameter.found);
     }
     FR_PTR_INFO("beatmap_onload_code_start", beatmap_onload_code_start);
     if (beatmap_onload_code_start)
@@ -147,8 +150,8 @@ void try_find_hook_offsets()
                 break;
             }
         }
+        FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
     }
-    FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
     FR_PTR_INFO("current_scene_code_start", current_scene_code_start);
     if (current_scene_code_start)
     {
@@ -165,8 +168,8 @@ void try_find_hook_offsets()
                 break;
             }
         }
+        FR_PTR_INFO("current_scene_offset", current_scene_offset);
     }
-    FR_PTR_INFO("current_scene_offset", current_scene_offset);
     FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
@@ -177,10 +180,10 @@ void try_find_hook_offsets()
             {
                 uintptr_t selected_song_offset = start - selected_song_code_start;
                 selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
-                FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
                 break;
             }
         }
+        FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
     }
     FR_PTR_INFO("audio_time_code_start", audio_time_code_start);
     if (audio_time_code_start)
@@ -192,10 +195,10 @@ void try_find_hook_offsets()
             {
                 uintptr_t audio_time_offset = start - audio_time_code_start;
                 audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
-                FR_PTR_INFO("audio_time_ptr", audio_time_ptr);
                 break;
             }
         }
+        FR_PTR_INFO("audio_time_ptr", audio_time_ptr);
     }
     FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
@@ -207,10 +210,10 @@ void try_find_hook_offsets()
             {
                 uintptr_t osu_manager_offset = start - osu_manager_code_start;
                 osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
-                FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
                 break;
             }
         }
+        FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
     }
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
@@ -224,10 +227,10 @@ void try_find_hook_offsets()
                 uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
                 uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
                 binding_manager_ptr = unknown_2 + 0x14;
-                FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
                 break;
             }
         }
+        FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
 }
 
