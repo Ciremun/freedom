@@ -16,6 +16,8 @@
 #define FR_INFO_FMT(fmt, ...)
 #endif // NDEBUG
 
+#define FR_PTR_INFO(...) FR_INFO_FMT("%-35.35s 0x%X", __VA_ARGS__)
+
 uintptr_t GetModuleBaseAddress(const wchar_t *modName);
 
 void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);

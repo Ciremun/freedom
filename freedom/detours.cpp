@@ -86,17 +86,15 @@ Hook SwapBuffersHook;
 Hook ApproachRateHook1;
 Hook ApproachRateHook2;
 
-Hook CircleSizeHook_1;
-Hook CircleSizeHook_2;
-Hook CircleSizeHook_3;
+Hook CircleSizeHook1;
+Hook CircleSizeHook2;
+Hook CircleSizeHook3;
 
-Hook OverallDifficultyHook_1;
-Hook OverallDifficultyHook_2;
+Hook OverallDifficultyHook1;
+Hook OverallDifficultyHook2;
 
 Hook BeatmapOnLoadHook;
 Hook SceneChangeHook;
-
-#define FR_PTR_INFO(...) FR_INFO_FMT("%-35.35s 0x%X", __VA_ARGS__)
 
 void try_find_hook_offsets()
 {
@@ -172,7 +170,7 @@ void try_find_hook_offsets()
     FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
-        const uint8_t selected_song_signature[] = { 0xD9, 0xEE, 0xDD,  0x5C,  0x24,  0x10,  0x83,  0x3D };
+        const uint8_t selected_song_signature[] = {0xD9, 0xEE, 0xDD, 0x5C, 0x24, 0x10, 0x83, 0x3D};
         for (uintptr_t start = selected_song_code_start + 0x200; start - selected_song_code_start <= 0x5A6; ++start)
         {
             if (memcmp((uint8_t *)start, selected_song_signature, sizeof(selected_song_signature)) == 0)
@@ -187,7 +185,7 @@ void try_find_hook_offsets()
     FR_PTR_INFO("audio_time_code_start", audio_time_code_start);
     if (audio_time_code_start)
     {
-        const uint8_t audio_time_signature[] = { 0xF7, 0xDA, 0x3B, 0xC2 };
+        const uint8_t audio_time_signature[] = {0xF7, 0xDA, 0x3B, 0xC2};
         for (uintptr_t start = audio_time_code_start; start - audio_time_code_start <= 0x5A6; ++start)
         {
             if (memcmp((uint8_t *)start, audio_time_signature, sizeof(audio_time_signature)) == 0)
@@ -202,7 +200,7 @@ void try_find_hook_offsets()
     FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
     {
-        const uint8_t osu_manager_signature[] = { 0x33, 0xD2, 0x89, 0x15 };
+        const uint8_t osu_manager_signature[] = {0x33, 0xD2, 0x89, 0x15};
         for (uintptr_t start = osu_manager_code_start + 0x100; start - osu_manager_code_start <= 0x400; ++start)
         {
             if (memcmp((uint8_t *)start, osu_manager_signature, sizeof(osu_manager_signature)) == 0)
@@ -217,7 +215,7 @@ void try_find_hook_offsets()
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
-        const uint8_t binding_manager_signature[] = { 0x8D, 0x45, 0xD8, 0x50, 0x8B, 0x0D };
+        const uint8_t binding_manager_signature[] = {0x8D, 0x45, 0xD8, 0x50, 0x8B, 0x0D};
         for (uintptr_t start = binding_manager_code_start; start - binding_manager_code_start <= 0x100; ++start)
         {
             if (memcmp((uint8_t *)start, binding_manager_signature, sizeof(binding_manager_signature)) == 0)
@@ -247,9 +245,9 @@ void init_hooks()
 
     if (cs_parameter.found)
     {
-        CircleSizeHook_1 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
-        CircleSizeHook_2 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
-        CircleSizeHook_3 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
+        CircleSizeHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
+        CircleSizeHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
+        CircleSizeHook3 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
         if (cs_parameter.lock)
             enable_cs_hooks();
     }
@@ -258,8 +256,8 @@ void init_hooks()
 
     if (od_parameter.found)
     {
-        OverallDifficultyHook_1 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
-        OverallDifficultyHook_2 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
+        OverallDifficultyHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
+        OverallDifficultyHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
         if (od_parameter.lock)
             enable_od_hooks();
     }
@@ -283,28 +281,28 @@ void init_hooks()
 
 void enable_od_hooks()
 {
-    OverallDifficultyHook_1.Enable();
-    OverallDifficultyHook_2.Enable();
+    OverallDifficultyHook1.Enable();
+    OverallDifficultyHook2.Enable();
 }
 
 void disable_od_hooks()
 {
-    OverallDifficultyHook_1.Disable();
-    OverallDifficultyHook_2.Disable();
+    OverallDifficultyHook1.Disable();
+    OverallDifficultyHook2.Disable();
 }
 
 void enable_cs_hooks()
 {
-    CircleSizeHook_1.Enable();
-    CircleSizeHook_2.Enable();
-    CircleSizeHook_3.Enable();
+    CircleSizeHook1.Enable();
+    CircleSizeHook2.Enable();
+    CircleSizeHook3.Enable();
 }
 
 void disable_cs_hooks()
 {
-    CircleSizeHook_1.Disable();
-    CircleSizeHook_2.Disable();
-    CircleSizeHook_3.Disable();
+    CircleSizeHook1.Disable();
+    CircleSizeHook2.Disable();
+    CircleSizeHook3.Disable();
 }
 
 void enable_ar_hooks()

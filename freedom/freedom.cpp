@@ -19,7 +19,7 @@
 #include "window.h"
 #include "font.h"
 
-#define FR_VERSION "v0.5"
+#define FR_VERSION "v0.6"
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
