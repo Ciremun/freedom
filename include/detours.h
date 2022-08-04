@@ -9,6 +9,8 @@
 #include "hook.h"
 #include "dotnet_data_collector.h"
 #include "code_start_target.h"
+#include "signatures.h"
+
 #include "imgui.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
@@ -64,3 +66,12 @@ void set_overall_difficulty();
 
 void notify_on_beatmap_load();
 void notify_on_scene_change();
+
+template <size_t size>
+uintptr_t find_opcodes(const uint8_t (&signature)[size], uintptr_t code_start, int start_offset, int end_offset)
+{
+    for (uintptr_t start = code_start + start_offset; start - code_start <= end_offset; ++start)
+        if (memcmp((uint8_t *)start, signature, size) == 0)
+            return start - code_start;
+    return 0;
+}

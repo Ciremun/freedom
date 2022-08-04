@@ -109,9 +109,6 @@ void try_find_hook_offsets()
     FR_PTR_INFO("parse_beatmap_metadata_code_start", parse_beatmap_metadata_code_start);
     if (parse_beatmap_metadata_code_start)
     {
-        const uint8_t approach_rate_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C};
-        const uint8_t circle_size_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x30};
-        const uint8_t overall_difficulty_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x38};
         int approach_rate_offsets_idx = 0;
         int circle_size_offsets_idx = 0;
         int overall_difficulty_offsets_idx = 0;
@@ -137,25 +134,9 @@ void try_find_hook_offsets()
         FR_INFO_FMT("cs_parameter.found: %d", cs_parameter.found);
         FR_INFO_FMT("od_parameter.found: %d", od_parameter.found);
     }
-    FR_PTR_INFO("beatmap_onload_code_start", beatmap_onload_code_start);
-    if (beatmap_onload_code_start)
-    {
-        const uint8_t beatmap_onload_signature[] = {0x8B, 0x86, 0x48, 0x01, 0x00, 0x00};
-        for (uintptr_t start = beatmap_onload_code_start + 0x100; start - beatmap_onload_code_start <= 0x300; ++start)
-        {
-            if (memcmp((uint8_t *)start, beatmap_onload_signature, sizeof(beatmap_onload_signature)) == 0)
-            {
-                beatmap_onload_offset = start - beatmap_onload_code_start;
-                beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
-                break;
-            }
-        }
-        FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
-    }
     FR_PTR_INFO("current_scene_code_start", current_scene_code_start);
     if (current_scene_code_start)
     {
-        const uint8_t current_scene_signature[] = {0xA1, 0xA3, 0xA1, 0xA3};
         for (uintptr_t start = current_scene_code_start + 0x18; start - current_scene_code_start <= 0x800; ++start)
         {
             uint8_t *bytes = (uint8_t *)start;
@@ -170,66 +151,41 @@ void try_find_hook_offsets()
         }
         FR_PTR_INFO("current_scene_offset", current_scene_offset);
     }
+    FR_PTR_INFO("beatmap_onload_code_start", beatmap_onload_code_start);
+    if (beatmap_onload_code_start)
+    {
+        beatmap_onload_offset = find_opcodes(beatmap_onload_signature, beatmap_onload_code_start, 0x100, 0x300);
+        beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
+        FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
+    }
     FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
-        const uint8_t selected_song_signature[] = {0xD9, 0xEE, 0xDD, 0x5C, 0x24, 0x10, 0x83, 0x3D};
-        for (uintptr_t start = selected_song_code_start + 0x200; start - selected_song_code_start <= 0x5A6; ++start)
-        {
-            if (memcmp((uint8_t *)start, selected_song_signature, sizeof(selected_song_signature)) == 0)
-            {
-                uintptr_t selected_song_offset = start - selected_song_code_start;
-                selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
-                break;
-            }
-        }
+        uintptr_t selected_song_offset = find_opcodes(selected_song_signature, selected_song_code_start, 0x200, 0x5A6);
+        selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
         FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
     }
     FR_PTR_INFO("audio_time_code_start", audio_time_code_start);
     if (audio_time_code_start)
     {
-        const uint8_t audio_time_signature[] = {0xF7, 0xDA, 0x3B, 0xC2};
-        for (uintptr_t start = audio_time_code_start; start - audio_time_code_start <= 0x5A6; ++start)
-        {
-            if (memcmp((uint8_t *)start, audio_time_signature, sizeof(audio_time_signature)) == 0)
-            {
-                uintptr_t audio_time_offset = start - audio_time_code_start;
-                audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
-                break;
-            }
-        }
+        uintptr_t audio_time_offset = find_opcodes(audio_time_signature, audio_time_code_start, 0x0, 0x5A6);
+        audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
         FR_PTR_INFO("audio_time_ptr", audio_time_ptr);
     }
     FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
     {
-        const uint8_t osu_manager_signature[] = {0x33, 0xD2, 0x89, 0x15};
-        for (uintptr_t start = osu_manager_code_start + 0x100; start - osu_manager_code_start <= 0x400; ++start)
-        {
-            if (memcmp((uint8_t *)start, osu_manager_signature, sizeof(osu_manager_signature)) == 0)
-            {
-                uintptr_t osu_manager_offset = start - osu_manager_code_start;
-                osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
-                break;
-            }
-        }
+        uintptr_t osu_manager_offset = find_opcodes(osu_manager_signature, osu_manager_code_start, 0x100, 0x400);
+        osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
         FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
     }
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
-        const uint8_t binding_manager_signature[] = {0x8D, 0x45, 0xD8, 0x50, 0x8B, 0x0D};
-        for (uintptr_t start = binding_manager_code_start; start - binding_manager_code_start <= 0x100; ++start)
-        {
-            if (memcmp((uint8_t *)start, binding_manager_signature, sizeof(binding_manager_signature)) == 0)
-            {
-                uintptr_t binding_manager_offset = start - binding_manager_code_start;
-                uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
-                uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
-                binding_manager_ptr = unknown_2 + 0x14;
-                break;
-            }
-        }
+        uintptr_t binding_manager_offset = find_opcodes(binding_manager_signature, binding_manager_code_start, 0x0, 0x100);
+        uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
+        uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
+        binding_manager_ptr = unknown_2 + 0x14;
         FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
 }
