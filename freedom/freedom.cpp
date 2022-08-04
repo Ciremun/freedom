@@ -14,7 +14,6 @@
 #include "detours.h"
 #include "hook.h"
 #include "input.h"
-#include "offsets.h"
 #include "tabs.h"
 #include "utility.h"
 #include "window.h"
@@ -158,7 +157,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         try_find_hook_offsets();
         init_hooks();
 
-        uintptr_t binding_manager_ptr = internal_multi_level_pointer_dereference(g_process, osu_auth_base + binding_manager_base_offset, binding_manager_ptr_offsets);
         if (binding_manager_ptr)
         {
             char sus_left_click = '\0';

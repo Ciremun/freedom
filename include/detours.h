@@ -36,6 +36,7 @@ extern bool cfg_aimbot_lock;
 extern uintptr_t selected_song_ptr;
 extern uintptr_t audio_time_ptr;
 extern uintptr_t osu_manager_ptr;
+extern uintptr_t binding_manager_ptr;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 

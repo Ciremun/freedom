@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "utility.h"
-#include "offsets.h"
 #include "vector.h"
 
 enum class HitObjectType

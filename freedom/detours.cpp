@@ -43,6 +43,7 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"},                     // current scene
     {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=z28e6_TM="},                 // osu manager
+    {L"#=zXCB2DjGO4mRaBoN27A==", L"#=zUeWVlwc="},                         // binding manager
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
@@ -77,6 +78,9 @@ uintptr_t audio_time_ptr = 0;
 uintptr_t osu_manager_code_start = 0;
 uintptr_t osu_manager_ptr = 0;
 
+uintptr_t binding_manager_code_start = 0;
+uintptr_t binding_manager_ptr = 0;
+
 Hook SwapBuffersHook;
 
 Hook ApproachRateHook1;
@@ -101,12 +105,14 @@ void try_find_hook_offsets()
     selected_song_code_start = code_starts[3].start;
     audio_time_code_start = code_starts[3].start;
     osu_manager_code_start = code_starts[4].start;
+    binding_manager_code_start = code_starts[5].start;
     FR_INFO_FMT("parse_beatmap_metadata_code_start: 0x%X", parse_beatmap_metadata_code_start);
     FR_INFO_FMT("beatmap_onload_code_start: 0x%X", beatmap_onload_code_start);
     FR_INFO_FMT("current_scene_code_start: 0x%X", current_scene_code_start);
     FR_INFO_FMT("selected_song_code_start: 0x%X", selected_song_code_start);
     FR_INFO_FMT("audio_time_code_start: 0x%X", audio_time_code_start);
     FR_INFO_FMT("osu_manager_code_start: 0x%X", osu_manager_code_start);
+    FR_INFO_FMT("binding_manager_code_start: 0x%X", binding_manager_code_start);
     if (parse_beatmap_metadata_code_start)
     {
         const uint8_t approach_rate_signature[] = {0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C};
@@ -203,6 +209,22 @@ void try_find_hook_offsets()
                 uintptr_t osu_manager_offset = start - osu_manager_code_start;
                 osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
                 FR_INFO_FMT("osu_manager_ptr: 0x%X", osu_manager_ptr);
+                break;
+            }
+        }
+    }
+    if (binding_manager_code_start)
+    {
+        const uint8_t binding_manager_signature[] = { 0x8D, 0x45, 0xD8, 0x50, 0x8B, 0x0D };
+        for (uintptr_t start = binding_manager_code_start; start - binding_manager_code_start <= 0x100; ++start)
+        {
+            if (memcmp((uint8_t *)start, binding_manager_signature, sizeof(binding_manager_signature)) == 0)
+            {
+                uintptr_t binding_manager_offset = start - binding_manager_code_start;
+                uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
+                uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
+                binding_manager_ptr = unknown_2 + 0x14;
+                FR_INFO_FMT("binding_manager_ptr: 0x%X", binding_manager_ptr);
                 break;
             }
         }
