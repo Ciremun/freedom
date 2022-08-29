@@ -19,7 +19,7 @@
 #include "window.h"
 #include "font.h"
 
-#define FR_VERSION "v0.6"
+#define FR_VERSION "v0.7"
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
 #define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
 
@@ -397,7 +397,6 @@ BOOL __stdcall freedom_update(HDC hDc)
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
-            // ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
             ImGui::Text("HitCircles only!");
         }

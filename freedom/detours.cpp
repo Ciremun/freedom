@@ -38,7 +38,7 @@ bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
     // class, method
-    {L"#=z9DEJsV779TWhgkKS1GefTZYVJDPgn5L2xrCk5pyAIyAH", L"#=zyO2ZBz4="}, // parse_beatmap
+    {L"#=zk8tPJ343CtdfCoyZXqxpXL8Mpr0BtBM7puFf$KCLvSvu", L"#=zmR99pQ0="}, // parse_beatmap
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
     {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"},                     // current scene
     {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
