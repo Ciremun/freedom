@@ -42,7 +42,7 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
     {L"#=zXYmDZ1fHfmG8nphZQw==", L"#=zuugrck8w7GV3"},                     // current scene
     {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
-    {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=z28e6_TM="},                 // osu manager
+    {L"#=znb3Y$KPwyjSF$10aUA==", L"#=zgiDWpY4uZHdja87yp7x7W1U="},         // osu manager
     {L"#=zXCB2DjGO4mRaBoN27A==", L"#=zUeWVlwc="},                         // binding manager
 };
 
@@ -175,8 +175,8 @@ void try_find_hook_offsets()
     FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
     {
-        uintptr_t osu_manager_offset = find_opcodes(osu_manager_signature, osu_manager_code_start, 0x100, 0x400);
-        osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x4);
+        uintptr_t osu_manager_offset = find_opcodes(osu_manager_signature, osu_manager_code_start, 0x0, 0x100);
+        osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset + 0x3);
         FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
     }
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
