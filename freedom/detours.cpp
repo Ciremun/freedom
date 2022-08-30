@@ -40,8 +40,8 @@ std::vector<CodeStartTarget> code_starts = {
     // class, method
     {L"#=zk8tPJ343CtdfCoyZXqxpXL8Mpr0BtBM7puFf$KCLvSvu", L"#=zmR99pQ0="}, // parse_beatmap - fixed
     {L"#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", L"#=zaGN2R64="},                 // beatmap_onload
-    {L"#=zmGcBavNsjoYtDFRNGA==", L"#=zbSsRq67idAjk"},                     // current scene
-    {L"#=zjThkqBA0bs1MaKyGrg==", L"#=zIxJRlsIgC5NO"},                     // selected song, audio time
+    {L"#=zmGcBavNsjoYtDFRNGA==", L"#=zbSsRq67idAjk"},                     // current scene - fixed
+    {L"#=z60q2XH9640DxZLQ$1A==", L"#=zsYVujtWLSR28"},                     // selected song, audio time - fixed
     {L"#=znb3Y$KPwyjSF$10aUA==", L"#=zgiDWpY4uZHdja87yp7x7W1U="},         // osu manager - fixed
     {L"#=zXCB2DjGO4mRaBoN27A==", L"#=zUeWVlwc="},                         // binding manager
 };
