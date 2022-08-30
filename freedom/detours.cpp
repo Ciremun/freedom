@@ -38,11 +38,11 @@ bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
     // class, method
-    {L"#=zk8tPJ343CtdfCoyZXqxpXL8Mpr0BtBM7puFf$KCLvSvu", L"#=zmR99pQ0="}, // parse_beatmap - fixed
-    {L"#=zlfVZLHpJLMIvTtJK$8MwYPK4xDI4", L"#=zhlImBbU="},                 // beatmap_onload - fixed
-    {L"#=zmGcBavNsjoYtDFRNGA==", L"#=zbSsRq67idAjk"},                     // current scene - fixed
-    {L"#=z60q2XH9640DxZLQ$1A==", L"#=zsYVujtWLSR28"},                     // selected song, audio time - fixed
-    {L"#=znb3Y$KPwyjSF$10aUA==", L"#=zgiDWpY4uZHdja87yp7x7W1U="},         // osu manager - fixed
+    {L"#=zk8tPJ343CtdfCoyZXqxpXL8Mpr0BtBM7puFf$KCLvSvu", L"#=zmR99pQ0="}, // parse_beatmap
+    {L"#=zlfVZLHpJLMIvTtJK$8MwYPK4xDI4", L"#=zhlImBbU="},                 // beatmap_onload
+    {L"#=zmGcBavNsjoYtDFRNGA==", L"#=zbSsRq67idAjk"},                     // current scene
+    {L"#=z60q2XH9640DxZLQ$1A==", L"#=zsYVujtWLSR28"},                     // selected song, audio time
+    {L"#=znb3Y$KPwyjSF$10aUA==", L"#=zgiDWpY4uZHdja87yp7x7W1U="},         // osu manager
     {L"#=zXCB2DjGO4mRaBoN27A==", L"#=zUeWVlwc="},                         // binding manager
 };
 

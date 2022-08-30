@@ -22,8 +22,7 @@ namespace Freedom
             var assembly = Assembly.GetEntryAssembly();
             Type[] classes = assembly.GetTypes();
             ClassMethod[] classmethods = new ClassMethod[]{
-                new ClassMethod {class_ = "#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", method = "#=zaGN2R64="},
-                new ClassMethod {class_ = "#=zZ86rRc_XTEYCVjLiIpwW9hgO85GX", method = "#=z28e6_TM="},
+                new ClassMethod {class_ = "#=zlfVZLHpJLMIvTtJK$8MwYPK4xDI4", method = "#=zhlImBbU="},
             };
             foreach (ClassMethod cm in classmethods)
             {
