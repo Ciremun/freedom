@@ -43,7 +43,8 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=zmGcBavNsjoYtDFRNGA==", L"#=zbSsRq67idAjk"},                     // current scene
     {L"#=z60q2XH9640DxZLQ$1A==", L"#=zsYVujtWLSR28"},                     // selected song, audio time
     {L"#=znb3Y$KPwyjSF$10aUA==", L"#=zgiDWpY4uZHdja87yp7x7W1U="},         // osu manager
-    {L"#=zXCB2DjGO4mRaBoN27A==", L"#=zUeWVlwc="},                         // binding manager
+    {L"#=z65Oz7y8ehU40RKOkgA==", L"#=z27QY0$4="},                         // binding manager
+
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
