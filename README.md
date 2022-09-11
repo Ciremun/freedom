@@ -1,13 +1,15 @@
 # Freedom
 
-![preview](https://user-images.githubusercontent.com/38132413/180621014-9c1bf2ef-0df4-4582-9dbe-aff71ed9ad31.png)
+![preview](https://user-images.githubusercontent.com/38132413/180621014-9c1bf2ef-0df4-4582-9dbe-aff71ed9ad31.png)  
+
+[GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.  
 
 ## Build
 
     vcvarsall x86
     build.bat
 
-## Required Visual Studio Components
+### Required Visual Studio Components
 
 * MSVC x64/x86 build tools
 * Windows SDK
@@ -20,8 +22,9 @@
     * Circle Size (CS)
     * Overall Difficulty (OD)
 
- - Singletap Relax  
- - HitCircle Aimbot:
+ - Singletap Relax (*no hit timing randomization!*)  
+
+ - HitCircle Aimbot (*sliders and spinners are not implemented!*):
     * Cursor Speed
 
 - Misc:
