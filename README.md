@@ -1,6 +1,6 @@
 # Freedom
 
-![preview](https://user-images.githubusercontent.com/38132413/180621014-9c1bf2ef-0df4-4582-9dbe-aff71ed9ad31.png)  
+![freedom](https://user-images.githubusercontent.com/38132413/189542546-2f701100-2690-470f-b9cc-63fe6faa8181.png)  
 
 [GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.  
 
