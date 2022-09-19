@@ -49,13 +49,12 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
             uintptr_t curve_points_ptr = *(uintptr_t *)(hit_object_ptr + 0xC4);
             uintptr_t curve_points_list_ptr = *(uintptr_t *)(curve_points_ptr + 0x4);
             int32_t curve_points_count = *(int32_t *)(curve_points_ptr + 0xC);
-            float base_y = 0;
             for (int32_t j = 0; j < curve_points_count; ++j)
             {
                 uintptr_t curve_point = *(uintptr_t *)(curve_points_list_ptr + 0x8 + 0x4 * j);
                 Vector2 p1(*(float *)(curve_point + 0x8), *(float *)(curve_point + 0xC));
                 circle.curves.push_back(p1);
-                if (curve_points_count == 1)
+                if (j + 1 == curve_points_count)
                 {
                     Vector2 p2(*(float *)(curve_point + 0x10), *(float *)(curve_point + 0x14));
                     circle.curves.push_back(p2);
