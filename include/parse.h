@@ -8,6 +8,7 @@
 
 #include "utility.h"
 #include "vector.h"
+#include "window.h"
 
 enum class HitObjectType
 {
@@ -30,10 +31,13 @@ enum Mods
 
 struct Circle
 {
-    int32_t start_time;
-    int32_t end_time;
+    int32_t start_time = 0;
+    int32_t end_time = 0;
     Vector2<float> position;
     HitObjectType type;
+    std::vector<Vector2<float>> curves;
+    uint32_t curve_idx = 0;
+    bool clicked = false;
 };
 
 struct BeatmapData
@@ -44,7 +48,7 @@ struct BeatmapData
     Mods mods;
 
     void clear();
-    Circle current_circle();
+    Circle& current_circle();
 };
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);
