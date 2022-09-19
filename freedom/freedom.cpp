@@ -261,15 +261,23 @@ BOOL __stdcall freedom_update(HDC hDc)
             {
                 if (circle.type == HitObjectType::Slider)
                 {
-                    static int32_t prev_audio_time = audio_time;
-                    int32_t circle_time = circle.end_time - circle.start_time;
-                    if ((audio_time - prev_audio_time) >= (circle_time / circle.curves.size()))
+                    if (circle.curves.size() == 2)
                     {
-                        if (circle.curve_idx < circle.curves.size())
+                        direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[1], mouse_position);
+                        fraction_of_the_distance = fraction_modifier;
+                    }
+                    else
+                    {
+                        static int32_t prev_audio_time = audio_time;
+                        int32_t circle_time = circle.end_time - circle.start_time;
+                        if ((audio_time - prev_audio_time) >= (circle_time / circle.curves.size()))
                         {
-                            direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[circle.curve_idx++], mouse_position);
-                            fraction_of_the_distance = fraction_modifier;
-                            prev_audio_time = audio_time;
+                            if (circle.curve_idx < circle.curves.size())
+                            {
+                                direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[circle.curve_idx++], mouse_position);
+                                fraction_of_the_distance = fraction_modifier;
+                                prev_audio_time = audio_time;
+                            }
                         }
                     }
                 }
