@@ -255,9 +255,9 @@ BOOL __stdcall freedom_update(HDC hDc)
                 target_first_circle = false;
             }
         }
-        if (cfg_aimbot_lock)
+        if (audio_time >= circle.start_time)
         {
-            if (audio_time >= circle.start_time)
+            if (cfg_aimbot_lock)
             {
                 if (circle.type == HitObjectType::Slider)
                 {
@@ -282,9 +282,6 @@ BOOL __stdcall freedom_update(HDC hDc)
                     }
                 }
             }
-        }
-        if (audio_time >= circle.start_time)
-        {
             if (cfg_relax_lock && !circle.clicked)
             {
                 send_keyboard_input(left_click[0], 0);
@@ -310,7 +307,7 @@ BOOL __stdcall freedom_update(HDC hDc)
             }
             else if (cfg_aimbot_lock)
             {
-                Circle next_circle = current_beatmap.current_circle();
+                Circle& next_circle = current_beatmap.current_circle();
                 if (next_circle.type == HitObjectType::Circle)
                 {
                     direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
