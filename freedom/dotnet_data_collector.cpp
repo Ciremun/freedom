@@ -1,4 +1,4 @@
-#include "dotnet_data_collector.h"
+#include "dotnet/dotnet_data_collector.h"
 
 bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets)
 {

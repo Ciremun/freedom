@@ -1,4 +1,4 @@
-#include "iclr_debugging_library_provider.h"
+#include "dotnet/iclr_debugging_library_provider.h"
 
 STDMETHODIMP CMyICLRDebuggingLibraryProvider::QueryInterface(__in REFIID InterfaceId, __out PVOID *Interface)
 {

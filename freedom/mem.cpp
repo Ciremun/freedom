@@ -1,4 +1,4 @@
-#include "utility.h"
+#include "mem.h"
 
 uintptr_t GetModuleBaseAddress(const wchar_t* modName)
 {

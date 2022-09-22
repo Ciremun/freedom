@@ -1,4 +1,4 @@
-#include "utility.h"
+#include "mem.h"
 #include "vector.h"
 
 Vector2<float> window_size;

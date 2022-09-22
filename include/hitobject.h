@@ -4,7 +4,15 @@
 
 #include "parse.h"
 #include "window.h"
-#include "utility.h"
+#include "mem.h"
+#include "input.h"
+
+extern bool start_parse_beatmap;
+extern Scene current_scene;
+extern BeatmapData current_beatmap;
+extern float fraction_modifier;
+
+void process_hitobject();
 
 template <typename T>
 Vector2<T> prepare_hitcircle_target(uintptr_t osu_manager_ptr, const Vector2<float> &position, Vector2<T> &mouse_position)

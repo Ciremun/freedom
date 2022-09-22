@@ -1,5 +1,30 @@
 #include "input.h"
 
+char left_click[2] = { 'Z', '\0' };
+char right_click[2] = { 'X', '\0' };
+
+void init_input()
+{
+    if (binding_manager_ptr)
+    {
+        char sus_left_click = '\0';
+        if (internal_memory_read(g_process, binding_manager_ptr, &sus_left_click))
+        {
+            char sus_right_click = '\0';
+            if (internal_memory_read(g_process, binding_manager_ptr + 0x10, &sus_right_click))
+            {
+                if (('A' <= sus_left_click && sus_left_click <= 'Z') && ('A' <= sus_right_click && sus_right_click <= 'Z'))
+                {
+                    left_click[0] = sus_left_click;
+                    right_click[0] = sus_right_click;
+                }
+            }
+        }
+    }
+    FR_INFO_FMT("left_click: %c", left_click[0]);
+    FR_INFO_FMT("right_click: %c", right_click[0]);
+}
+
 void send_keyboard_input(char wVk, DWORD dwFlags)
 {
     INPUT inputs[1];

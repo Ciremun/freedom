@@ -2,7 +2,9 @@
 
 #include "stdafx.h"
 
-#include "psapi.h"
+#include <psapi.h>
+
+#include <stdint.h>
 
 #ifndef NDEBUG
 #define FR_ERROR(message) fprintf(stderr, "ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
@@ -45,4 +47,13 @@ uintptr_t internal_multi_level_pointer_dereference(HANDLE hProc, uintptr_t base,
         base += offsets[i];
     }
     return base;
+}
+
+template <size_t size>
+uintptr_t find_opcodes(const uint8_t (&signature)[size], uintptr_t code_start, int start_offset, int end_offset)
+{
+    for (uintptr_t start = code_start + start_offset; start - code_start <= end_offset; ++start)
+        if (memcmp((uint8_t *)start, signature, size) == 0)
+            return start - code_start;
+    return 0;
 }

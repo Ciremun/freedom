@@ -6,9 +6,19 @@
 
 #include <stdint.h>
 
-#include "utility.h"
+#include "mem.h"
 #include "vector.h"
 #include "window.h"
+
+enum class Scene
+{
+    MAIN_MENU = 0,
+    EDITOR,
+    GAMIN,
+    EXIT,
+    EDITOR_BEATMAP_SELECT,
+    BEATMAP_SELECT
+};
 
 enum class HitObjectType
 {

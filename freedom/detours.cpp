@@ -97,7 +97,7 @@ Hook OverallDifficultyHook2;
 Hook BeatmapOnLoadHook;
 Hook SceneChangeHook;
 
-void try_find_hook_offsets()
+static void try_find_hook_offsets()
 {
     code_start_for_class_methods(code_starts);
     parse_beatmap_metadata_code_start = code_starts[0].start;
@@ -193,6 +193,8 @@ void try_find_hook_offsets()
 
 void init_hooks()
 {
+    try_find_hook_offsets();
+
     if (ar_parameter.found)
     {
         ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, (BYTE *)&empty_gateway, 9);

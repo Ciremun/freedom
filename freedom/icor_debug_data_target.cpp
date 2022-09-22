@@ -1,4 +1,4 @@
-#include "icor_debug_data_target.h"
+#include "dotnet/icor_debug_data_target.h"
 
 STDMETHODIMP CMyIcorDebugDataTarget::QueryInterface(__in REFIID InterfaceId, __out PVOID *Interface)
 {
