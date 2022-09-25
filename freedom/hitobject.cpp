@@ -75,6 +75,17 @@ void process_hitobject()
                         }
                     }
                 }
+                if (circle.type == HitObjectType::Spinner)
+                {
+                    auto& center = circle.position;
+                    static const float radius = 150.0f;
+                    static const float PI = 3.14159f;
+                    static float angle = .0f;
+                    Vector2<float> next_point_on_circle(center.x + radius * cos(angle), center.y + radius * sin(angle));
+                    direction = prepare_hitcircle_target(osu_manager_ptr, next_point_on_circle, mouse_position);
+                    fraction_of_the_distance = 1.0f;
+                    angle > 2 * PI ? angle = 0 : angle += 0.1;
+                }
             }
             if (cfg_relax_lock && !circle.clicked)
             {
@@ -102,15 +113,15 @@ void process_hitobject()
             else if (cfg_aimbot_lock)
             {
                 Circle& next_circle = current_beatmap.current_circle();
-                if (next_circle.type == HitObjectType::Circle)
+                switch (next_circle.type)
                 {
-                    direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
-                    fraction_of_the_distance = fraction_modifier;
-                }
-                if (next_circle.type == HitObjectType::Slider)
-                {
-                    direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
-                    fraction_of_the_distance = fraction_modifier;
+                    case HitObjectType::Circle:
+                    case HitObjectType::Slider:
+                    case HitObjectType::Spinner:
+                    {
+                        direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
+                        fraction_of_the_distance = fraction_modifier;
+                    } break;
                 }
             }
         }

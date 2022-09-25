@@ -24,7 +24,7 @@
 
  - Singletap Relax (*no hit timing randomization!*)  
 
- - HitCircle Aimbot (*partial support for sliders, spinners are not implemented!*):
+ - HitCircle Aimbot (*partial support for sliders*):
     * Cursor Speed
 
 - Misc:
