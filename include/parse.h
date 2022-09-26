@@ -14,7 +14,7 @@ enum class Scene
 {
     MAIN_MENU = 0,
     EDITOR,
-    GAMIN,
+    GAME,
     EXIT,
     EDITOR_BEATMAP_SELECT,
     BEATMAP_SELECT

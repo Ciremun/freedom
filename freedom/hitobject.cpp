@@ -8,6 +8,11 @@ bool target_first_circle = true;
 
 float fraction_modifier = 0.04f;
 
+static inline bool is_playing(uintptr_t audio_time_ptr)
+{
+    return *(bool *)(audio_time_ptr + 0x30);
+}
+
 void process_hitobject()
 {
     if (start_parse_beatmap)
@@ -22,9 +27,8 @@ void process_hitobject()
     static float fraction_of_the_distance = 0.0f;
     static Vector2 direction(0.0f, 0.0f);
     static Vector2 mouse_position(0.0f, 0.0f);
-    if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAMIN && current_beatmap.ready)
+    if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAME && current_beatmap.ready && is_playing(audio_time_ptr))
     {
-        double current_time = ImGui::GetTime();
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle& circle = current_beatmap.current_circle();
         if (cfg_aimbot_lock)
