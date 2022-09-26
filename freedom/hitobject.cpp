@@ -81,7 +81,7 @@ void process_hitobject()
                     static const float radius = 60.0f;
                     static const float PI = 3.14159f;
                     static float angle = .0f;
-                    Vector2<float> next_point_on_circle(center.x + radius * cos(angle), center.y + radius * sin(angle));
+                    Vector2 next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
                     direction = prepare_hitcircle_target(osu_manager_ptr, next_point_on_circle, mouse_position);
                     fraction_of_the_distance = 1.0f;
                     angle > 2 * PI ? angle = 0 : angle += 30.0 * ImGui::GetIO().DeltaTime;
