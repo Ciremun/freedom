@@ -6,6 +6,7 @@
 #include "window.h"
 #include "mem.h"
 #include "input.h"
+#include "config.h"
 
 extern bool start_parse_beatmap;
 extern Scene current_scene;

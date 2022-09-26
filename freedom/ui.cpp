@@ -156,11 +156,12 @@ void update_ui()
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
             if (ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f"))
-            {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-            }
+            ImGui::Dummy(ImVec2(.0f, .5f));
+            if (ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 477, "Spins Per Minute: %d"))
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
-            ImGui::Text("HitCircles only!");
+            ImGui::Text("Partial support for sliders!");
         }
         if (selected_tab == MenuTab::Other)
         {

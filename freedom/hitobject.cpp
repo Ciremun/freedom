@@ -84,7 +84,7 @@ void process_hitobject()
                     Vector2 next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
                     direction = prepare_hitcircle_target(osu_manager_ptr, next_point_on_circle, mouse_position);
                     fraction_of_the_distance = 1.0f;
-                    angle > 2 * PI ? angle = 0 : angle += 30.0 * ImGui::GetIO().DeltaTime;
+                    angle > 2 * PI ? angle = 0 : angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime;
                 }
             }
             if (cfg_relax_lock && !circle.clicked)

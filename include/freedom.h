@@ -4,7 +4,7 @@
 
 #include "parse.h"
 
-#define FR_VERSION "v0.7"
+#define FR_VERSION "v0.8"
 
 extern uintptr_t osu_auth_base;
 

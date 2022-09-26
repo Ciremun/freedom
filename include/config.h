@@ -9,6 +9,7 @@
 #include "mem.h"
 
 extern int cfg_font_size;
+extern int cfg_spins_per_minute;
 extern bool cfg_mod_menu_visible;
 
 const char *get_imgui_ini_filename(HMODULE hMod);

@@ -1,6 +1,7 @@
 #include "config.h"
 
 int cfg_font_size = 30;
+int cfg_spins_per_minute = 300;
 bool cfg_mod_menu_visible = true;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
