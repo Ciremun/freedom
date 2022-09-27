@@ -59,6 +59,7 @@ Hook::Hook(const char *exportName, const char *modName, BYTE *dst,
 
 void Hook::Enable()
 {
+    assert(len <= 16);
     memcpy(originalBytes, src, len);
     *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
 }

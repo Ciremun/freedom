@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include <stdint.h>
+#include <assert.h>
 
 bool detour_32(BYTE *src, BYTE *dst, const uintptr_t len);
 BYTE *trampoline_32(BYTE *src, BYTE *dst, const uintptr_t len);
@@ -16,7 +17,7 @@ struct Hook
     BYTE *PtrToGatewayFnPtr = nullptr;
     uintptr_t len = 0;
 
-    BYTE originalBytes[10] = {0};
+    BYTE originalBytes[16] = {0};
 
     Hook();
     Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayPtr, uintptr_t len);
