@@ -110,9 +110,18 @@ void update_ui()
             }
         };
 
+        const auto inactive_tab = [](const char *tab_name)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+            ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
+            ImGui::PopStyleColor();
+        };
+
         update_tab("Difficulty", MenuTab::Difficulty);
-        update_tab("Relax", MenuTab::Relax);
-        update_tab("Aimbot", MenuTab::Aimbot);
+
+        beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
+        beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
+
         update_tab("Other", MenuTab::Other);
         update_tab("About", MenuTab::About);
 

@@ -39,6 +39,7 @@ extern uintptr_t selected_song_ptr;
 extern uintptr_t audio_time_ptr;
 extern uintptr_t osu_manager_ptr;
 extern uintptr_t binding_manager_ptr;
+extern uintptr_t beatmap_onload_offset;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 
