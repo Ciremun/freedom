@@ -155,10 +155,12 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            if (ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f"))
+            ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f");
+            if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));
-            if (ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 477, "Spins Per Minute: %d"))
+            ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 477, "Spins Per Minute: %d");
+            if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
             ImGui::Text("Partial support for sliders!");
@@ -167,9 +169,8 @@ void update_ui()
         {
             ImGui::Text("Other Settings");
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGuiContext &g = *ImGui::GetCurrentContext();
             static char preview_font_size[16] = {0};
-            stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)g.Font->ConfigData->SizePixels);
+            stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);
             if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
             {
                 const ImGuiIO& io = ImGui::GetIO();
