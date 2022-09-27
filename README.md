@@ -24,8 +24,9 @@
 
  - Singletap Relax (*no hit timing randomization!*)  
 
- - HitCircle Aimbot (*partial support for sliders*):
+ - Aimbot (*reverse sliders are not implemented!*):
     * Cursor Speed
+    * Spins Per Minute
 
 - Misc:
     * Mod Menu Font Size
