@@ -28,7 +28,7 @@ void process_hitobject()
     if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAME && current_beatmap.ready && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
-        Circle& circle = current_beatmap.current_circle();
+        Circle* circle = current_beatmap.current_circle();
         if (cfg_aimbot_lock)
         {
             if (fraction_of_the_distance)
@@ -46,40 +46,41 @@ void process_hitobject()
             }
             if (target_first_circle)
             {
-                direction = prepare_hitcircle_target(osu_manager_ptr, circle.position, mouse_position);
+                direction = prepare_hitcircle_target(osu_manager_ptr, circle->position, mouse_position);
                 fraction_of_the_distance = cfg_fraction_modifier;
                 target_first_circle = false;
             }
         }
-        if (audio_time >= circle.start_time)
+        if (audio_time >= circle->start_time)
         {
             if (cfg_aimbot_lock)
             {
-                if (circle.type == HitObjectType::Slider)
+                if (circle->type == HitObjectType::Slider)
                 {
-                    if (circle.curves.size() == 2)
+                    Slider *slider = (Slider *)circle;
+                    if (slider->curves.size() == 2)
                     {
-                        direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[1], mouse_position);
+                        direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[1], mouse_position);
                         fraction_of_the_distance = cfg_fraction_modifier;
                     }
                     else
                     {
                         static int32_t prev_audio_time = audio_time;
-                        int32_t circle_time = circle.end_time - circle.start_time;
-                        if ((audio_time - prev_audio_time) >= (circle_time / circle.curves.size()))
+                        int32_t circle_time = slider->end_time - slider->start_time;
+                        if ((audio_time - prev_audio_time) >= (circle_time / slider->curves.size()))
                         {
-                            if (circle.curve_idx < circle.curves.size())
+                            if (slider->curve_idx < slider->curves.size())
                             {
-                                direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[circle.curve_idx++], mouse_position);
+                                direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[slider->curve_idx++], mouse_position);
                                 fraction_of_the_distance = cfg_fraction_modifier;
                                 prev_audio_time = audio_time;
                             }
                         }
                     }
                 }
-                if (circle.type == HitObjectType::Spinner)
+                if (circle->type == HitObjectType::Spinner)
                 {
-                    auto& center = circle.position;
+                    auto& center = circle->position;
                     static const float radius = 60.0f;
                     static const float PI = 3.14159f;
                     static float angle = .0f;
@@ -89,12 +90,12 @@ void process_hitobject()
                     angle > 2 * PI ? angle = 0 : angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime;
                 }
             }
-            if (cfg_relax_lock && !circle.clicked)
+            if (cfg_relax_lock && !circle->clicked)
             {
                 send_keyboard_input(left_click[0], 0);
-                FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
-                if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle->start_time, circle->end_time);
+                keyup_delay = circle->end_time ? circle->end_time - circle->start_time : 0.5;
+                if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
                 {
                     if (current_beatmap.mods & Mods::DoubleTime)
                         keyup_delay /= 1.5;
@@ -102,10 +103,10 @@ void process_hitobject()
                         keyup_delay /= 0.75;
                 }
                 keydown_time = ImGui::GetTime();
-                circle.clicked = true;
+                circle->clicked = true;
             }
         }
-        if (audio_time >= circle.end_time)
+        if (audio_time >= circle->end_time)
         {
             current_beatmap.hit_object_idx++;
             if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
@@ -114,14 +115,14 @@ void process_hitobject()
             }
             else if (cfg_aimbot_lock)
             {
-                Circle& next_circle = current_beatmap.current_circle();
-                switch (next_circle.type)
+                Circle* next_circle = current_beatmap.current_circle();
+                switch (next_circle->type)
                 {
                     case HitObjectType::Circle:
                     case HitObjectType::Slider:
                     case HitObjectType::Spinner:
                     {
-                        direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
+                        direction = prepare_hitcircle_target(osu_manager_ptr, next_circle->position, mouse_position);
                         fraction_of_the_distance = cfg_fraction_modifier;
                     } break;
                 }

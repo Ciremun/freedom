@@ -10,7 +10,7 @@
 #include "vector.h"
 #include "window.h"
 
-enum class Scene
+enum class Scene : int32_t
 {
     MAIN_MENU = 0,
     EDITOR,
@@ -20,7 +20,7 @@ enum class Scene
     BEATMAP_SELECT
 };
 
-enum class HitObjectType
+enum class HitObjectType : int32_t
 {
     Circle = 1 << 0,
     Slider = 1 << 1,
@@ -33,7 +33,7 @@ enum class HitObjectType
 inline HitObjectType& operator&= (HitObjectType& a, HitObjectType b) { return reinterpret_cast<HitObjectType&>( reinterpret_cast<int32_t&>(a) &= static_cast<int32_t>(b) ); }
 inline HitObjectType operator~ (HitObjectType a) { return static_cast<HitObjectType>( ~static_cast<int32_t>(a) ); }
 
-enum Mods
+enum Mods : int32_t
 {
     DoubleTime = 1 << 6,
     HalfTime = 1 << 8
@@ -43,22 +43,26 @@ struct Circle
 {
     int32_t start_time = 0;
     int32_t end_time = 0;
-    Vector2<float> position;
+    bool clicked = false;
     HitObjectType type;
+    Vector2<float> position;
+};
+
+struct Slider : Circle
+{
     std::vector<Vector2<float>> curves;
     uint32_t curve_idx = 0;
-    bool clicked = false;
 };
 
 struct BeatmapData
 {
-    std::vector<Circle> hit_objects;
+    std::vector<Circle *> hit_objects;
     uint32_t hit_object_idx = 0;
     bool ready = false;
     Mods mods;
 
     void clear();
-    Circle& current_circle();
+    Circle* current_circle();
 };
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);
