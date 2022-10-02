@@ -11,7 +11,6 @@
 extern bool start_parse_beatmap;
 extern Scene current_scene;
 extern BeatmapData current_beatmap;
-extern float fraction_modifier;
 
 void process_hitobject();
 

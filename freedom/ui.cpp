@@ -164,7 +164,7 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::SliderFloat("##fraction_modifier", &fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f");
+            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));

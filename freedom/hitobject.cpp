@@ -6,8 +6,6 @@ Scene current_scene = Scene::MAIN_MENU;
 bool start_parse_beatmap = false;
 bool target_first_circle = true;
 
-float fraction_modifier = 0.04f;
-
 static inline bool is_playing(uintptr_t audio_time_ptr)
 {
     return *(bool *)(audio_time_ptr + 0x30);
@@ -43,13 +41,13 @@ void process_hitobject()
                 {
                     Vector2 next_mouse_position = mouse_position + direction * fraction_of_the_distance;
                     move_mouse_to(next_mouse_position.x, next_mouse_position.y);
-                    fraction_of_the_distance += fraction_modifier;
+                    fraction_of_the_distance += cfg_fraction_modifier;
                 }
             }
             if (target_first_circle)
             {
                 direction = prepare_hitcircle_target(osu_manager_ptr, circle.position, mouse_position);
-                fraction_of_the_distance = fraction_modifier;
+                fraction_of_the_distance = cfg_fraction_modifier;
                 target_first_circle = false;
             }
         }
@@ -62,7 +60,7 @@ void process_hitobject()
                     if (circle.curves.size() == 2)
                     {
                         direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[1], mouse_position);
-                        fraction_of_the_distance = fraction_modifier;
+                        fraction_of_the_distance = cfg_fraction_modifier;
                     }
                     else
                     {
@@ -73,7 +71,7 @@ void process_hitobject()
                             if (circle.curve_idx < circle.curves.size())
                             {
                                 direction = prepare_hitcircle_target(osu_manager_ptr, circle.curves[circle.curve_idx++], mouse_position);
-                                fraction_of_the_distance = fraction_modifier;
+                                fraction_of_the_distance = cfg_fraction_modifier;
                                 prev_audio_time = audio_time;
                             }
                         }
@@ -124,7 +122,7 @@ void process_hitobject()
                     case HitObjectType::Spinner:
                     {
                         direction = prepare_hitcircle_target(osu_manager_ptr, next_circle.position, mouse_position);
-                        fraction_of_the_distance = fraction_modifier;
+                        fraction_of_the_distance = cfg_fraction_modifier;
                     } break;
                 }
             }

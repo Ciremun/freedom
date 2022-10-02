@@ -3,6 +3,7 @@
 int cfg_font_size = 30;
 int cfg_spins_per_minute = 300;
 bool cfg_mod_menu_visible = true;
+float cfg_fraction_modifier = 0.04f;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
@@ -48,13 +49,15 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("font_size=%d\n", cfg_font_size);
     buf->appendf("relax=%d\n", cfg_relax_lock);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
+    buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
+    buf->appendf("fraction_modifier=%.3f\n", cfg_fraction_modifier);
     buf->append("\n");
 }
 
 static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
-    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i, relax_lock_i, aimbot_lock_i;
-    float ar_value_f, cs_value_f, od_value_f;
+    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i, relax_lock_i, aimbot_lock_i, spins_per_minute_i;
+    float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f;
     if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)
         ar_parameter.lock = ar_lock_i;
     else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)
@@ -75,6 +78,10 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
         cfg_relax_lock = relax_lock_i;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)
         cfg_aimbot_lock = aimbot_lock_i;
+    else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)
+        cfg_spins_per_minute = spins_per_minute_i;
+    else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1)
+        cfg_fraction_modifier = fraction_modifier_f;
 }
 
 void set_imgui_ini_handler()
