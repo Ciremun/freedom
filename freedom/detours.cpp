@@ -48,7 +48,6 @@ std::vector<CodeStartTarget> code_starts = {
 };
 
 twglSwapBuffers wglSwapBuffersGateway;
-void_trampoline empty_gateway;
 
 uintptr_t parse_beatmap_metadata_code_start = 0;
 
@@ -82,20 +81,20 @@ uintptr_t osu_manager_ptr = 0;
 uintptr_t binding_manager_code_start = 0;
 uintptr_t binding_manager_ptr = 0;
 
-Hook SwapBuffersHook;
+Hook<Trampoline32> SwapBuffersHook;
 
-Hook ApproachRateHook1;
-Hook ApproachRateHook2;
+Hook<Detour32> ApproachRateHook1;
+Hook<Detour32> ApproachRateHook2;
 
-Hook CircleSizeHook1;
-Hook CircleSizeHook2;
-Hook CircleSizeHook3;
+Hook<Detour32> CircleSizeHook1;
+Hook<Detour32> CircleSizeHook2;
+Hook<Detour32> CircleSizeHook3;
 
-Hook OverallDifficultyHook1;
-Hook OverallDifficultyHook2;
+Hook<Detour32> OverallDifficultyHook1;
+Hook<Detour32> OverallDifficultyHook2;
 
-Hook BeatmapOnLoadHook;
-Hook SceneChangeHook;
+Hook<Detour32> BeatmapOnLoadHook;
+Hook<Detour32> SceneChangeHook;
 
 static void try_find_hook_offsets()
 {
@@ -197,8 +196,8 @@ void init_hooks()
 
     if (ar_parameter.found)
     {
-        ApproachRateHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, (BYTE *)&empty_gateway, 9);
-        ApproachRateHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, (BYTE *)&empty_gateway, 9);
+        ApproachRateHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
+        ApproachRateHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
         if (ar_parameter.lock)
             enable_ar_hooks();
     }
@@ -207,9 +206,9 @@ void init_hooks()
 
     if (cs_parameter.found)
     {
-        CircleSizeHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
-        CircleSizeHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
-        CircleSizeHook3 = Hook((BYTE *)parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, (BYTE *)&empty_gateway, 9);
+        CircleSizeHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, 9);
+        CircleSizeHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, 9);
+        CircleSizeHook3 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, 9);
         if (cs_parameter.lock)
             enable_cs_hooks();
     }
@@ -218,8 +217,8 @@ void init_hooks()
 
     if (od_parameter.found)
     {
-        OverallDifficultyHook1 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
-        OverallDifficultyHook2 = Hook((BYTE *)parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, (BYTE *)&empty_gateway, 9);
+        OverallDifficultyHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, 9);
+        OverallDifficultyHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, 9);
         if (od_parameter.lock)
             enable_od_hooks();
     }
@@ -228,14 +227,14 @@ void init_hooks()
 
     if (beatmap_onload_offset)
     {
-        BeatmapOnLoadHook = Hook((BYTE *)beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, (BYTE *)&empty_gateway, 6);
+        BeatmapOnLoadHook = Hook<Detour32>(beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, 6);
         if (cfg_relax_lock || cfg_aimbot_lock)
             BeatmapOnLoadHook.Enable();
     }
 
     if (current_scene_offset)
     {
-        SceneChangeHook = Hook((BYTE *)current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, (BYTE *)&empty_gateway, 5);
+        SceneChangeHook = Hook<Detour32>(current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, 5);
         if (cfg_relax_lock || cfg_aimbot_lock)
             SceneChangeHook.Enable();
     }

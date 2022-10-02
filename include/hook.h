@@ -10,19 +10,46 @@
 bool detour_32(BYTE *src, BYTE *dst, const uintptr_t len);
 BYTE *trampoline_32(BYTE *src, BYTE *dst, const uintptr_t len);
 
+struct Detour32 {};
+struct Trampoline32 {};
+
+template <typename T>
 struct Hook
 {
-    BYTE *src = nullptr;
-    BYTE *dst = nullptr;
-    BYTE *PtrToGatewayFnPtr = nullptr;
+    BYTE *src = 0;
+    BYTE *dst = 0;
+    BYTE *PtrToGatewayFnPtr = 0;
     uintptr_t len = 0;
-
     BYTE originalBytes[16] = {0};
 
-    Hook();
-    Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayPtr, uintptr_t len);
-    Hook(const char *exportName, const char *modName, BYTE *dst, BYTE *PtrToGatewayPtr, uintptr_t len);
-
+    Hook() {}
+    Hook(uintptr_t src, BYTE *dst, uintptr_t len) : src((BYTE *)src), dst(dst), len(len) {}
+    Hook(BYTE *src, BYTE *dst, uintptr_t len) : src(src), dst(dst), len(len) {}
+    Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len) : src(src), dst(dst), len(len), PtrToGatewayFnPtr(PtrToGatewayFnPtr) {}
+    Hook(const char *exportName, const char *modName, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len) : dst(dst), len(len), PtrToGatewayFnPtr(PtrToGatewayFnPtr)
+    {
+        HMODULE hMod = GetModuleHandleA(modName);
+        this->src = (BYTE *)GetProcAddress(hMod, exportName);
+    }
     void Enable();
-    void Disable();
+    void Disable()
+    {
+        internal_memory_patch(src, originalBytes, len);
+    }
 };
+
+template <>
+inline void Hook<Trampoline32>::Enable()
+{
+    assert(len <= 16);
+    memcpy(originalBytes, src, len);
+    *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
+}
+
+template <>
+inline void Hook<Detour32>::Enable()
+{
+    assert(len <= 16);
+    memcpy(originalBytes, src, len);
+    detour_32(src, dst, len);
+}

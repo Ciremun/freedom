@@ -36,35 +36,3 @@ BYTE *trampoline_32(BYTE *src, BYTE *dst, const uintptr_t len)
 
     return gateway;
 }
-
-Hook::Hook() {}
-
-Hook::Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len)
-{
-    this->src = src;
-    this->dst = dst;
-    this->len = len;
-    this->PtrToGatewayFnPtr = PtrToGatewayFnPtr;
-}
-
-Hook::Hook(const char *exportName, const char *modName, BYTE *dst,
-           BYTE *PtrToGatewayFnPtr, uintptr_t len)
-{
-    HMODULE hMod = GetModuleHandleA(modName);
-    this->src = (BYTE *)GetProcAddress(hMod, exportName);
-    this->dst = dst;
-    this->len = len;
-    this->PtrToGatewayFnPtr = PtrToGatewayFnPtr;
-}
-
-void Hook::Enable()
-{
-    assert(len <= 16);
-    memcpy(originalBytes, src, len);
-    *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
-}
-
-void Hook::Disable()
-{
-    internal_memory_patch(src, originalBytes, len);
-}

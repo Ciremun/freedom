@@ -91,7 +91,7 @@ DWORD WINAPI freedom_main(HMODULE hModule)
 {
     g_module = hModule;
 
-    SwapBuffersHook = Hook("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
+    SwapBuffersHook = Hook<Trampoline32>("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.Enable();
 
     return 0;

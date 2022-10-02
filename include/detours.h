@@ -14,7 +14,6 @@
 #include "imgui.h"
 
 typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
-typedef void(__stdcall *void_trampoline)();
 
 struct Parameter
 {
@@ -43,7 +42,7 @@ extern uintptr_t beatmap_onload_offset;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 
-extern Hook SwapBuffersHook;
+extern Hook<Trampoline32> SwapBuffersHook;
 
 void init_hooks();
 
