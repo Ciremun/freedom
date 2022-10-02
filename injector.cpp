@@ -32,12 +32,7 @@ DWORD get_process_id(const wchar_t *process_name)
 
 int wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
-    wchar_t *process_name;
-    if (argc > 1)
-        process_name = argv[1];
-    else
-        process_name = L"osu!.exe";
-
+    wchar_t *process_name = argc > 1 ? argv[1] : L"osu!.exe";
     DWORD process_id = get_process_id(process_name);
     if (process_id == 0)
     {
@@ -45,8 +40,9 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         return 1;
     }
 
+    wchar_t *dll_name = argc > 2 ? argv[2] : L"freedom.dll";
     static wchar_t module_path[MAX_PATH * 2];
-    DWORD module_path_length = GetFullPathNameW(L"freedom.dll", MAX_PATH * 2, module_path, NULL);
+    DWORD module_path_length = GetFullPathNameW(dll_name, MAX_PATH * 2, module_path, NULL);
     if (module_path_length == 0)
     {
         fprintf(stderr, "GetFullPathNameA failed: %ld\n", GetLastError());
