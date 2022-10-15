@@ -61,13 +61,86 @@ void process_hitobject()
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         if (audio_time >= current_replay.replay_ms)
         {
+            static bool left = false;
+            static bool right = false;
             if (current_replay.entries_idx < current_replay.entries.size())
             {
                 ReplayEntryData &entry = current_replay.current_entry();
                 Vector2<float> screen = playfield_to_screen(entry.position);
                 move_mouse_to(screen.x, screen.y);
+
+                // fixme refactor
+                if (entry.keypresses != 0)
+                {
+                    if (entry.keypresses == 15)
+                    {
+                        if (!left)
+                        {
+                            send_keyboard_input(left_click[0], 0);
+                            left = true;
+                        }
+                        if (!right)
+                        {
+                            send_keyboard_input(right_click[0], 0);
+                            right = true;
+                        }
+                    }
+                    if (entry.keypresses == 10)
+                    {
+                        if (left)
+                        {
+                            send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+                            left = false;
+                        }
+                        if (!right)
+                        {
+                            send_keyboard_input(right_click[0], 0);
+                            right = true;
+                        }
+                    }
+                    if (entry.keypresses == 5)
+                    {
+                        if (!left)
+                        {
+                            send_keyboard_input(left_click[0], 0);
+                            left = true;
+                        }
+                        if (right)
+                        {
+                            send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+                            right = false;
+                        }
+                    }
+                }
+                else
+                {
+                    if (left)
+                    {
+                        send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+                        left = false;
+                    }
+                    if (right)
+                    {
+                        send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+                        right = false;
+                    }
+                }
+
                 current_replay.replay_ms += entry.ms_since_last_frame;
                 current_replay.entries_idx++;
+            }
+            else
+            {
+                if (left)
+                {
+                    send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+                    left = false;
+                }
+                if (right)
+                {
+                    send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+                    right = false;
+                }
             }
         }
     }
