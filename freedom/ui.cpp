@@ -142,13 +142,12 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Relax)
         {
-            ImGui::Text("Enable");
-            ImGui::SameLine();
-            if (ImGui::Checkbox("##relax_checkbox", &cfg_relax_lock))
+            if (ImGui::Checkbox("Enable", &cfg_relax_lock))
             {
                 cfg_relax_lock ? enable_notify_hooks() : disable_notify_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::PushItemWidth(24.0f);
             ImGui::InputText("Left Click",  left_click,  2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::InputText("Right Click", right_click, 2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
@@ -158,9 +157,7 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Aimbot)
         {
-            ImGui::Text("Enable");
-            ImGui::SameLine();
-            if (ImGui::Checkbox("##aimbot_checkbox", &cfg_aimbot_lock))
+            if (ImGui::Checkbox("Enable", &cfg_aimbot_lock))
             {
                 cfg_aimbot_lock ? enable_notify_hooks() : disable_notify_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
@@ -178,11 +175,45 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Replay)
         {
-            static char replay_path[MAX_PATH * 2] = {0};
-            if (ImGui::InputText("Replay Path", replay_path, MAX_PATH * 2, ImGuiInputTextFlags_EnterReturnsTrue))
+            static bool replay_enabled = false;
+            static bool replay_hardrock = false;
+            static bool replay_use_aim = false;
+            static bool replay_use_keys = false;
+            ImGui::Text("%s", song_name_u8);
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Selected Replay");
+            ImGui::Text("%s - %.2f%% - %s", "Ciremun", 100.0f, "SONFHDDTFL");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Player, Accuracy, Mods");
+            ImGui::Dummy(ImVec2(.0f, 2.f));
+            if (ImGui::Checkbox("Enable", &replay_enabled))
+                FR_INFO("replay_enabled is not implemented");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Usage: Preview Replay in-game to Select a Replay");
+            ImGui::SameLine(210.0f);
+            if (!replay_enabled)
             {
-                FR_INFO("input replay path");
-                
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+            }
+            if (ImGui::Checkbox("Hardrock", &replay_hardrock))
+                FR_INFO("replay_hardrock is not implemented");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Convert Replay to/from Hardrock");
+            ImGui::Dummy(ImVec2(.0f, 2.f));
+            if (ImGui::Checkbox("Replay Aim", &replay_use_aim))
+                FR_INFO("replay_use_aim is not implemented");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Aim According to Replay Data");
+            ImGui::SameLine(210.0f);
+            if (ImGui::Checkbox("Replay Keys", &replay_use_keys))
+                FR_INFO("replay_use_keys is not implemented");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Press Keys According to Replay Data");
+            if (!replay_enabled)
+            {
+                ImGui::PopStyleColor();
+                ImGui::PopItemFlag();
             }
         }
         if (selected_tab == MenuTab::Other)

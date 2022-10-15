@@ -31,8 +31,10 @@ void process_hitobject()
         selected_replay_ptr += 0x30;
         uintptr_t selected_replay = *(uintptr_t *)selected_replay_ptr;
         size_t compressed_data_size = *(uint32_t *)(selected_replay + 0x4);
+        FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
         uint8_t *compressed_data = (uint8_t *)(selected_replay + 0x8);
         size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
+        FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
         static std::vector<uint8_t> replay_data;
         replay_data.reserve(replay_data_size);
         lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
