@@ -28,35 +28,23 @@ void process_hitobject()
     if (start_parse_replay)
     {
         current_replay.clear();
-        FR_PTR_INFO("selected_replay_ptr", selected_replay_ptr);
         selected_replay_ptr += 0x30;
-        FR_PTR_INFO("selected_replay_ptr 2", selected_replay_ptr);
         uintptr_t selected_replay = *(uintptr_t *)selected_replay_ptr;
-        FR_PTR_INFO("selected_replay", selected_replay);
         size_t compressed_data_size = *(uint32_t *)(selected_replay + 0x4);
-        FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
         uint8_t *compressed_data = (uint8_t *)(selected_replay + 0x8);
-        FR_PTR_INFO("compressed_data", (uintptr_t)compressed_data);
         size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
-        FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
         static std::vector<uint8_t> replay_data;
         replay_data.reserve(replay_data_size);
         lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
-        FR_INFO_FMT("replay_data: %s", &replay_data[0]);
         const char *replay_data_ptr = (const char *)&replay_data[0];
         size_t next_comma_position = 0;
         ReplayEntryData entry;
         while (entry.ms_since_last_frame != -12345)
         {
             if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
-            {
-                if (entry.ms_since_last_frame > 0)
-                    current_replay.entries.push_back(entry); // fixme - reserve
-            }
+                current_replay.entries.push_back(entry); // fixme - reserve
             else
-            {
                 break;
-            }
             while (next_comma_position < replay_data_size)
                 if (replay_data[++next_comma_position] == ',')
                     break;
@@ -68,33 +56,19 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    static int v = 7606;
-    ImGui::InputInt("debug", &v);
-
     if (current_scene == Scene::GAME && is_playing(audio_time_ptr))
     {
-        // FR_INFO_FMT("replay_bot_ms: %zu, replay_ms: %zu", current_replay.replay_bot_ms, current_replay.replay_ms);
-        // float c = 1.f;
-        // float bot_ms_since_last_frame = ImGui::GetIO().DeltaTime * 1000.0f;
-        // float ms_since_last_frame = (float)(current_replay.current_entry().ms_since_last_frame);
-        // if (bot_ms_since_last_frame > ms_since_last_frame)
-        //     c = bot_ms_since_last_frame / ms_since_last_frame;
-        // else
-        //     c = ms_since_last_frame / bot_ms_since_last_frame;
-        // FR_INFO_FMT("(current_replay.current_entry().ms_since_last_frame): %f", ms_since_last_frame);
-        // FR_INFO_FMT("bot_ms_since_last_frame: %f", bot_ms_since_last_frame);
-        // FR_INFO_FMT("c: %f", c);
-        // current_replay.replay_bot_ms += bot_ms_since_last_frame;
         int32_t audio_time = *(int32_t *)audio_time_ptr;
-        FR_INFO_FMT("audio_time: %d", audio_time);
-        if (audio_time + v >= current_replay.replay_ms && current_replay.entries_idx < current_replay.entries.size())
+        if (audio_time >= current_replay.replay_ms)
         {
-            ReplayEntryData &entry = current_replay.current_entry();
-            FR_INFO_FMT("move mouse to: %f,%f", entry.position.x, entry.position.y);
-            Vector2<float> screen = playfield_to_screen(entry.position);
-            move_mouse_to(screen.x, screen.y);
-            current_replay.replay_ms += entry.ms_since_last_frame;
-            current_replay.entries_idx++;
+            if (current_replay.entries_idx < current_replay.entries.size())
+            {
+                ReplayEntryData &entry = current_replay.current_entry();
+                Vector2<float> screen = playfield_to_screen(entry.position);
+                move_mouse_to(screen.x, screen.y);
+                current_replay.replay_ms += entry.ms_since_last_frame;
+                current_replay.entries_idx++;
+            }
         }
     }
 

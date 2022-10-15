@@ -260,6 +260,8 @@ void init_hooks()
         SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
         // fixme
         SelectedReplayHook.Enable();
+        BeatmapOnLoadHook.Enable();
+        SceneChangeHook.Enable();
     }
 }
 
