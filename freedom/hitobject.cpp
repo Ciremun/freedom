@@ -42,7 +42,10 @@ void process_hitobject()
         while (entry.ms_since_last_frame != -12345)
         {
             if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
+            {
+                entry.position = playfield_to_screen(entry.position);
                 current_replay.entries.push_back(entry); // fixme - reserve
+            }
             else
                 break;
             while (next_comma_position < replay_data_size)
@@ -59,15 +62,14 @@ void process_hitobject()
     if (current_scene == Scene::GAME && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
-        if (audio_time >= current_replay.replay_ms)
+        ReplayEntryData &entry = current_replay.current_entry();
+        if (audio_time >= current_replay.replay_ms + entry.ms_since_last_frame)
         {
             static bool left = false;
             static bool right = false;
             if (current_replay.entries_idx < current_replay.entries.size())
             {
-                ReplayEntryData &entry = current_replay.current_entry();
-                Vector2<float> screen = playfield_to_screen(entry.position);
-                move_mouse_to(screen.x, screen.y);
+                move_mouse_to(entry.position.x, entry.position.y);
 
                 // fixme refactor
                 if (entry.keypresses != 0)
