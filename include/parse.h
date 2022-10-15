@@ -17,7 +17,9 @@ enum class Scene : int32_t
     GAME,
     EXIT,
     EDITOR_BEATMAP_SELECT,
-    BEATMAP_SELECT
+    BEATMAP_SELECT,
+    BEATMAP_SELECT_DRAWINGS,
+    REPLAY_PREVIEW,
 };
 
 enum class HitObjectType : int32_t
@@ -63,6 +65,24 @@ struct BeatmapData
 
     void clear();
     Circle* current_circle();
+};
+
+struct ReplayEntryData
+{
+    int64_t ms_since_last_frame = 0;
+    Vector2<float> position;
+    uint32_t keypresses = 0;
+};
+
+struct ReplayData
+{
+    std::vector<ReplayEntryData> entries;
+    size_t entries_idx = 0;
+    int64_t replay_ms = 0;
+    int64_t replay_bot_ms = 0;
+
+    void clear();
+    ReplayEntryData& current_entry();
 };
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);

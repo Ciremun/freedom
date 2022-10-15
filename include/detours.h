@@ -38,6 +38,7 @@ extern uintptr_t selected_song_ptr;
 extern uintptr_t audio_time_ptr;
 extern uintptr_t osu_manager_ptr;
 extern uintptr_t binding_manager_ptr;
+extern uintptr_t selected_replay_ptr;
 extern uintptr_t beatmap_onload_offset;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
@@ -64,3 +65,4 @@ void set_overall_difficulty();
 
 void notify_on_beatmap_load();
 void notify_on_scene_change();
+void notify_on_select_replay();

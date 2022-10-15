@@ -122,6 +122,8 @@ void update_ui()
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
 
+        update_tab("Replay", MenuTab::Replay);
+
         update_tab("Other", MenuTab::Other);
         update_tab("About", MenuTab::About);
 
@@ -173,6 +175,15 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
             ImGui::Text("Partial support for sliders!");
+        }
+        if (selected_tab == MenuTab::Replay)
+        {
+            static char replay_path[MAX_PATH * 2] = {0};
+            if (ImGui::InputText("Replay Path", replay_path, MAX_PATH * 2, ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                FR_INFO("input replay path");
+                
+            }
         }
         if (selected_tab == MenuTab::Other)
         {

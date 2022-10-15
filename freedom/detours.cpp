@@ -38,12 +38,13 @@ bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
     // class, method
-    {L"#=zpAE7r_ox_yxpe6hOI9hzbch4LGFeuoGOBBqK4YlL9FRQ", L"#=z9UyRnsg="}, // parse_beatmap
-    {L"#=zkSWagGKhFAn55id$mbXyWWRyx_3V", L"#=zZsW95$nuMw13"},             // beatmap_onload
-    {L"#=zS7fz_WbW2RQ8Uam1QQ==", L"#=zieKq3gRDzrjv"},                     // current scene
-    {L"#=zN9CK0bfelyag9OGc8g==", L"#=zEJU4$GhkhAyo"},                     // selected song, audio time
-    {L"#=zEWt8IoZxKZrRkh57Rw==", L"#=zV9hJNIx3EvVHXL6Jikrzgec="},         // osu manager
-    {L"#=zzmUzyBlAKy20XO7d5Q==", L"#=zOdS7jPE="},                         // binding manager
+    {L"#=zpAE7r_ox_yxpe6hOI9hzbch4LGFeuoGOBBqK4YlL9FRQ", L"#=z9UyRnsg="},         // parse_beatmap
+    {L"#=zkSWagGKhFAn55id$mbXyWWRyx_3V", L"#=zZsW95$nuMw13"},                     // beatmap_onload
+    {L"#=zS7fz_WbW2RQ8Uam1QQ==", L"#=zieKq3gRDzrjv"},                             // current scene
+    {L"#=zN9CK0bfelyag9OGc8g==", L"#=zEJU4$GhkhAyo"},                             // selected song, audio time
+    {L"#=zEWt8IoZxKZrRkh57Rw==", L"#=zV9hJNIx3EvVHXL6Jikrzgec="},                 // osu manager
+    {L"#=zzmUzyBlAKy20XO7d5Q==", L"#=zOdS7jPE="},                                 // binding manager
+    {L"#=zLeUxSLKOhtnoyDCet1AKxC1Pft5nd98oNyBudgo=", L"#=zBBJnU8bwZFe1luZf4A=="}, // replay selected
 
 };
 
@@ -81,6 +82,11 @@ uintptr_t osu_manager_ptr = 0;
 uintptr_t binding_manager_code_start = 0;
 uintptr_t binding_manager_ptr = 0;
 
+uintptr_t selected_replay_code_start = 0;
+uintptr_t selected_replay_offset = 0;
+uintptr_t selected_replay_hook_jump_back = 0;
+uintptr_t selected_replay_ptr = 0;
+
 Hook<Trampoline32> SwapBuffersHook;
 
 Hook<Detour32> ApproachRateHook1;
@@ -96,6 +102,8 @@ Hook<Detour32> OverallDifficultyHook2;
 Hook<Detour32> BeatmapOnLoadHook;
 Hook<Detour32> SceneChangeHook;
 
+Hook<Detour32> SelectedReplayHook;
+
 static void try_find_hook_offsets()
 {
     code_start_for_class_methods(code_starts);
@@ -106,6 +114,7 @@ static void try_find_hook_offsets()
     audio_time_code_start = code_starts[3].start;
     osu_manager_code_start = code_starts[4].start;
     binding_manager_code_start = code_starts[5].start;
+    selected_replay_code_start = code_starts[6].start;
     FR_PTR_INFO("parse_beatmap_metadata_code_start", parse_beatmap_metadata_code_start);
     if (parse_beatmap_metadata_code_start)
     {
@@ -188,6 +197,13 @@ static void try_find_hook_offsets()
         binding_manager_ptr = unknown_2 + 0x14;
         FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
+    FR_PTR_INFO("selected_replay_code_start", selected_replay_code_start);
+    if (selected_replay_code_start)
+    {
+        selected_replay_offset = find_opcodes(selected_replay_signature, selected_replay_code_start, 0x400, 0x718);
+        selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
+        FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
+    }
 }
 
 void init_hooks()
@@ -237,6 +253,13 @@ void init_hooks()
         SceneChangeHook = Hook<Detour32>(current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, 5);
         if (cfg_relax_lock || cfg_aimbot_lock)
             SceneChangeHook.Enable();
+    }
+
+    if (selected_replay_offset)
+    {
+        SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
+        // fixme
+        SelectedReplayHook.Enable();
     }
 }
 
@@ -346,5 +369,16 @@ __declspec(naked) void notify_on_scene_change()
         mov dword ptr [edx], eax
         mov edx, 0
         jmp [current_scene_hook_jump_back]
+    }
+}
+
+__declspec(naked) void notify_on_select_replay()
+{
+    __asm {
+        mov eax, [esi+0x38]
+        mov selected_replay_ptr, eax
+        mov start_parse_replay, 1
+        cmp dword ptr [eax+30], 0x00
+        jmp [selected_replay_hook_jump_back]
     }
 }

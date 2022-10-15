@@ -9,6 +9,7 @@
 #include "config.h"
 
 extern bool start_parse_beatmap;
+extern bool start_parse_replay;
 extern Scene current_scene;
 extern BeatmapData current_beatmap;
 

@@ -1,5 +1,18 @@
 #include "parse.h"
 
+ReplayEntryData& ReplayData::current_entry()
+{
+    return entries[entries_idx];
+}
+
+void ReplayData::clear()
+{
+    entries.clear();
+    entries_idx = 0;
+    replay_ms = 0;
+    replay_bot_ms = 0;
+}
+
 Circle* BeatmapData::current_circle()
 {
     return hit_objects[hit_object_idx];

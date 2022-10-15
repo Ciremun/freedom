@@ -27,6 +27,7 @@ enum class MenuTab
     Difficulty = 0,
     Relax,
     Aimbot,
+    Replay,
     Other,
     About
 };

@@ -23,6 +23,7 @@ namespace Freedom
             Type[] classes = assembly.GetTypes();
             ClassMethod[] classmethods = new ClassMethod[]{
                 new ClassMethod {class_ = "#=zkSWagGKhFAn55id$mbXyWWRyx_3V", method = "#=zZsW95$nuMw13"},
+                new ClassMethod {class_ = "#=zLeUxSLKOhtnoyDCet1AKxC1Pft5nd98oNyBudgo=", method = "#=zBBJnU8bwZFe1luZf4A=="},
             };
             foreach (ClassMethod cm in classmethods)
             {
