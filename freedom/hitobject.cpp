@@ -25,127 +25,127 @@ void process_hitobject()
         start_parse_beatmap = false;
     }
 
-    if (start_parse_replay)
-    {
-        current_replay.clear();
-        selected_replay_ptr += 0x30;
-        uintptr_t selected_replay = *(uintptr_t *)selected_replay_ptr;
-        size_t compressed_data_size = *(uint32_t *)(selected_replay + 0x4);
-        uint8_t *compressed_data = (uint8_t *)(selected_replay + 0x8);
-        size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
-        static std::vector<uint8_t> replay_data;
-        replay_data.reserve(replay_data_size);
-        lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
-        const char *replay_data_ptr = (const char *)&replay_data[0];
-        size_t next_comma_position = 0;
-        ReplayEntryData entry;
-        while (entry.ms_since_last_frame != -12345)
-        {
-            if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
-            {
-                entry.position = playfield_to_screen(entry.position);
-                current_replay.entries.push_back(entry); // fixme - reserve
-            }
-            else
-                break;
-            while (next_comma_position < replay_data_size)
-                if (replay_data[++next_comma_position] == ',')
-                    break;
-            if (next_comma_position >= replay_data_size)
-                break;
-            replay_data_ptr += (const char *)&replay_data[next_comma_position] - replay_data_ptr + 1;
-        }
-        FR_INFO_FMT("current_replay.size: %zu", current_replay.entries.size());
-        start_parse_replay = false;
-    }
+    // if (start_parse_replay)
+    // {
+    //     current_replay.clear();
+    //     selected_replay_ptr += 0x30;
+    //     uintptr_t selected_replay = *(uintptr_t *)selected_replay_ptr;
+    //     size_t compressed_data_size = *(uint32_t *)(selected_replay + 0x4);
+    //     uint8_t *compressed_data = (uint8_t *)(selected_replay + 0x8);
+    //     size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
+    //     static std::vector<uint8_t> replay_data;
+    //     replay_data.reserve(replay_data_size);
+    //     lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
+    //     const char *replay_data_ptr = (const char *)&replay_data[0];
+    //     size_t next_comma_position = 0;
+    //     ReplayEntryData entry;
+    //     while (entry.ms_since_last_frame != -12345)
+    //     {
+    //         if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
+    //         {
+    //             entry.position = playfield_to_screen(entry.position);
+    //             current_replay.entries.push_back(entry); // fixme - reserve
+    //         }
+    //         else
+    //             break;
+    //         while (next_comma_position < replay_data_size)
+    //             if (replay_data[++next_comma_position] == ',')
+    //                 break;
+    //         if (next_comma_position >= replay_data_size)
+    //             break;
+    //         replay_data_ptr += (const char *)&replay_data[next_comma_position] - replay_data_ptr + 1;
+    //     }
+    //     FR_INFO_FMT("current_replay.size: %zu", current_replay.entries.size());
+    //     start_parse_replay = false;
+    // }
 
-    if (current_scene == Scene::GAME && is_playing(audio_time_ptr))
-    {
-        int32_t audio_time = *(int32_t *)audio_time_ptr;
-        ReplayEntryData &entry = current_replay.current_entry();
-        if (audio_time >= current_replay.replay_ms + entry.ms_since_last_frame)
-        {
-            static bool left = false;
-            static bool right = false;
-            if (current_replay.entries_idx < current_replay.entries.size())
-            {
-                move_mouse_to(entry.position.x, entry.position.y);
+    // if (current_scene == Scene::GAME && is_playing(audio_time_ptr))
+    // {
+    //     int32_t audio_time = *(int32_t *)audio_time_ptr;
+    //     ReplayEntryData &entry = current_replay.current_entry();
+    //     if (audio_time >= current_replay.replay_ms + entry.ms_since_last_frame)
+    //     {
+    //         static bool left = false;
+    //         static bool right = false;
+    //         if (current_replay.entries_idx < current_replay.entries.size())
+    //         {
+    //             move_mouse_to(entry.position.x, entry.position.y);
 
-                // fixme refactor
-                if (entry.keypresses != 0)
-                {
-                    if (entry.keypresses == 15)
-                    {
-                        if (!left)
-                        {
-                            send_keyboard_input(left_click[0], 0);
-                            left = true;
-                        }
-                        if (!right)
-                        {
-                            send_keyboard_input(right_click[0], 0);
-                            right = true;
-                        }
-                    }
-                    if (entry.keypresses == 10)
-                    {
-                        if (left)
-                        {
-                            send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
-                            left = false;
-                        }
-                        if (!right)
-                        {
-                            send_keyboard_input(right_click[0], 0);
-                            right = true;
-                        }
-                    }
-                    if (entry.keypresses == 5)
-                    {
-                        if (!left)
-                        {
-                            send_keyboard_input(left_click[0], 0);
-                            left = true;
-                        }
-                        if (right)
-                        {
-                            send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
-                            right = false;
-                        }
-                    }
-                }
-                else
-                {
-                    if (left)
-                    {
-                        send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
-                        left = false;
-                    }
-                    if (right)
-                    {
-                        send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
-                        right = false;
-                    }
-                }
+    //             // fixme refactor
+    //             if (entry.keypresses != 0)
+    //             {
+    //                 if (entry.keypresses == 15)
+    //                 {
+    //                     if (!left)
+    //                     {
+    //                         send_keyboard_input(left_click[0], 0);
+    //                         left = true;
+    //                     }
+    //                     if (!right)
+    //                     {
+    //                         send_keyboard_input(right_click[0], 0);
+    //                         right = true;
+    //                     }
+    //                 }
+    //                 if (entry.keypresses == 10)
+    //                 {
+    //                     if (left)
+    //                     {
+    //                         send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+    //                         left = false;
+    //                     }
+    //                     if (!right)
+    //                     {
+    //                         send_keyboard_input(right_click[0], 0);
+    //                         right = true;
+    //                     }
+    //                 }
+    //                 if (entry.keypresses == 5)
+    //                 {
+    //                     if (!left)
+    //                     {
+    //                         send_keyboard_input(left_click[0], 0);
+    //                         left = true;
+    //                     }
+    //                     if (right)
+    //                     {
+    //                         send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+    //                         right = false;
+    //                     }
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if (left)
+    //                 {
+    //                     send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+    //                     left = false;
+    //                 }
+    //                 if (right)
+    //                 {
+    //                     send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+    //                     right = false;
+    //                 }
+    //             }
 
-                current_replay.replay_ms += entry.ms_since_last_frame;
-                current_replay.entries_idx++;
-            }
-            else
-            {
-                if (left)
-                {
-                    send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
-                    left = false;
-                }
-                if (right)
-                {
-                    send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
-                    right = false;
-                }
-            }
-        }
-    }
+    //             current_replay.replay_ms += entry.ms_since_last_frame;
+    //             current_replay.entries_idx++;
+    //         }
+    //         else
+    //         {
+    //             if (left)
+    //             {
+    //                 send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+    //                 left = false;
+    //             }
+    //             if (right)
+    //             {
+    //                 send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+    //                 right = false;
+    //             }
+    //         }
+    //     }
+    // }
 
     static double keydown_time = 0.0;
     static double keyup_delay = 0.0;

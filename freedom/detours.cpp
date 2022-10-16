@@ -38,13 +38,13 @@ bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
     // class, method
-    {L"#=zpAE7r_ox_yxpe6hOI9hzbch4LGFeuoGOBBqK4YlL9FRQ", L"#=z9UyRnsg="},         // parse_beatmap
-    {L"#=zkSWagGKhFAn55id$mbXyWWRyx_3V", L"#=zZsW95$nuMw13"},                     // beatmap_onload
-    {L"#=zS7fz_WbW2RQ8Uam1QQ==", L"#=zieKq3gRDzrjv"},                             // current scene
-    {L"#=zN9CK0bfelyag9OGc8g==", L"#=zEJU4$GhkhAyo"},                             // selected song, audio time
-    {L"#=zEWt8IoZxKZrRkh57Rw==", L"#=zV9hJNIx3EvVHXL6Jikrzgec="},                 // osu manager
-    {L"#=zzmUzyBlAKy20XO7d5Q==", L"#=zOdS7jPE="},                                 // binding manager
-    {L"#=zLeUxSLKOhtnoyDCet1AKxC1Pft5nd98oNyBudgo=", L"#=zBBJnU8bwZFe1luZf4A=="}, // replay selected
+    {L"#=zZkm8tMRXVYd$jFQnnzZMoimcjogNpV87Qd1qDeVtaCnr", L"#=zWPruv_Q="},         // parse_beatmap
+    {L"#=z80AYqGbjne6KJcJQG$RmgHSxiO98", L"#=ziJ$JrnGILUiL"},                     // beatmap_onload
+    {L"#=zFNJI930JqpdIBB0ihw==", L"#=zBWCtnYFBD8pV"},                             // current scene
+    {L"#=zawJ1iTMjkZmo2r1KRA==", L"#=z1qAut25TupMl"},                             // selected song, audio time
+    {L"#=z2PdCNwRL8MQSH$Kjyg==", L"#=zu1W2__spAKIPMz1xiBq6pmk="},                 // osu manager
+    {L"#=z$lSS$e9JQdH4Ukc65A==", L"#=ztWfkzAs="},                                 // binding manager
+    {L"#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", L"#=zoAQnVmPUhNups7guIw=="}, // replay selected
 
 };
 
@@ -255,14 +255,14 @@ void init_hooks()
             SceneChangeHook.Enable();
     }
 
-    if (selected_replay_offset)
-    {
-        SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
-        // fixme
-        SelectedReplayHook.Enable();
-        BeatmapOnLoadHook.Enable();
-        SceneChangeHook.Enable();
-    }
+    // if (selected_replay_offset)
+    // {
+    //     SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
+    //     // fixme
+    //     SelectedReplayHook.Enable();
+    //     BeatmapOnLoadHook.Enable();
+    //     SceneChangeHook.Enable();
+    // }
 }
 
 void enable_od_hooks()
