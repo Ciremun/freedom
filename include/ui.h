@@ -33,6 +33,7 @@ enum class MenuTab
 };
 
 extern WNDPROC oWndProc;
+extern char song_name_u8[256];
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void init_ui();

@@ -10,6 +10,8 @@
 #include "vector.h"
 #include "window.h"
 
+#include "stb_sprintf.h"
+
 enum class Scene : int32_t
 {
     MAIN_MENU = 0,
@@ -37,8 +39,37 @@ inline HitObjectType operator~ (HitObjectType a) { return static_cast<HitObjectT
 
 enum Mods : int32_t
 {
+    None = 0,
+    NoFail = 1 << 0,
+    Easy = 1 << 1,
+    TouchDevice = 1 << 2,
+    Hidden = 1 << 3,
+    HardRock = 1 << 4,
+    SuddenDeath = 1 << 5,
     DoubleTime = 1 << 6,
-    HalfTime = 1 << 8
+    Relax = 1 << 7,
+    HalfTime = 1 << 8,
+    Nightcore = 1 << 9,
+    Flashlight = 1 << 10,
+    Autoplay = 1 << 11,
+    SpunOut = 1 << 12,
+    Relax2 = 1 << 13,
+    Perfect = 1 << 14,
+    Key4 = 1 << 15,
+    Key5 = 1 << 16,
+    Key6 = 1 << 17,
+    Key7 = 1 << 18,
+    Key8 = 1 << 19,
+    FadeIn = 1 << 20,
+    Random = 1 << 21,
+    Cinema = 1 << 22,
+    Target = 1 << 23,
+    Key9 = 1 << 24,
+    KeyCoop = 1 << 25,
+    Key1 = 1 << 26,
+    Key3 = 1 << 27,
+    Key2 = 1 << 28,
+    ScoreV2 = 1 << 29,
 };
 
 struct Circle
@@ -79,10 +110,17 @@ struct ReplayData
     std::vector<ReplayEntryData> entries;
     size_t entries_idx = 0;
     int64_t replay_ms = 0;
-    int64_t replay_bot_ms = 0;
+    bool ready = false;
+
+    char song_name_u8[256] = "Open Replay Preview in-game to Select a Replay";
+    char author[32] = "Replay Author";
+    char mods[64] = "Mods";
+    float accuracy = .0f;
+    uint32_t combo = 0;
 
     void clear();
     ReplayEntryData& current_entry();
 };
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);
+bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay);

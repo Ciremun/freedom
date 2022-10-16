@@ -8,10 +8,11 @@
 #include "input.h"
 #include "config.h"
 
-extern bool start_parse_beatmap;
+extern bool beatmap_loaded;
 extern bool start_parse_replay;
 extern Scene current_scene;
 extern BeatmapData current_beatmap;
+extern ReplayData current_replay;
 
 void process_hitobject();
 

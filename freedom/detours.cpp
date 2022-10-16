@@ -255,14 +255,12 @@ void init_hooks()
             SceneChangeHook.Enable();
     }
 
-    // if (selected_replay_offset)
-    // {
-    //     SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
-    //     // fixme
-    //     SelectedReplayHook.Enable();
-    //     BeatmapOnLoadHook.Enable();
-    //     SceneChangeHook.Enable();
-    // }
+    if (selected_replay_offset)
+    {
+        SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
+        if (cfg_replay_enabled)
+            enable_replay_hooks();
+    }
 }
 
 void enable_od_hooks()
@@ -305,7 +303,7 @@ void disable_ar_hooks()
 
 void enable_notify_hooks()
 {
-    if (!cfg_relax_lock || !cfg_aimbot_lock)
+    if (!cfg_relax_lock || !cfg_aimbot_lock || !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Enable();
         SceneChangeHook.Enable();
@@ -314,11 +312,23 @@ void enable_notify_hooks()
 
 void disable_notify_hooks()
 {
-    if (!cfg_relax_lock && !cfg_aimbot_lock)
+    if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Disable();
         SceneChangeHook.Disable();
     }
+}
+
+void enable_replay_hooks()
+{
+    enable_notify_hooks();
+    SelectedReplayHook.Enable();
+}
+
+void disable_replay_hooks()
+{
+    disable_notify_hooks();
+    SelectedReplayHook.Disable();
 }
 
 __declspec(naked) void set_approach_rate()
@@ -357,7 +367,7 @@ __declspec(naked) void set_overall_difficulty()
 __declspec(naked) void notify_on_beatmap_load()
 {
     __asm {
-        mov start_parse_beatmap, 1
+        mov beatmap_loaded, 1
         mov eax, [esi+0x00000148]
         jmp [beatmap_onload_hook_jump_back]
     }
