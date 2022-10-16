@@ -1,13 +1,10 @@
-#define LZMA_IMPLEMENTATION
-#include "lzma.h"
-
 #include "hitobject.h"
 
 BeatmapData current_beatmap;
 ReplayData current_replay;
 Scene current_scene = Scene::MAIN_MENU;
 
-bool start_parse_beatmap = false;
+bool beatmap_loaded = false;
 bool start_parse_replay = false;
 bool target_first_circle = true;
 
@@ -18,50 +15,27 @@ static inline bool is_playing(uintptr_t audio_time_ptr)
 
 void process_hitobject()
 {
-    if (start_parse_beatmap)
+    if (beatmap_loaded)
     {
         parse_beatmap(osu_manager_ptr, current_beatmap);
         target_first_circle = true;
-        start_parse_beatmap = false;
+
+        if (current_replay.ready)
+        {
+            current_replay.replay_ms = 0;
+            current_replay.entries_idx = 0;
+        }
+
+        beatmap_loaded = false;
     }
 
     if (start_parse_replay)
     {
-        current_replay.clear();
-        selected_replay_ptr += 0x30;
-        uintptr_t selected_replay = *(uintptr_t *)selected_replay_ptr;
-        size_t compressed_data_size = *(uint32_t *)(selected_replay + 0x4);
-        FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
-        uint8_t *compressed_data = (uint8_t *)(selected_replay + 0x8);
-        size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
-        FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
-        static std::vector<uint8_t> replay_data;
-        replay_data.reserve(replay_data_size);
-        lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
-        const char *replay_data_ptr = (const char *)&replay_data[0];
-        size_t next_comma_position = 0;
-        ReplayEntryData entry;
-        while (entry.ms_since_last_frame != -12345)
-        {
-            if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
-            {
-                entry.position = playfield_to_screen(entry.position);
-                current_replay.entries.push_back(entry); // fixme - reserve
-            }
-            else
-                break;
-            while (next_comma_position < replay_data_size)
-                if (replay_data[++next_comma_position] == ',')
-                    break;
-            if (next_comma_position >= replay_data_size)
-                break;
-            replay_data_ptr += (const char *)&replay_data[next_comma_position] - replay_data_ptr + 1;
-        }
-        FR_INFO_FMT("current_replay.size: %zu", current_replay.entries.size());
+        parse_replay(selected_replay_ptr, current_replay);
         start_parse_replay = false;
     }
 
-    if (current_scene == Scene::GAME && is_playing(audio_time_ptr))
+    if (cfg_replay_enabled && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
@@ -145,6 +119,9 @@ void process_hitobject()
                     send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
                     right = false;
                 }
+                current_replay.replay_ms = 0;
+                current_replay.entries_idx = 0;
+                current_replay.ready = false;
             }
         }
     }

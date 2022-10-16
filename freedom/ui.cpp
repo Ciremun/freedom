@@ -1,6 +1,7 @@
 #include "ui.h"
 
 ImFont *font = 0;
+char song_name_u8[256] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -62,7 +63,6 @@ void init_ui()
 
 void update_ui()
 {
-    static char song_name_u8[128] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
     if (selected_song_ptr)
     {
         uintptr_t song_str_ptr = 0;
@@ -80,7 +80,7 @@ void update_ui()
                     if (internal_memory_read(g_process, song_str, &song_str_length))
                     {
                         song_str += 0x4;
-                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 127, 0, 0);
+                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 255, 0, 0);
                         song_name_u8[bytes_written] = '\0';
                     }
                 }
@@ -175,23 +175,22 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Replay)
         {
-            static bool replay_enabled = false;
             static bool replay_hardrock = false;
-            static bool replay_use_aim = false;
-            static bool replay_use_keys = false;
-            ImGui::Text("%s", song_name_u8);
+            static bool replay_use_aim = true;
+            static bool replay_use_keys = true;
+            ImGui::Text("%s", current_replay.song_name_u8);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Selected Replay");
-            ImGui::Text("%s - %.2f%% - %s", "Ciremun", 100.0f, "SONFHDDTFL");
+            ImGui::Text("%s - %.2f%% - %ux - %s", current_replay.author, current_replay.accuracy, current_replay.combo, current_replay.mods);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Player, Accuracy, Mods");
             ImGui::Dummy(ImVec2(.0f, 2.f));
-            if (ImGui::Checkbox("Enable", &replay_enabled))
-                FR_INFO("replay_enabled is not implemented");
+            if (ImGui::Checkbox("Enable", &cfg_replay_enabled))
+                cfg_replay_enabled ? enable_replay_hooks() : disable_replay_hooks();
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                ImGui::SetTooltip("Usage: Preview Replay in-game to Select a Replay");
+                ImGui::SetTooltip("Usage: Open Replay Preview in-game to Select a Replay");
             ImGui::SameLine(210.0f);
-            if (!replay_enabled)
+            if (!cfg_replay_enabled)
             {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
@@ -210,11 +209,12 @@ void update_ui()
                 FR_INFO("replay_use_keys is not implemented");
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Press Keys According to Replay Data");
-            if (!replay_enabled)
+            if (!cfg_replay_enabled)
             {
                 ImGui::PopStyleColor();
                 ImGui::PopItemFlag();
             }
+            ImGui::Text("Hardrock, Replay Aim, Replay Keys checkboxes are not implemented yet!");
         }
         if (selected_tab == MenuTab::Other)
         {

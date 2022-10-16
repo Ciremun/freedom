@@ -59,6 +59,9 @@ void disable_od_hooks();
 void enable_notify_hooks();
 void disable_notify_hooks();
 
+void enable_replay_hooks();
+void disable_replay_hooks();
+
 void set_approach_rate();
 void set_circle_size();
 void set_overall_difficulty();
