@@ -5,14 +5,16 @@ namespace Freedom
 {
     public struct ClassMethod
     {
-        public ClassMethod(String c, String m)
+        public ClassMethod(String c, String m, String n)
         {
             class_ = c;
             method = m;
+            name = n;
         }
 
         public String class_ { get; set; }
         public String method { get; set; }
+        public String name { get; set; }
     }
 
     public class PreJit
@@ -22,8 +24,8 @@ namespace Freedom
             var assembly = Assembly.GetEntryAssembly();
             Type[] classes = assembly.GetTypes();
             ClassMethod[] classmethods = new ClassMethod[]{
-                new ClassMethod {class_ = "#=zkSWagGKhFAn55id$mbXyWWRyx_3V", method = "#=zZsW95$nuMw13"},
-                new ClassMethod {class_ = "#=zLeUxSLKOhtnoyDCet1AKxC1Pft5nd98oNyBudgo=", method = "#=zBBJnU8bwZFe1luZf4A=="},
+                new ClassMethod {class_ = "#=z80AYqGbjne6KJcJQG$RmgHSxiO98", method = "#=ziJ$JrnGILUiL", name="beatmap_onload"},
+                new ClassMethod {class_ = "#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", method = "#=zoAQnVmPUhNups7guIw==", name="selected_replay"},
             };
             foreach (ClassMethod cm in classmethods)
             {
@@ -42,7 +44,7 @@ namespace Freedom
                             if (method.Name == cm.method)
                             {
                                 System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
-                                Console.WriteLine(String.Format("prejit {0}::{1}", cm.class_, cm.method));
+                                Console.WriteLine(String.Format("prejit {0} {1}::{2}", cm.name, cm.class_, cm.method));
                             }
                         }
                     }
