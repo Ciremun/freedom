@@ -182,6 +182,13 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
     uintptr_t compressed_data_ptr = *(uintptr_t *)(selected_replay_ptr + 0x30);
     FR_PTR_INFO("selected_replay_ptr", selected_replay_ptr);
+
+    if (compressed_data_ptr == 0)
+    {
+        FR_INFO("compressed_data_ptr is null!");
+        return false;
+    }
+
     size_t compressed_data_size = *(uint32_t *)(compressed_data_ptr + 0x4);
     FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
     uint8_t *compressed_data = (uint8_t *)(compressed_data_ptr + 0x8);
