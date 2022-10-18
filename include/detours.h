@@ -9,6 +9,7 @@
 #include "hook.h"
 #include "signatures.h"
 #include "hitobject.h"
+#include "mem.h"
 #include "dotnet/dotnet_data_collector.h"
 
 #include "imgui.h"

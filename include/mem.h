@@ -57,3 +57,30 @@ uintptr_t find_opcodes(const uint8_t (&signature)[size], uintptr_t code_start, i
             return start - code_start;
     return 0;
 }
+
+template <typename T>
+void scan_memory(uintptr_t begin, uintptr_t end, int alignment, T body)
+{
+    HANDLE hProc = GetCurrentProcess();
+    _MEMORY_BASIC_INFORMATION BasicInformation;
+    while (VirtualQuery((void *)begin, &BasicInformation, sizeof(BasicInformation)) && begin < end)
+    {
+        if (BasicInformation.State & MEM_COMMIT)
+        {
+            unsigned char *block = (unsigned char *)malloc(BasicInformation.RegionSize);
+            if (ReadProcessMemory(hProc, (void *)begin, block, BasicInformation.RegionSize, nullptr))
+            {
+                for (unsigned int idx = 0; idx != BasicInformation.RegionSize / alignment; ++idx)
+                {
+                    if (body(begin, alignment, block, idx))
+                    {
+                        free(block);
+                        return;
+                    }
+                }
+                free(block);
+            }
+        }
+        begin = (uintptr_t)BasicInformation.BaseAddress + BasicInformation.RegionSize;
+    }
+}
