@@ -28,9 +28,11 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Circle Size (CS)
     * Overall Difficulty (OD)
 
- - Singletap Relax (*no hit timing randomization!*)  
+- Replay Copy (*buggy and unfinished!*)
 
- - Aimbot (*reverse sliders are not implemented!*):
+- Singletap Relax (*no hit timing randomization!*)  
+
+- Aimbot (*reverse sliders are not implemented!*):
     * Cursor Speed
     * Spins Per Minute
 
