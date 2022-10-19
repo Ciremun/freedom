@@ -204,6 +204,8 @@ static void try_find_hook_offsets()
         selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
         FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
     }
+    // use module's base address
+    //                \/
     // scan_memory(0x00F00000, 0xFFFFFFFF, 8, [](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx){
     //     uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
     //     static const uint8_t signature[] = {0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x81, 0xEC, 0x58, 0x01,
