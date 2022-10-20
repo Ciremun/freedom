@@ -52,5 +52,29 @@ namespace Freedom
             }
             return 1;
         }
+        public static int prejit_all(String pwzArgument)
+        {
+            Console.WriteLine("start prejit all");
+            var assembly = Assembly.GetEntryAssembly();
+            Type[] classes = assembly.GetTypes();
+            foreach (Type class_ in classes)
+            {
+                MethodInfo[] methods = class_.GetMethods(
+                        BindingFlags.DeclaredOnly |
+                        BindingFlags.NonPublic |
+                        BindingFlags.Public |
+                        BindingFlags.Instance |
+                        BindingFlags.Static);
+                foreach (MethodInfo method in methods)
+                {
+                    try
+                    {
+                        System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                    } catch (Exception) {}
+                }
+            }
+            Console.WriteLine("done prejit all");
+            return 1;
+        }
     }
 }

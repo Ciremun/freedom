@@ -47,8 +47,7 @@ BOOL __stdcall freedom_update(HDC hDc)
         osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
 
         init_ui();
-        init_hooks();
-        init_input();
+        std::thread(init_hooks).detach();
 
         calc_playfield(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 

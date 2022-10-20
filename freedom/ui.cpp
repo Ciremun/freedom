@@ -261,11 +261,16 @@ void update_ui()
 
 void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
 {
+    const char *slider_fmt;
     if (!p->found)
     {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-        p->slider_fmt = p->error_message;
+        slider_fmt = p->error_message;
+    }
+    else
+    {
+        slider_fmt = p->slider_fmt;
     }
     if (!p->lock)
     {
@@ -280,16 +285,16 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
         }
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleColor(ImGuiCol_Text, p->found ? ITEM_DISABLED : ITEM_UNAVAILABLE);
-        ImGui::PushID(p->slider_fmt);
-        ImGui::SliderFloat("", &p->value, .0f, 11.0f, p->slider_fmt);
+        ImGui::PushID(slider_fmt);
+        ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
         ImGui::PopID();
         ImGui::PopStyleColor();
         ImGui::PopItemFlag();
     }
     else
     {
-        ImGui::PushID(p->slider_fmt);
-        ImGui::SliderFloat("", &p->value, .0f, 11.0f, p->slider_fmt);
+        ImGui::PushID(slider_fmt);
+        ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
         ImGui::PopID();
         if (ImGui::IsItemDeactivatedAfterEdit())
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);

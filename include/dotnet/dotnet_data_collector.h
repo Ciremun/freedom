@@ -19,3 +19,4 @@ struct CodeStartTarget
 };
 
 bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets);
+bool prejit_all();

@@ -50,7 +50,7 @@ std::vector<CodeStartTarget> code_starts = {
 
 twglSwapBuffers wglSwapBuffersGateway;
 
-uintptr_t parse_beatmap_metadata_code_start = 0;
+uintptr_t parse_beatmap_code_start = 0;
 
 uintptr_t approach_rate_offsets[2] = {0};
 uintptr_t ar_hook_jump_back = 0;
@@ -104,10 +104,44 @@ Hook<Detour32> SceneChangeHook;
 
 Hook<Detour32> SelectedReplayHook;
 
-static void try_find_hook_offsets()
+static inline bool all_code_starts_found()
+{
+    return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
+        audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start;
+}
+
+static void scan_for_code_starts()
+{
+    prejit_all();
+    const auto find_code_start = [](uint8_t *opcodes, const char *code_start_name,
+                                    uintptr_t &code_start, uint8_t *code_start_signature,
+                                    size_t code_start_signature_size)
+    {
+        if (!code_start && memcmp(opcodes, code_start_signature, code_start_signature_size) == 0)
+            code_start = (uintptr_t)opcodes;
+    };
+
+    scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x80000000, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
+    {
+        uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
+
+        find_code_start(opcodes, "parse_beatmap_code_start",   parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
+        find_code_start(opcodes, "beatmap_onload_code_start",  beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
+        find_code_start(opcodes, "current_scene_code_start",   current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
+        find_code_start(opcodes, "selected_song_code_start",   selected_song_code_start,   (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
+        find_code_start(opcodes, "audio_time_code_start",      audio_time_code_start,      (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
+        find_code_start(opcodes, "osu_manager_code_start",     osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
+        find_code_start(opcodes, "binding_manager_code_start", binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
+        find_code_start(opcodes, "selected_replay_code_start", selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
+
+        return all_code_starts_found();
+    });
+}
+
+static void dotnet_collect_code_starts()
 {
     code_start_for_class_methods(code_starts);
-    parse_beatmap_metadata_code_start = code_starts[0].start;
+    parse_beatmap_code_start = code_starts[0].start;
     beatmap_onload_code_start = code_starts[1].start;
     current_scene_code_start = code_starts[2].start;
     selected_song_code_start = code_starts[3].start;
@@ -115,27 +149,31 @@ static void try_find_hook_offsets()
     osu_manager_code_start = code_starts[4].start;
     binding_manager_code_start = code_starts[5].start;
     selected_replay_code_start = code_starts[6].start;
-    FR_PTR_INFO("parse_beatmap_metadata_code_start", parse_beatmap_metadata_code_start);
-    if (parse_beatmap_metadata_code_start)
+}
+
+static void try_find_hook_offsets()
+{
+    FR_PTR_INFO("parse_beatmap_code_start", parse_beatmap_code_start);
+    if (parse_beatmap_code_start)
     {
         int approach_rate_offsets_idx = 0;
         int circle_size_offsets_idx = 0;
         int overall_difficulty_offsets_idx = 0;
-        for (uintptr_t start = parse_beatmap_metadata_code_start + 0x1000; start - parse_beatmap_metadata_code_start <= 0x1CFF; ++start)
+        for (uintptr_t start = parse_beatmap_code_start + 0x1000; start - parse_beatmap_code_start <= 0x1CFF; ++start)
         {
             if (approach_rate_offsets_idx < 2 &&
                 memcmp((uint8_t *)start, approach_rate_signature, sizeof(approach_rate_signature)) == 0)
-                approach_rate_offsets[approach_rate_offsets_idx++] = start - parse_beatmap_metadata_code_start;
+                approach_rate_offsets[approach_rate_offsets_idx++] = start - parse_beatmap_code_start;
             if (circle_size_offsets_idx < 3 &&
                 memcmp((uint8_t *)start, circle_size_signature, sizeof(circle_size_signature)) == 0)
-                circle_size_offsets[circle_size_offsets_idx++] = start - parse_beatmap_metadata_code_start;
+                circle_size_offsets[circle_size_offsets_idx++] = start - parse_beatmap_code_start;
             if (overall_difficulty_offsets_idx < 2 &&
                 memcmp((uint8_t *)start, overall_difficulty_signature, sizeof(overall_difficulty_signature)) == 0)
-                overall_difficulty_offsets[overall_difficulty_offsets_idx++] = start - parse_beatmap_metadata_code_start;
+                overall_difficulty_offsets[overall_difficulty_offsets_idx++] = start - parse_beatmap_code_start;
         }
-        ar_hook_jump_back = parse_beatmap_metadata_code_start + approach_rate_offsets[1] + 0x9;
-        cs_hook_jump_back = parse_beatmap_metadata_code_start + circle_size_offsets[0] + 0x9;
-        od_hook_jump_back = parse_beatmap_metadata_code_start + overall_difficulty_offsets[1] + 0x9;
+        ar_hook_jump_back = parse_beatmap_code_start + approach_rate_offsets[1] + 0x9;
+        cs_hook_jump_back = parse_beatmap_code_start + circle_size_offsets[0] + 0x9;
+        od_hook_jump_back = parse_beatmap_code_start + overall_difficulty_offsets[1] + 0x9;
         ar_parameter.found = approach_rate_offsets[1] > 0;
         cs_parameter.found = circle_size_offsets[2] > 0;
         od_parameter.found = overall_difficulty_offsets[1] > 0;
@@ -204,57 +242,43 @@ static void try_find_hook_offsets()
         selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
         FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
     }
-    // use module's base address
-    //                \/
-    // scan_memory(0x00F00000, 0xFFFFFFFF, 8, [](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx){
-    //     uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
-    //     static const uint8_t signature[] = {0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x81, 0xEC, 0x58, 0x01,
-    //     0x00, 0x00, 0x8B, 0xF1, 0x8D, 0xBD, 0xB8, 0xFE, 0xFF, 0xFF,
-    //     0xB9, 0x4E, 0x00, 0x00, 0x00, 0x33, 0xC0, 0xF3, 0xAB, 0x8B,
-    //     0xCE, 0x89, 0x8D, 0xB0, 0xFE, 0xFF, 0xFF};
-    //     if (memcmp(opcodes, signature, sizeof(signature)) == 0)
-    //     {
-    //         FR_PTR_INFO("parse_beatmap from scan", (uintptr_t)opcodes);
-    //         return true;
-    //     }
-    //     return false;
-    // });
 }
 
 void init_hooks()
 {
+    dotnet_collect_code_starts();
+
+    if (!all_code_starts_found())
+        scan_for_code_starts();
+
     try_find_hook_offsets();
+
+    init_input();
 
     if (ar_parameter.found)
     {
-        ApproachRateHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
-        ApproachRateHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
+        ApproachRateHook1 = Hook<Detour32>(parse_beatmap_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
+        ApproachRateHook2 = Hook<Detour32>(parse_beatmap_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
         if (ar_parameter.lock)
             enable_ar_hooks();
     }
-    else
-        ar_parameter.lock = false;
 
     if (cs_parameter.found)
     {
-        CircleSizeHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, 9);
-        CircleSizeHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, 9);
-        CircleSizeHook3 = Hook<Detour32>(parse_beatmap_metadata_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, 9);
+        CircleSizeHook1 = Hook<Detour32>(parse_beatmap_code_start + circle_size_offsets[0], (BYTE *)set_circle_size, 9);
+        CircleSizeHook2 = Hook<Detour32>(parse_beatmap_code_start + circle_size_offsets[1], (BYTE *)set_circle_size, 9);
+        CircleSizeHook3 = Hook<Detour32>(parse_beatmap_code_start + circle_size_offsets[2], (BYTE *)set_circle_size, 9);
         if (cs_parameter.lock)
             enable_cs_hooks();
     }
-    else
-        cs_parameter.lock = false;
 
     if (od_parameter.found)
     {
-        OverallDifficultyHook1 = Hook<Detour32>(parse_beatmap_metadata_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, 9);
-        OverallDifficultyHook2 = Hook<Detour32>(parse_beatmap_metadata_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, 9);
+        OverallDifficultyHook1 = Hook<Detour32>(parse_beatmap_code_start + overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, 9);
+        OverallDifficultyHook2 = Hook<Detour32>(parse_beatmap_code_start + overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, 9);
         if (od_parameter.lock)
             enable_od_hooks();
     }
-    else
-        od_parameter.lock = false;
 
     if (beatmap_onload_offset)
     {
