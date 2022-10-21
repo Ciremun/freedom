@@ -186,7 +186,10 @@ void update_ui()
                 ImGui::SetTooltip("Player, Accuracy, Mods");
             ImGui::Dummy(ImVec2(.0f, 2.f));
             if (ImGui::Checkbox("Enable", &cfg_replay_enabled))
+            {
                 cfg_replay_enabled ? enable_replay_hooks() : disable_replay_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Usage: Open Replay Preview in-game to Select a Replay");
             ImGui::SameLine(210.0f);
