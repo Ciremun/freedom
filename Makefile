@@ -19,16 +19,16 @@ PREJIT_CSCFLAGS = -nologo -target:library -out:$(PREJIT)
 
 all: $(INJECTOR) $(FREEDOM) $(PREJIT)
 
-$(INJECTOR_OBJ):$(INJECTOR_SRC)
+$(INJECTOR_OBJ): $(INJECTOR_SRC)
 	$(CXX) $(INJECTOR_CXXFLAGS) -c $<
 
-%.obj:freedom/%.cpp
+%.obj: freedom/%.cpp
 	$(CXX) $(FREEDOM_CXXFLAGS) -c $<
 
-%.obj:imgui/%.cpp
+%.obj: imgui/%.cpp
 	$(CXX) $(FREEDOM_CXXFLAGS) -c $<
 
-%.obj:imgui/backends/%.cpp
+%.obj: imgui/backends/%.cpp
 	$(CXX) $(FREEDOM_CXXFLAGS) -c $<
 
 $(INJECTOR): $(INJECTOR_OBJ)
@@ -37,5 +37,5 @@ $(INJECTOR): $(INJECTOR_OBJ)
 $(FREEDOM): $(FREEDOM_OBJ)
 	$(CXX) $(FREEDOM_CXXFLAGS) $^ $(FREEDOM_LINKER_FLAGS)
 
-$(PREJIT): $(FREEDOM)
+$(PREJIT): $(FREEDOM) $(PREJIT_SRC)
 	$(CSC) $(PREJIT_CSCFLAGS) $(PREJIT_SRC)

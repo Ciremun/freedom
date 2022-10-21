@@ -109,6 +109,7 @@ bool prejit_all()
             pClrRuntimeHost->Release();
         }
     }
+    return true;
 }
 
 bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets)

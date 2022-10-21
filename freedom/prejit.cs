@@ -19,14 +19,15 @@ namespace Freedom
 
     public class PreJit
     {
+        public static ClassMethod[] classmethods = new ClassMethod[]{
+            new ClassMethod {class_ = "#=z80AYqGbjne6KJcJQG$RmgHSxiO98", method = "#=ziJ$JrnGILUiL", name="beatmap_onload"},
+            new ClassMethod {class_ = "#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", method = "#=zoAQnVmPUhNups7guIw==", name="selected_replay"},
+        };
+
         public static int main(String pwzArgument)
         {
             var assembly = Assembly.GetEntryAssembly();
             Type[] classes = assembly.GetTypes();
-            ClassMethod[] classmethods = new ClassMethod[]{
-                new ClassMethod {class_ = "#=z80AYqGbjne6KJcJQG$RmgHSxiO98", method = "#=ziJ$JrnGILUiL", name="beatmap_onload"},
-                new ClassMethod {class_ = "#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", method = "#=zoAQnVmPUhNups7guIw==", name="selected_replay"},
-            };
             foreach (ClassMethod cm in classmethods)
             {
                 foreach (Type class_ in classes)
@@ -67,10 +68,16 @@ namespace Freedom
                         BindingFlags.Static);
                 foreach (MethodInfo method in methods)
                 {
-                    try
+                    foreach (ClassMethod cm in classmethods)
                     {
-                        System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
-                    } catch (Exception) {}
+                        if (class_.Name.Length == cm.class_.Length && method.Name.Length == cm.method.Length)
+                        {
+                            try
+                            {
+                                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
+                            } catch (Exception) {}
+                        }
+                    }
                 }
             }
             Console.WriteLine("done prejit all");
