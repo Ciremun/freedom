@@ -121,8 +121,7 @@ void update_ui()
 
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
-
-        update_tab("Replay", MenuTab::Replay);
+        selected_replay_offset ? update_tab("Replay", MenuTab::Replay) : inactive_tab("Replay");
 
         update_tab("Other", MenuTab::Other);
         update_tab("About", MenuTab::About);

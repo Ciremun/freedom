@@ -15,7 +15,7 @@
 #include "stb_sprintf.h"
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
-#define ITEM_UNAVAILABLE ImVec4(1.0f, 0.0f, 0.0f, 1.00f)
+#define ITEM_UNAVAILABLE ImVec4(0.722f, 0.059f, .0f, 1.00f)
 #define BLACK ImVec4(0.05f, 0.05f, 0.05f, 1.0f)
 #define WHITE ImVec4(1.0f, 1.0f, 1.0f, 1.0f)
 #define BLACK_TRANSPARENT ImVec4(0.05f, 0.05f, 0.05f, 0.7f)
