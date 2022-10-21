@@ -29,7 +29,8 @@ enum class MenuTab
     Aimbot,
     Replay,
     Other,
-    About
+    About,
+    Debug
 };
 
 extern WNDPROC oWndProc;

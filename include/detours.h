@@ -35,13 +35,42 @@ extern Parameter od_parameter;
 extern bool cfg_relax_lock;
 extern bool cfg_aimbot_lock;
 
-extern uintptr_t selected_song_ptr;
-extern uintptr_t audio_time_ptr;
-extern uintptr_t osu_manager_ptr;
-extern uintptr_t binding_manager_ptr;
-extern uintptr_t selected_replay_ptr;
+extern uintptr_t parse_beatmap_code_start;
+
+extern uintptr_t approach_rate_offsets[2];
+extern uintptr_t ar_hook_jump_back;
+
+extern uintptr_t circle_size_offsets[3];
+extern uintptr_t cs_hook_jump_back;
+
+extern uintptr_t overall_difficulty_offsets[2];
+extern uintptr_t od_hook_jump_back;
+
+extern uintptr_t beatmap_onload_code_start;
 extern uintptr_t beatmap_onload_offset;
+extern uintptr_t beatmap_onload_hook_jump_back;
+
+extern uintptr_t current_scene_code_start;
+extern uintptr_t current_scene_offset;
+extern uintptr_t notify_on_scene_change_original_mov_address;
+extern uintptr_t current_scene_hook_jump_back;
+
+extern uintptr_t selected_song_code_start;
+extern uintptr_t selected_song_ptr;
+
+extern uintptr_t audio_time_code_start;
+extern uintptr_t audio_time_ptr;
+
+extern uintptr_t osu_manager_code_start;
+extern uintptr_t osu_manager_ptr;
+
+extern uintptr_t binding_manager_code_start;
+extern uintptr_t binding_manager_ptr;
+
+extern uintptr_t selected_replay_code_start;
 extern uintptr_t selected_replay_offset;
+extern uintptr_t selected_replay_hook_jump_back;
+extern uintptr_t selected_replay_ptr;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 

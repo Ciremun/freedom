@@ -36,12 +36,12 @@ BOOL __stdcall freedom_update(HDC hDc)
         if (!IsWindowVisible(g_hwnd))
             return wglSwapBuffersGateway(hDc);
 
-#ifndef NDEBUG
-        AllocConsole();
-        FILE *f;
-        freopen_s(&f, "CONOUT$", "w", stdout);
-        freopen_s(&f, "CONOUT$", "w", stderr);
-#endif // NDEBUG
+// #ifndef NDEBUG
+//         AllocConsole();
+//         FILE *f;
+//         freopen_s(&f, "CONOUT$", "w", stdout);
+//         freopen_s(&f, "CONOUT$", "w", stderr);
+// #endif // NDEBUG
 
         g_process = GetCurrentProcess();
         osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");

@@ -125,6 +125,9 @@ void update_ui()
 
         update_tab("Other", MenuTab::Other);
         update_tab("About", MenuTab::About);
+#ifndef NDEBUG
+        update_tab("Debug", MenuTab::Debug);
+#endif // NDEBUG
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
         ImGui::SetNextWindowSize(ImVec2(0.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
@@ -253,6 +256,37 @@ void update_ui()
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::Text("Discord: Ciremun#8516");
         }
+#ifndef NDEBUG
+        if (selected_tab == MenuTab::Debug)
+        {
+            ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
+            ImGui::Text("approach_rate_offsets: 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1]);
+            ImGui::Text("ar_hook_jump_back: %08X", ar_hook_jump_back);
+            ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
+            ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
+            ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
+            ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
+            ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
+            ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
+            ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
+            ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
+            ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
+            ImGui::Text("notify_on_scene_change_original_mov_address: \n%08X", notify_on_scene_change_original_mov_address);
+            ImGui::Text("current_scene_hook_jump_back: %08X", current_scene_hook_jump_back);
+            ImGui::Text("selected_song_code_start: %08X", selected_song_code_start);
+            ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
+            ImGui::Text("audio_time_code_start: %08X", audio_time_code_start);
+            ImGui::Text("audio_time_ptr: %08X", audio_time_ptr);
+            ImGui::Text("osu_manager_code_start: %08X", osu_manager_code_start);
+            ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
+            ImGui::Text("binding_manager_code_start: %08X", binding_manager_code_start);
+            ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
+            ImGui::Text("selected_replay_code_start: %08X", selected_replay_code_start);
+            ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
+            ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
+            ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
+        }
+#endif // NDEBUG
         ImGui::End();
         ImGui::EndPopup();
     }
