@@ -124,9 +124,9 @@ static float score_percent(uint16_t _300, uint16_t _100, uint16_t _50, uint16_t 
 
 static void mods_to_string(Mods &mods, char *buffer)
 {
-    if (mods & Mods::None)
+    if (mods == Mods::None)
     {
-        memcpy(buffer, "nomod", 6);
+        memcpy(buffer, "No Mod", 7);
         return;
     }
     size_t cursor = 0;
