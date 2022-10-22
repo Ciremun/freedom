@@ -178,7 +178,7 @@ void process_hitobject()
                                 slider->start_time + single_curve_span * (slider->curve_idx + 1))
                             {
                                 direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[slider->curve_idx++], mouse_position);
-                                fraction_of_the_distance = 0.5f;
+                                fraction_of_the_distance = 1.0f;
                             }
                         }
                     }
