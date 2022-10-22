@@ -32,7 +32,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 - Singletap Relax (*no hit timing randomization!*)  
 
-- Aimbot (*reverse sliders are not implemented!*):
+- Aimbot (*a bit buggy!*):
     * Cursor Speed
     * Spins Per Minute
 
