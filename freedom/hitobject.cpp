@@ -171,15 +171,14 @@ void process_hitobject()
                     }
                     else
                     {
-                        static int32_t prev_audio_time = audio_time;
-                        int32_t circle_time = slider->end_time - slider->start_time;
-                        if ((audio_time - prev_audio_time) >= (circle_time / slider->curves.size()))
+                        if (slider->curve_idx < slider->curves.size())
                         {
-                            if (slider->curve_idx < slider->curves.size())
+                            float single_curve_span = (slider->end_time - slider->start_time) / slider->curves.size();
+                            if (audio_time + single_curve_span >=
+                                slider->start_time + single_curve_span * (slider->curve_idx + 1))
                             {
                                 direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[slider->curve_idx++], mouse_position);
-                                fraction_of_the_distance = cfg_fraction_modifier;
-                                prev_audio_time = audio_time;
+                                fraction_of_the_distance = 0.5f;
                             }
                         }
                     }
