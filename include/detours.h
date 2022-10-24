@@ -72,6 +72,12 @@ extern uintptr_t selected_replay_offset;
 extern uintptr_t selected_replay_hook_jump_back;
 extern uintptr_t selected_replay_ptr;
 
+extern uintptr_t osu_client_id_code_start;
+extern char osu_client_id[64];
+
+extern uintptr_t osu_username_code_start;
+extern char osu_username[32];
+
 extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook<Trampoline32> SwapBuffersHook;

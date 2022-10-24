@@ -259,32 +259,51 @@ void update_ui()
 #ifndef NDEBUG
         if (selected_tab == MenuTab::Debug)
         {
-            ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
-            ImGui::Text("approach_rate_offsets: 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1]);
-            ImGui::Text("ar_hook_jump_back: %08X", ar_hook_jump_back);
-            ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
-            ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
-            ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
-            ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
-            ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
-            ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
-            ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
-            ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
-            ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
-            ImGui::Text("notify_on_scene_change_original_mov_address: \n%08X", notify_on_scene_change_original_mov_address);
-            ImGui::Text("current_scene_hook_jump_back: %08X", current_scene_hook_jump_back);
-            ImGui::Text("selected_song_code_start: %08X", selected_song_code_start);
-            ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
-            ImGui::Text("audio_time_code_start: %08X", audio_time_code_start);
-            ImGui::Text("audio_time_ptr: %08X", audio_time_ptr);
-            ImGui::Text("osu_manager_code_start: %08X", osu_manager_code_start);
-            ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
-            ImGui::Text("binding_manager_code_start: %08X", binding_manager_code_start);
-            ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
-            ImGui::Text("selected_replay_code_start: %08X", selected_replay_code_start);
-            ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
-            ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
-            ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
+            if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("osu_client_id: \n%s", osu_client_id);
+                ImGui::Text("osu_username: %s", osu_username);
+            }
+            if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
+                ImGui::Text("audio_time_ptr: %08X", audio_time_ptr);
+                ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
+                ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
+                ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
+            }
+            if (ImGui::CollapsingHeader("Code Starts", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
+                ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
+                ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
+                ImGui::Text("selected_song_code_start: %08X", selected_song_code_start);
+                ImGui::Text("audio_time_code_start: %08X", audio_time_code_start);
+                ImGui::Text("osu_manager_code_start: %08X", osu_manager_code_start);
+                ImGui::Text("binding_manager_code_start: %08X", binding_manager_code_start);
+                ImGui::Text("selected_replay_code_start: %08X", selected_replay_code_start);
+                ImGui::Text("osu_client_id_code_start: %08X", osu_client_id_code_start);
+                ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
+            }
+            if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("approach_rate_offsets: 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1]);
+                ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
+                ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
+                ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
+                ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
+                ImGui::Text("notify_on_scene_change_original_mov_address: \n%08X", notify_on_scene_change_original_mov_address);
+                ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
+            }
+            if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("ar_hook_jump_back: %08X", ar_hook_jump_back);
+                ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
+                ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
+                ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
+                ImGui::Text("current_scene_hook_jump_back: %08X", current_scene_hook_jump_back);
+                ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
+            }
         }
 #endif // NDEBUG
         ImGui::End();
