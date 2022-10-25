@@ -155,22 +155,14 @@ static void mods_to_string(Mods &mods, char *buffer)
         memcpy(buffer + cursor, mod, 2);
         cursor += 2;
     };
-    if (mods & Mods::SpunOut)
-        apply_mod(cursor, buffer, "SO");
-    if (mods & Mods::NoFail)
-        apply_mod(cursor, buffer, "NF");
-    if (mods & Mods::Hidden)
-        apply_mod(cursor, buffer, "HD");
-    if (mods & Mods::HardRock)
-        apply_mod(cursor, buffer, "HR");
-    if (mods & Mods::HalfTime)
-        apply_mod(cursor, buffer, "HT");
-    else if (mods & Mods::Nightcore)
-        apply_mod(cursor, buffer, "NC");
-    else if (mods & Mods::DoubleTime)
-        apply_mod(cursor, buffer, "DT");
-    if (mods & Mods::Flashlight)
-        apply_mod(cursor, buffer, "FL");
+    if (mods & Mods::SpunOut)         apply_mod(cursor, buffer, "SO");
+    if (mods & Mods::NoFail)          apply_mod(cursor, buffer, "NF");
+    if (mods & Mods::Hidden)          apply_mod(cursor, buffer, "HD");
+    if (mods & Mods::HardRock)        apply_mod(cursor, buffer, "HR");
+    if (mods & Mods::HalfTime)        apply_mod(cursor, buffer, "HT");
+    else if (mods & Mods::Nightcore)  apply_mod(cursor, buffer, "NC");
+    else if (mods & Mods::DoubleTime) apply_mod(cursor, buffer, "DT");
+    if (mods & Mods::Flashlight)      apply_mod(cursor, buffer, "FL");
     buffer[cursor] = '\0';
 }
 
@@ -204,15 +196,113 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     uintptr_t compressed_data_ptr = *(uintptr_t *)(selected_replay_ptr + 0x30);
     FR_PTR_INFO("selected_replay_ptr", selected_replay_ptr);
 
+    size_t compressed_data_size;
+    uint8_t *compressed_data;
+
     if (compressed_data_ptr == 0)
     {
-        FR_INFO("compressed_data_ptr is null!");
-        return false;
+        // @@@ fixme refactor
+        extern char osu_username[32];
+        extern char osu_client_id[64];
+        uint32_t replay_id = *(uint32_t *)(selected_replay_ptr + 0x4);
+        if (replay_id && osu_username[0] != '\0' && osu_client_id[0] != '\0')
+        {
+            static const wchar_t* osu_domain = L"osu.ppy.sh";
+
+            static std::vector<uint8_t> compressed_data_vec;
+            compressed_data_vec.clear();
+            compressed_data_vec.reserve(8192);
+
+            static char replay_url[128];
+            stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%u&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
+
+            static wchar_t replay_url_w[256];
+            int bytes_written = MultiByteToWideChar(CP_UTF8, 0, replay_url, 127, replay_url_w, 256);
+            replay_url_w[bytes_written] = '\0';
+            FR_INFO_FMT("replay_url_w: https://%S%S", osu_domain, replay_url_w);
+
+            DWORD dwSize = 0;
+            DWORD dwDownloaded = 0;
+            LPSTR pszOutBuffer;
+            BOOL  bResults = FALSE;
+            HINTERNET  hSession = NULL,
+                        hConnect = NULL,
+                        hRequest = NULL;
+
+            hSession = WinHttpOpen(L"osu!",
+                                    WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+                                    WINHTTP_NO_PROXY_NAME,
+                                    WINHTTP_NO_PROXY_BYPASS, 0);
+
+            if (hSession)
+                hConnect = WinHttpConnect(hSession, osu_domain,
+                                        INTERNET_DEFAULT_HTTPS_PORT, 0);
+
+            if (hConnect)
+                hRequest = WinHttpOpenRequest(hConnect, L"GET", replay_url_w,
+                                            NULL, WINHTTP_NO_REFERER,
+                                            WINHTTP_DEFAULT_ACCEPT_TYPES,
+                                            WINHTTP_FLAG_SECURE);
+
+            if (hRequest)
+                bResults = WinHttpSendRequest(hRequest,
+                                            WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+                                            WINHTTP_NO_REQUEST_DATA, 0,
+                                            0, 0);
+
+
+            if (bResults)
+                bResults = WinHttpReceiveResponse(hRequest, NULL);
+
+            if (bResults)
+            {
+                do
+                {
+                    dwSize = 0;
+                    if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
+                    FR_INFO_FMT("Error %u in WinHttpQueryDataAvailable.",
+                            GetLastError());
+
+                    pszOutBuffer = new char[dwSize];
+                    ZeroMemory(pszOutBuffer, dwSize);
+
+                    if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
+                        FR_INFO_FMT("Error %u in WinHttpReadData.", GetLastError());
+
+                    for (DWORD i = 0; i < dwDownloaded; ++i)
+                        compressed_data_vec.push_back(pszOutBuffer[i]);
+
+                    delete[] pszOutBuffer;
+
+                } while(dwSize > 0);
+            }
+
+            if (hRequest) WinHttpCloseHandle(hRequest);
+            if (hConnect) WinHttpCloseHandle(hConnect);
+            if (hSession) WinHttpCloseHandle(hSession);
+
+            if (!bResults)
+            {
+                printf("Error %d has occurred.\n", GetLastError());
+                return false;
+            }
+
+            compressed_data_size = compressed_data_vec.size();
+            compressed_data = &compressed_data_vec[0];
+        }
+        else
+        {
+            FR_INFO("compressed_data_ptr is null!");
+            return false;
+        }
+    }
+    else
+    {
+        compressed_data_size = *(uint32_t *)(compressed_data_ptr + 0x4);
+        compressed_data = (uint8_t *)(compressed_data_ptr + 0x8);
     }
 
-    size_t compressed_data_size = *(uint32_t *)(compressed_data_ptr + 0x4);
     FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
-    uint8_t *compressed_data = (uint8_t *)(compressed_data_ptr + 0x8);
     size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
     FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
     static std::vector<uint8_t> replay_data;

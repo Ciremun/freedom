@@ -1,5 +1,6 @@
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "CorGuids.lib")
+#pragma comment(lib, "Winhttp.lib")
 
 #include "stdafx.h"
 
