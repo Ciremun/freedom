@@ -40,7 +40,7 @@ void process_hitobject()
 
     if (start_parse_replay)
     {
-        parse_replay(selected_replay_ptr, current_replay);
+        std::thread(parse_replay, selected_replay_ptr, std::ref(current_replay)).detach();
         start_parse_replay = false;
     }
 
