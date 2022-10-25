@@ -13,6 +13,15 @@ static inline bool is_playing(uintptr_t audio_time_ptr)
     return *(bool *)(audio_time_ptr + 0x30);
 }
 
+static inline bool is_replay_mode(uintptr_t osu_manager_ptr)
+{
+    if (osu_manager_ptr == 0)
+        return false;
+
+    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+    return *(bool *)(osu_manager + 0x17A);
+}
+
 void process_hitobject()
 {
     if (beatmap_loaded)
@@ -35,7 +44,7 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    if (cfg_replay_enabled && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr))
+    if (cfg_replay_enabled && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
