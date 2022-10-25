@@ -45,6 +45,8 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=z2PdCNwRL8MQSH$Kjyg==", L"#=zu1W2__spAKIPMz1xiBq6pmk="},                 // osu manager
     {L"#=z$lSS$e9JQdH4Ukc65A==", L"#=ztWfkzAs="},                                 // binding manager
     {L"#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", L"#=zoAQnVmPUhNups7guIw=="}, // replay selected
+    {L"#=zmxerX6VKl5Tqk2FdZ33bYlw=", L"#=zPKCAm6g7wfpK"},                         // client id
+    {L"#=zzL_sXCs=", L"#=zcR$cictUyamlx1Mo0g=="},                                 // username
 
 };
 
@@ -139,8 +141,8 @@ static void scan_for_code_starts()
         find_code_start(opcodes, "osu_manager_code_start",     osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
         find_code_start(opcodes, "binding_manager_code_start", binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
         find_code_start(opcodes, "selected_replay_code_start", selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
-        find_code_start(opcodes, "osu_client_id_code_start",       osu_client_id_code_start,       (uint8_t *)client_id_function_signature,       sizeof(client_id_function_signature));
-        find_code_start(opcodes, "osu_username_code_start",        osu_username_code_start,        (uint8_t *)username_function_signature,        sizeof(username_function_signature));
+        find_code_start(opcodes, "osu_client_id_code_start",   osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,       sizeof(osu_client_id_function_signature));
+        find_code_start(opcodes, "osu_username_code_start",    osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
 
         return all_code_starts_found();
     });
@@ -157,6 +159,8 @@ static void dotnet_collect_code_starts()
     osu_manager_code_start = code_starts[4].start;
     binding_manager_code_start = code_starts[5].start;
     selected_replay_code_start = code_starts[6].start;
+    osu_client_id_code_start = code_starts[7].start;
+    osu_username_code_start = code_starts[8].start;
 }
 
 static void try_find_hook_offsets()
@@ -252,7 +256,8 @@ static void try_find_hook_offsets()
     }
     if (osu_client_id_code_start)
     {
-        uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + sizeof(client_id_function_signature));
+        uintptr_t client_id_offset = find_opcodes(osu_client_id_function_signature, osu_client_id_code_start, 0x0, 0xBF);
+        uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + client_id_offset + sizeof(osu_client_id_function_signature));
         uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
         uintptr_t client_id_string = *(uintptr_t *)(client_id_array + 0x8);
         uint32_t client_id_length = *(uint32_t *)(client_id_string + 0x4);
@@ -263,8 +268,8 @@ static void try_find_hook_offsets()
     FR_INFO_FMT("client_id: %s", osu_client_id);
     if (osu_username_code_start)
     {
-        uintptr_t username_offset = find_opcodes(username_signature, osu_username_code_start, 0x50, 0x14D);
-        uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(username_signature));
+        uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x50, 0x14D);
+        uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
         uint32_t username_length = *(uint32_t *)(username_string + 0x4);
         wchar_t *username_data = (wchar_t *)(username_string + 0x8);
         int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
