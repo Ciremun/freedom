@@ -99,6 +99,14 @@ struct BeatmapData
     Circle* current_circle();
 };
 
+enum ReplayKeys : uint32_t
+{
+    NO_KEY = 0,
+    KEY_LEFT = 5,
+    KEY_RIGHT = 10,
+    KEY_LEFT_AND_RIGHT = 15,
+};
+
 struct ReplayEntryData
 {
     int64_t ms_since_last_frame = 0;

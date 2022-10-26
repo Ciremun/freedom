@@ -313,7 +313,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     ReplayEntryData entry;
     while (entry.ms_since_last_frame != -12345)
     {
-        if (sscanf(replay_data_ptr, "%lld|%f|%f|%d", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
+        if (sscanf(replay_data_ptr, "%lld|%f|%f|%u", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
         {
             entry.position = playfield_to_screen(entry.position);
             replay.entries.push_back(entry); // fixme - reserve

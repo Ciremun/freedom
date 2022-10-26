@@ -388,6 +388,11 @@ void disable_notify_hooks()
     if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Disable();
+
+        // @@@ fixme
+        // this just avoids crashes caused by osu_manager deref
+        // use current scene pointer instead of a hook is the fix
+        current_scene = Scene::BEATMAP_SELECT;
         SceneChangeHook.Disable();
     }
 }
