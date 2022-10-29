@@ -15,6 +15,20 @@ HANDLE g_process = NULL;
 HMODULE g_module = NULL;
 uintptr_t osu_auth_base = NULL;
 
+static void unload_module()
+{
+    Sleep(2000);
+    VirtualFree(wglSwapBuffersGateway, 0, MEM_RELEASE);
+    FreeLibrary(g_module);
+}
+
+void unload_freedom()
+{
+    destroy_ui();
+    destroy_hooks();
+    std::thread(unload_module).detach();
+}
+
 BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
 {
     DWORD lpdwProcessId;

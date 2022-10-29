@@ -91,6 +91,11 @@ void update_ui()
 
     ImGui::PushFont(font);
 
+    if (ImGui::Button("unload"))
+    {
+        unload_freedom();
+    }
+
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -312,6 +317,14 @@ void update_ui()
 
     ImGui::End();
     ImGui::PopFont();
+}
+
+void destroy_ui()
+{
+    // ImGui_ImplOpenGL3_Shutdown();
+    // ImGui_ImplWin32_Shutdown();
+    // ImGui::DestroyContext();
+    SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
 }
 
 void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)

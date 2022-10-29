@@ -472,3 +472,20 @@ __declspec(naked) void notify_on_select_replay()
         jmp [selected_replay_hook_jump_back]
     }
 }
+
+void destroy_hooks()
+{
+    SwapBuffersHook.Disable();
+    ApproachRateHook1.Disable();
+    ApproachRateHook2.Disable();
+    // CircleSizeHook1.Disable();
+    // CircleSizeHook2.Disable();
+    // CircleSizeHook3.Disable();
+    // OverallDifficultyHook1.Disable();
+    // OverallDifficultyHook2.Disable();
+    // BeatmapOnLoadHook.Disable();
+    // SceneChangeHook.Disable();
+    // SelectedReplayHook.Disable();
+
+    // VirtualFree(wglSwapBuffersGateway, 0, MEM_RELEASE);
+}

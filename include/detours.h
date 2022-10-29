@@ -106,3 +106,5 @@ void set_overall_difficulty();
 void notify_on_beatmap_load();
 void notify_on_scene_change();
 void notify_on_select_replay();
+
+void destroy_hooks();
