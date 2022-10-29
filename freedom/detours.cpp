@@ -121,9 +121,7 @@ static inline bool all_code_starts_found()
 static void scan_for_code_starts()
 {
     prejit_all();
-    const auto find_code_start = [](uint8_t *opcodes, const char *code_start_name,
-                                    uintptr_t &code_start, uint8_t *code_start_signature,
-                                    size_t code_start_signature_size)
+    const auto find_code_start = [](uint8_t *opcodes, uintptr_t &code_start, uint8_t *code_start_signature, size_t code_start_signature_size)
     {
         if (!code_start && memcmp(opcodes, code_start_signature, code_start_signature_size) == 0)
             code_start = (uintptr_t)opcodes;
@@ -133,16 +131,16 @@ static void scan_for_code_starts()
     {
         uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
 
-        find_code_start(opcodes, "parse_beatmap_code_start",   parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
-        find_code_start(opcodes, "beatmap_onload_code_start",  beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
-        find_code_start(opcodes, "current_scene_code_start",   current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
-        find_code_start(opcodes, "selected_song_code_start",   selected_song_code_start,   (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
-        find_code_start(opcodes, "audio_time_code_start",      audio_time_code_start,      (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
-        find_code_start(opcodes, "osu_manager_code_start",     osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
-        find_code_start(opcodes, "binding_manager_code_start", binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
-        find_code_start(opcodes, "selected_replay_code_start", selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
-        find_code_start(opcodes, "osu_client_id_code_start",   osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,       sizeof(osu_client_id_function_signature));
-        find_code_start(opcodes, "osu_username_code_start",    osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
+        find_code_start(opcodes, parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
+        find_code_start(opcodes, beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
+        find_code_start(opcodes, current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
+        find_code_start(opcodes, selected_song_code_start,   (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
+        find_code_start(opcodes, audio_time_code_start,      (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
+        find_code_start(opcodes, osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
+        find_code_start(opcodes, binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
+        find_code_start(opcodes, selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
+        find_code_start(opcodes, osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
+        find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
 
         return all_code_starts_found();
     });
@@ -317,14 +315,14 @@ void init_hooks()
     if (beatmap_onload_offset)
     {
         BeatmapOnLoadHook = Hook<Detour32>(beatmap_onload_code_start + beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, 6);
-        if (cfg_relax_lock || cfg_aimbot_lock)
+        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
             BeatmapOnLoadHook.Enable();
     }
 
     if (current_scene_offset)
     {
         SceneChangeHook = Hook<Detour32>(current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, 5);
-        if (cfg_relax_lock || cfg_aimbot_lock)
+        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
             SceneChangeHook.Enable();
     }
 
@@ -388,12 +386,11 @@ void disable_notify_hooks()
     if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Disable();
-
+        SceneChangeHook.Disable();
         // @@@ fixme
         // this just avoids crashes caused by osu_manager deref
         // use current scene pointer instead of a hook is the fix
         current_scene = Scene::BEATMAP_SELECT;
-        SceneChangeHook.Disable();
     }
 }
 
@@ -476,16 +473,13 @@ __declspec(naked) void notify_on_select_replay()
 void destroy_hooks()
 {
     SwapBuffersHook.Disable();
-    ApproachRateHook1.Disable();
-    ApproachRateHook2.Disable();
-    // CircleSizeHook1.Disable();
-    // CircleSizeHook2.Disable();
-    // CircleSizeHook3.Disable();
-    // OverallDifficultyHook1.Disable();
-    // OverallDifficultyHook2.Disable();
-    // BeatmapOnLoadHook.Disable();
-    // SceneChangeHook.Disable();
-    // SelectedReplayHook.Disable();
-
-    // VirtualFree(wglSwapBuffersGateway, 0, MEM_RELEASE);
+    if (ar_parameter.lock)  disable_ar_hooks();
+    if (cs_parameter.lock)  disable_cs_hooks();
+    if (od_parameter.lock)  disable_od_hooks();
+    if (cfg_replay_enabled) SelectedReplayHook.Disable();
+    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+    {
+        BeatmapOnLoadHook.Disable();
+        SceneChangeHook.Disable();
+    }
 }
