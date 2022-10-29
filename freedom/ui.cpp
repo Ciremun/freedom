@@ -91,11 +91,6 @@ void update_ui()
 
     ImGui::PushFont(font);
 
-    if (ImGui::Button("unload"))
-    {
-        unload_freedom();
-    }
-
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -251,6 +246,9 @@ void update_ui()
                 }
                 ImGui::EndCombo();
             }
+            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() - 10.0f);
+            if (ImGui::Button("Unload DLL"))
+                unload_freedom();
         }
         if (selected_tab == MenuTab::About)
         {
