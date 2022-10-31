@@ -43,7 +43,7 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    if (cfg_replay_enabled && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
+    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
@@ -53,35 +53,42 @@ void process_hitobject()
             static bool right = false;
             if (current_replay.entries_idx < current_replay.entries.size())
             {
-                move_mouse_to(entry.position.x, entry.position.y);
-                switch (entry.keypresses)
+                if (cfg_replay_aim)
+                    move_mouse_to(entry.position.x, entry.position.y);
+                if (cfg_replay_keys)
                 {
-                    case ReplayKeys::KEY_LEFT: {
-                        if (!left) { send_keyboard_input(left_click[0], 0); left = true; }
-                        if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
-                    } break;
-                    case ReplayKeys::KEY_RIGHT: {
-                        if (left)   { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
-                        if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
-                    } break;
-                    case ReplayKeys::NO_KEY: {
-                        if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
-                        if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
-                    } break;
-                    case ReplayKeys::KEY_LEFT_AND_RIGHT: {
-                        if (!left)  { send_keyboard_input(left_click[0], 0); left = true; }
-                        if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
-                    } break;
-                    default:
-                        break;
+                    switch (entry.keypresses)
+                    {
+                        case ReplayKeys::KEY_LEFT: {
+                            if (!left) { send_keyboard_input(left_click[0], 0); left = true; }
+                            if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
+                        } break;
+                        case ReplayKeys::KEY_RIGHT: {
+                            if (left)   { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
+                            if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
+                        } break;
+                        case ReplayKeys::NO_KEY: {
+                            if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
+                            if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
+                        } break;
+                        case ReplayKeys::KEY_LEFT_AND_RIGHT: {
+                            if (!left)  { send_keyboard_input(left_click[0], 0); left = true; }
+                            if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
+                        } break;
+                        default:
+                            break;
+                    }
                 }
                 current_replay.replay_ms += entry.ms_since_last_frame;
                 current_replay.entries_idx++;
             }
             else
             {
-                if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
-                if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
+                if (cfg_replay_keys)
+                {
+                    if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
+                    if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
+                }
                 current_replay.replay_ms = 0;
                 current_replay.entries_idx = 0;
                 current_replay.ready = false;

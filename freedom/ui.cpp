@@ -178,8 +178,6 @@ void update_ui()
         if (selected_tab == MenuTab::Replay)
         {
             static bool replay_hardrock = false;
-            static bool replay_use_aim = true;
-            static bool replay_use_keys = true;
             ImGui::Text("%s", current_replay.song_name_u8);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Selected Replay");
@@ -205,13 +203,11 @@ void update_ui()
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Convert Replay to/from Hardrock");
             ImGui::Dummy(ImVec2(.0f, 2.f));
-            if (ImGui::Checkbox("Replay Aim", &replay_use_aim))
-                FR_INFO("replay_use_aim is not implemented");
+            ImGui::Checkbox("Replay Aim", &cfg_replay_aim);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Aim According to Replay Data");
             ImGui::SameLine(210.0f);
-            if (ImGui::Checkbox("Replay Keys", &replay_use_keys))
-                FR_INFO("replay_use_keys is not implemented");
+            ImGui::Checkbox("Replay Keys", &cfg_replay_keys);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                 ImGui::SetTooltip("Press Keys According to Replay Data");
             if (!cfg_replay_enabled)
@@ -219,7 +215,7 @@ void update_ui()
                 ImGui::PopStyleColor();
                 ImGui::PopItemFlag();
             }
-            ImGui::Text("Hardrock, Replay Aim, Replay Keys checkboxes are not implemented yet!");
+            ImGui::Text("Hardrock checkbox is not implemented yet!");
         }
         if (selected_tab == MenuTab::Other)
         {
