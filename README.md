@@ -2,7 +2,7 @@
 
 freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
-![preview](https://user-images.githubusercontent.com/38132413/196666180-933eb85c-eacd-43ff-886e-5768ed117145.png)  
+![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
 
 ## Download
 
@@ -48,6 +48,8 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 * MSVC x64/x86 build tools
 * Windows SDK
 * .NET Framework SDK
+
+![installer_preview](https://user-images.githubusercontent.com/38132413/199610177-89f05acc-c1ff-4656-9839-2abf66ffd126.png)  
 
 open command prompt (cmd.exe) and run:  
 
