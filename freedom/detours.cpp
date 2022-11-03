@@ -330,7 +330,7 @@ void init_hooks()
     {
         SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
         if (cfg_replay_enabled)
-            enable_replay_hooks();
+            SelectedReplayHook.Enable();
     }
 }
 

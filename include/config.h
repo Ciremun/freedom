@@ -15,6 +15,7 @@ extern float cfg_fraction_modifier;
 extern bool cfg_replay_enabled;
 extern bool cfg_replay_aim;
 extern bool cfg_replay_keys;
+extern bool cfg_replay_hardrock;
 
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

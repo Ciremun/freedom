@@ -91,7 +91,6 @@ void process_hitobject()
                 }
                 current_replay.replay_ms = 0;
                 current_replay.entries_idx = 0;
-                current_replay.ready = false;
             }
         }
     }

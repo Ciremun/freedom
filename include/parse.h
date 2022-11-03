@@ -128,6 +128,7 @@ struct ReplayData
     uint32_t combo = 0;
 
     void clear();
+    void toggle_hardrock();
     ReplayEntryData& current_entry();
 };
 

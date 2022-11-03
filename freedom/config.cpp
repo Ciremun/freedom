@@ -7,6 +7,7 @@ float cfg_fraction_modifier = 0.04f;
 bool cfg_replay_enabled = false;
 bool cfg_replay_aim = true;
 bool cfg_replay_keys = true;
+bool cfg_replay_hardrock = false;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {

@@ -15,6 +15,19 @@ void ReplayData::clear()
     replay_ms = 0;
 }
 
+void ReplayData::toggle_hardrock()
+{
+    if (ready)
+    {
+        for (auto &entry : entries)
+        {
+            Vector2<float> playfield = screen_to_playfield(entry.position);
+            playfield.y = std::abs(384.f - playfield.y);
+            entry.position = playfield_to_screen(playfield);
+        }
+    }
+}
+
 Circle* BeatmapData::current_circle()
 {
     return hit_objects[hit_object_idx];
@@ -315,6 +328,9 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     {
         if (sscanf(replay_data_ptr, "%lld|%f|%f|%u", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
         {
+            extern bool cfg_replay_hardrock;
+            if (cfg_replay_hardrock)
+                entry.position.y = std::abs(384.f - entry.position.y);
             entry.position = playfield_to_screen(entry.position);
             replay.entries.push_back(entry); // fixme - reserve
         }
