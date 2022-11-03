@@ -28,13 +28,16 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Circle Size (CS)
     * Overall Difficulty (OD)
 
-- Replay Copy (*buggy and unfinished!*)
-
-- Singletap Relax (*no hit timing randomization!*)  
+- Replay Copy (*a bit buggy!*):
+    * Add/Remove Hard Rock (HR)
+    * Replay Keys Only
+    * Replay Aim Only
 
 - Aimbot (*a bit buggy!*):
     * Cursor Speed
     * Spins Per Minute
+
+- Singletap Relax (*no hit timing randomization!*)
 
 - Misc:
     * Set Font Size
