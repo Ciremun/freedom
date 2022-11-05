@@ -125,9 +125,7 @@ void update_ui()
 
         update_tab("Other", MenuTab::Other);
         update_tab("About", MenuTab::About);
-#ifndef NDEBUG
         update_tab("Debug", MenuTab::Debug);
-#endif // NDEBUG
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
         ImGui::SetNextWindowSize(ImVec2(0.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
@@ -246,13 +244,18 @@ void update_ui()
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::Text("Discord: Ciremun#8516");
         }
-#ifndef NDEBUG
         if (selected_tab == MenuTab::Debug)
         {
             if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("osu_client_id: \n%s", osu_client_id);
                 ImGui::Text("osu_username: %s", osu_username);
+            }
+            if (ImGui::CollapsingHeader("Playfield", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("window_size: %f %f", window_size.x, window_size.y);
+                ImGui::Text("playfield_size: %f %f", playfield_size.x, playfield_size.y);
+                ImGui::Text("playfield_position: %f %f", playfield_position.x, playfield_position.y);
             }
             if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
             {
@@ -262,7 +265,7 @@ void update_ui()
                 ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
             }
-            if (ImGui::CollapsingHeader("Code Starts", ImGuiTreeNodeFlags_None))
+            if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
@@ -295,7 +298,6 @@ void update_ui()
                 ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
             }
         }
-#endif // NDEBUG
         ImGui::End();
         ImGui::EndPopup();
     }
