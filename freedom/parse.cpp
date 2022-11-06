@@ -21,9 +21,7 @@ void ReplayData::toggle_hardrock()
     {
         for (auto &entry : entries)
         {
-            Vector2<float> playfield = screen_to_playfield(entry.position);
-            playfield.y = std::abs(384.f - playfield.y);
-            entry.position = playfield_to_screen(playfield);
+            entry.position.y = std::abs(playfield_size.y - entry.position.y);
         }
     }
 }
