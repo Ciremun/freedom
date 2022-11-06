@@ -18,12 +18,8 @@ void ReplayData::clear()
 void ReplayData::toggle_hardrock()
 {
     if (ready)
-    {
         for (auto &entry : entries)
-        {
             entry.position.y = std::abs(playfield_size.y - entry.position.y);
-        }
-    }
 }
 
 Circle* BeatmapData::current_circle()
