@@ -64,8 +64,6 @@ BOOL __stdcall freedom_update(HDC hDc)
         init_ui();
         std::thread(init_hooks).detach();
 
-        calc_playfield(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
-
         init = true;
     }
 

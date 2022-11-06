@@ -37,6 +37,9 @@ bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
+    // class and method names are changing every game update, lengths persist
+    // to avoid memory scan fallback, update these using signatures.h
+
     // class, method
     {L"#=zZkm8tMRXVYd$jFQnnzZMoimcjogNpV87Qd1qDeVtaCnr", L"#=zWPruv_Q="},         // parse_beatmap
     {L"#=z80AYqGbjne6KJcJQG$RmgHSxiO98", L"#=ziJ$JrnGILUiL"},                     // beatmap_onload
@@ -47,6 +50,7 @@ std::vector<CodeStartTarget> code_starts = {
     {L"#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", L"#=zoAQnVmPUhNups7guIw=="}, // replay selected
     {L"#=zmxerX6VKl5Tqk2FdZ33bYlw=", L"#=zPKCAm6g7wfpK"},                         // client id
     {L"#=zzL_sXCs=", L"#=zcR$cictUyamlx1Mo0g=="},                                 // username
+    {L"#=zVn6sagACma0EgTqWXg==", L"#=z54et7IQ="},                                 // window_manager
 
 };
 
@@ -88,6 +92,10 @@ uintptr_t selected_replay_code_start = 0;
 uintptr_t selected_replay_offset = 0;
 uintptr_t selected_replay_hook_jump_back = 0;
 uintptr_t selected_replay_ptr = 0;
+
+uintptr_t window_manager_code_start = 0;
+uintptr_t window_manager_offset = 0;
+uintptr_t window_manager_ptr = 0;
 
 uintptr_t osu_client_id_code_start = 0;
 char osu_client_id[64] = {0};
@@ -141,6 +149,7 @@ static void scan_for_code_starts()
         find_code_start(opcodes, selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
         find_code_start(opcodes, osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
         find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
+        find_code_start(opcodes, window_manager_code_start,  (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
 
         return all_code_starts_found();
     });
@@ -159,6 +168,7 @@ static void dotnet_collect_code_starts()
     selected_replay_code_start = code_starts[6].start;
     osu_client_id_code_start = code_starts[7].start;
     osu_username_code_start = code_starts[8].start;
+    window_manager_code_start = code_starts[9].start;
 }
 
 static void try_find_hook_offsets()
@@ -274,6 +284,12 @@ static void try_find_hook_offsets()
         osu_username[username_bytes_written] = '\0';
     }
     FR_INFO_FMT("username: %s", osu_username);
+    FR_PTR_INFO("window_manager_code_start", window_manager_code_start);
+    if (window_manager_code_start)
+    {
+        window_manager_offset = find_opcodes(window_manager_signature, window_manager_code_start, 0x100, 0xC0A);
+        window_manager_ptr = *(uintptr_t *)(window_manager_code_start + window_manager_offset + sizeof(window_manager_signature));
+    }
 }
 
 void init_hooks()

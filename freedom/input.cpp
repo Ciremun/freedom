@@ -23,6 +23,9 @@ void init_input()
     }
     FR_INFO_FMT("left_click: %c", left_click[0]);
     FR_INFO_FMT("right_click: %c", right_click[0]);
+
+    if (!calc_playfield_from_window(window_manager_ptr))
+        calc_playfield_manual(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 
 void send_keyboard_input(char wVk, DWORD dwFlags)

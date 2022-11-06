@@ -72,6 +72,10 @@ extern uintptr_t selected_replay_offset;
 extern uintptr_t selected_replay_hook_jump_back;
 extern uintptr_t selected_replay_ptr;
 
+extern uintptr_t window_manager_code_start;
+extern uintptr_t window_manager_offset;
+extern uintptr_t window_manager_ptr;
+
 extern uintptr_t osu_client_id_code_start;
 extern char osu_client_id[64];
 

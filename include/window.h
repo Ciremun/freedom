@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector.h"
+#include "freedom.h"
 
 extern Vector2<float> window_size;
 extern Vector2<float> playfield_size;
@@ -21,4 +22,5 @@ Vector2<T> playfield_to_screen(Vector2<T> playfield_coords)
     return (playfield_coords * playfield_ratio) + playfield_position;
 }
 
-void calc_playfield(float window_x, float window_y);
+void calc_playfield_manual(float window_x, float window_y);
+bool calc_playfield_from_window(uintptr_t window_manager_ptr);

@@ -264,6 +264,7 @@ void update_ui()
                 ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
                 ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
+                ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
@@ -277,6 +278,7 @@ void update_ui()
                 ImGui::Text("selected_replay_code_start: %08X", selected_replay_code_start);
                 ImGui::Text("osu_client_id_code_start: %08X", osu_client_id_code_start);
                 ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
+                ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -287,6 +289,7 @@ void update_ui()
                 ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
                 ImGui::Text("notify_on_scene_change_original_mov_address: \n%08X", notify_on_scene_change_original_mov_address);
                 ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
+                ImGui::Text("window_manager_offset: 0x%X", window_manager_offset);
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {
