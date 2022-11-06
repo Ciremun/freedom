@@ -53,7 +53,7 @@ void process_hitobject()
             static bool right = false;
             if (current_replay.entries_idx < current_replay.entries.size())
             {
-                if (cfg_replay_aim)
+                if (cfg_replay_aim && entry.position.x > 0 && entry.position.y > 0)
                     move_mouse_to(entry.position.x, entry.position.y);
                 if (cfg_replay_keys)
                 {

@@ -318,6 +318,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     const char *replay_data_ptr = (const char *)&replay_data[0];
     size_t next_comma_position = 0;
     ReplayEntryData entry;
+    replay.entries.reserve(replay_data_size / 4);
     while (entry.ms_since_last_frame != -12345)
     {
         if (sscanf(replay_data_ptr, "%lld|%f|%f|%u", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
@@ -326,7 +327,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
             if (cfg_replay_hardrock)
                 entry.position.y = std::abs(384.f - entry.position.y);
             entry.position = playfield_to_screen(entry.position);
-            replay.entries.push_back(entry); // fixme - reserve
+            replay.entries.push_back(entry);
         }
         else
             break;
