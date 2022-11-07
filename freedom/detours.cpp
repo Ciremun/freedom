@@ -123,7 +123,8 @@ Hook<Detour32> SelectedReplayHook;
 static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
-        audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start;
+        audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
+        osu_client_id_code_start && osu_username_code_start && window_manager_code_start;
 }
 
 static void scan_for_code_starts()
