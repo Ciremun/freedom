@@ -6,7 +6,7 @@
 
 #include <thread>
 
-#define FR_VERSION "v0.8"
+#define FR_VERSION "v0.81"
 
 extern uintptr_t osu_auth_base;
 
