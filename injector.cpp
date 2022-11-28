@@ -50,20 +50,27 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
     }
 
     HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
-
-    if (hProc != INVALID_HANDLE_VALUE)
+    if (hProc != NULL)
     {
-        void *loc = VirtualAllocEx(hProc, 0, MAX_PATH * 2 * sizeof(wchar_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        void *loc = VirtualAllocEx(hProc, 0, module_path_length * sizeof(wchar_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (loc)
         {
-            if (WriteProcessMemory(hProc, loc, module_path, module_path_length * sizeof(wchar_t), 0) != 0)
+            if (WriteProcessMemory(hProc, loc, module_path, module_path_length * sizeof(wchar_t), 0))
             {
                 HANDLE hThread = CreateRemoteThread(hProc, 0, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, loc, 0, 0);
                 if (hThread)
                     CloseHandle(hThread);
+                else
+                    fprintf(stderr, "CreateRemoteThread failed: %ld\n", GetLastError());
             }
+            else
+                fprintf(stderr, "WriteProcessMemory failed: %ld\n", GetLastError());
         }
+        else
+            fprintf(stderr, "VirtualAllocEx failed: %ld\n", GetLastError());
     }
+    else
+        fprintf(stderr, "OpenProcess failed: %ld\n", GetLastError());
 
     if (hProc)
         CloseHandle(hProc);
