@@ -250,6 +250,7 @@ static void try_find_hook_offsets()
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
+        // @@@ crash
         uintptr_t binding_manager_offset = find_opcodes(binding_manager_signature, binding_manager_code_start, 0x0, 0x100);
         uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
         uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
