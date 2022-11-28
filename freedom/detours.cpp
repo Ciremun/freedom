@@ -223,14 +223,14 @@ static void try_find_hook_offsets()
     FR_PTR_INFO("beatmap_onload_code_start", beatmap_onload_code_start);
     if (beatmap_onload_code_start)
     {
-        beatmap_onload_offset = find_opcodes(beatmap_onload_signature, beatmap_onload_code_start, 0x100, 0x300);
+        beatmap_onload_offset = find_opcodes(beatmap_onload_signature, beatmap_onload_code_start, 0x50, 0x300);
         beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
         FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
     }
     FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
-        uintptr_t selected_song_offset = find_opcodes(selected_song_signature, selected_song_code_start, 0x200, 0x5A6);
+        uintptr_t selected_song_offset = find_opcodes(selected_song_signature, selected_song_code_start, 0x100, 0x5A6);
         selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
         FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
     }
@@ -251,17 +251,18 @@ static void try_find_hook_offsets()
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
-        // @@@ crash
         uintptr_t binding_manager_offset = find_opcodes(binding_manager_signature, binding_manager_code_start, 0x0, 0x100);
-        uintptr_t unknown_1 = **(uintptr_t **)(binding_manager_code_start + binding_manager_offset + 0x6);
-        uintptr_t unknown_2 = *(uintptr_t *)(unknown_1 + 0x8);
-        binding_manager_ptr = unknown_2 + 0x14;
+        uintptr_t unknown_ptr = binding_manager_code_start + binding_manager_offset + 0x6;
+        if (internal_memory_read(g_process, unknown_ptr, &unknown_ptr))
+            if (internal_memory_read(g_process, unknown_ptr, &unknown_ptr))
+                if (internal_memory_read(g_process, unknown_ptr + 0x8, &unknown_ptr))
+                    binding_manager_ptr = unknown_ptr + 0x14;
         FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
     FR_PTR_INFO("selected_replay_code_start", selected_replay_code_start);
     if (selected_replay_code_start)
     {
-        selected_replay_offset = find_opcodes(selected_replay_signature, selected_replay_code_start, 0x400, 0x718);
+        selected_replay_offset = find_opcodes(selected_replay_signature, selected_replay_code_start, 0x200, 0x718);
         selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
         FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
     }
@@ -279,7 +280,7 @@ static void try_find_hook_offsets()
     FR_INFO_FMT("client_id: %s", osu_client_id);
     if (osu_username_code_start)
     {
-        uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x50, 0x14D);
+        uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x20, 0x14D);
         uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
         uint32_t username_length = *(uint32_t *)(username_string + 0x4);
         wchar_t *username_data = (wchar_t *)(username_string + 0x8);
@@ -290,7 +291,7 @@ static void try_find_hook_offsets()
     FR_PTR_INFO("window_manager_code_start", window_manager_code_start);
     if (window_manager_code_start)
     {
-        window_manager_offset = find_opcodes(window_manager_signature, window_manager_code_start, 0x100, 0xC0A);
+        window_manager_offset = find_opcodes(window_manager_signature, window_manager_code_start, 0x50, 0xC0A);
         window_manager_ptr = *(uintptr_t *)(window_manager_code_start + window_manager_offset + sizeof(window_manager_signature));
     }
 }
