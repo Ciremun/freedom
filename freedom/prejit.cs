@@ -20,8 +20,8 @@ namespace Freedom
     public class PreJit
     {
         public static ClassMethod[] classmethods = new ClassMethod[]{
-            new ClassMethod {class_ = "#=z80AYqGbjne6KJcJQG$RmgHSxiO98", method = "#=ziJ$JrnGILUiL", name="beatmap_onload"},
-            new ClassMethod {class_ = "#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", method = "#=zoAQnVmPUhNups7guIw==", name="selected_replay"},
+            new ClassMethod {class_ = "#=zYURwUP2uJSsqnTKodmJE03TyPLeq", method = "#=zatiWg0Szrt2L", name="beatmap_onload"},
+            new ClassMethod {class_ = "#=zhFqy59fyDDU$w2YsO7z89QEc0IwbUUjvkJtJWu0=", method = "#=zpTKaeg$h_sSQy5vq$g==", name="selected_replay"},
         };
 
         public static int main(String pwzArgument)

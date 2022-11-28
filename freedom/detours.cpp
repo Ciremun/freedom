@@ -38,18 +38,19 @@ bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
     // class and method names are changing every game update, lengths persist
-    // to avoid memory scan fallback, update these using signatures.h
+    // to avoid memory scan fallback, update these using methods from debug tab
+    // or signatures.h
 
     // class, method
-    {L"#=zZkm8tMRXVYd$jFQnnzZMoimcjogNpV87Qd1qDeVtaCnr", L"#=zWPruv_Q="},         // parse_beatmap
-    {L"#=z80AYqGbjne6KJcJQG$RmgHSxiO98", L"#=ziJ$JrnGILUiL"},                     // beatmap_onload
-    {L"#=zFNJI930JqpdIBB0ihw==", L"#=zBWCtnYFBD8pV"},                             // current scene
-    {L"#=zawJ1iTMjkZmo2r1KRA==", L"#=z1qAut25TupMl"},                             // selected song, audio time
+    {L"#=z9LeL3D52o1fSAqPDqfA4Edzg0X1At03UCCj1jMPHwfAV", L"#=zDQPJYto="},         // parse_beatmap
+    {L"#=zYURwUP2uJSsqnTKodmJE03TyPLeq", L"#=zatiWg0Szrt2L"},                     // beatmap_onload
+    {L"#=zdb8S9GZ2tpSdgXuEoQ==", L"#=zgJ06wy82Ev$i"},                             // current scene
+    {L"#=z6KkieAY6WWrjigcGIA==", L"#=zb0_LPxrHC214"},                             // selected song, audio time
     {L"#=zLl42PvkI8UhE6qoDRkIGCOs=", L"#=zw3RHfpUNJFBO"},                         // osu manager
-    {L"#=z$lSS$e9JQdH4Ukc65A==", L"#=ztWfkzAs="},                                 // binding manager
-    {L"#=zD9xjQs44dfTmz3eJ5rYlMH$M3sA_uswuffhmjxI=", L"#=zoAQnVmPUhNups7guIw=="}, // replay selected
-    {L"#=zmxerX6VKl5Tqk2FdZ33bYlw=", L"#=zPKCAm6g7wfpK"},                         // client id
-    {L"#=zzL_sXCs=", L"#=zcR$cictUyamlx1Mo0g=="},                                 // username
+    {L"#=zrJ8u2LMm4sx24BzivQ==", L"#=z3YLH4IA="},                                 // binding manager
+    {L"#=zhFqy59fyDDU$w2YsO7z89QEc0IwbUUjvkJtJWu0=", L"#=zpTKaeg$h_sSQy5vq$g=="}, // replay selected
+    {L"#=z5uF2wYKLAgvAca9vRkuYhcU=", L"#=zf5wOtqnLL1sV"},                         // client id
+    {L"#=zMWj8QQU=", L"#=zHQiGl5Wh7SlRaEwg0w=="},                                 // username
     {L"#=zVn6sagACma0EgTqWXg==", L"#=z54et7IQ="},                                 // window_manager
 
 };
