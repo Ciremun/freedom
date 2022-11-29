@@ -224,75 +224,91 @@ static void try_find_hook_offsets()
     if (beatmap_onload_code_start)
     {
         beatmap_onload_offset = find_opcodes(beatmap_onload_signature, beatmap_onload_code_start, 0x50, 0x300);
-        beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
+        if (beatmap_onload_offset)
+            beatmap_onload_hook_jump_back = beatmap_onload_code_start + beatmap_onload_offset + 0x6;
         FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
     }
     FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
         uintptr_t selected_song_offset = find_opcodes(selected_song_signature, selected_song_code_start, 0x100, 0x5A6);
-        selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
+        if (selected_song_offset)
+            selected_song_ptr = *(uintptr_t *)(selected_song_code_start + selected_song_offset + 0x8);
         FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
     }
     FR_PTR_INFO("audio_time_code_start", audio_time_code_start);
     if (audio_time_code_start)
     {
         uintptr_t audio_time_offset = find_opcodes(audio_time_signature, audio_time_code_start, 0x0, 0x5A6);
-        audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
+        if (audio_time_offset)
+            audio_time_ptr = *(uintptr_t *)(audio_time_code_start + audio_time_offset - 0xA);
         FR_PTR_INFO("audio_time_ptr", audio_time_ptr);
     }
     FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
     {
         uintptr_t osu_manager_offset = find_opcodes(osu_manager_signature, osu_manager_code_start, 0x0, 0x150);
-        osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset - 0x4);
+        if (osu_manager_offset)
+            osu_manager_ptr = *(uintptr_t *)(osu_manager_code_start + osu_manager_offset - 0x4);
         FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
     }
     FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
         uintptr_t binding_manager_offset = find_opcodes(binding_manager_signature, binding_manager_code_start, 0x0, 0x100);
-        uintptr_t unknown_ptr = binding_manager_code_start + binding_manager_offset + 0x6;
-        if (internal_memory_read(g_process, unknown_ptr, &unknown_ptr))
+        if (binding_manager_offset)
+        {
+            uintptr_t unknown_ptr = binding_manager_code_start + binding_manager_offset + 0x6;
             if (internal_memory_read(g_process, unknown_ptr, &unknown_ptr))
-                if (internal_memory_read(g_process, unknown_ptr + 0x8, &unknown_ptr))
-                    binding_manager_ptr = unknown_ptr + 0x14;
+                if (internal_memory_read(g_process, unknown_ptr, &unknown_ptr))
+                    if (internal_memory_read(g_process, unknown_ptr + 0x8, &unknown_ptr))
+                        binding_manager_ptr = unknown_ptr + 0x14;
+        }
         FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
     FR_PTR_INFO("selected_replay_code_start", selected_replay_code_start);
     if (selected_replay_code_start)
     {
         selected_replay_offset = find_opcodes(selected_replay_signature, selected_replay_code_start, 0x200, 0x718);
-        selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
+        if (selected_replay_offset)
+            selected_replay_hook_jump_back = selected_replay_code_start + selected_replay_offset + 0x7;
         FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
     }
     if (osu_client_id_code_start)
     {
+        // @@@ todo: log errors in ui
         uintptr_t client_id_offset = find_opcodes(osu_client_id_function_signature, osu_client_id_code_start, 0x0, 0xBF);
-        uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + client_id_offset + sizeof(osu_client_id_function_signature));
-        uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
-        uintptr_t client_id_string = *(uintptr_t *)(client_id_array + 0x8);
-        uint32_t client_id_length = *(uint32_t *)(client_id_string + 0x4);
-        wchar_t *client_id_data = (wchar_t *)(client_id_string + 0x8);
-        int client_bytes_written = WideCharToMultiByte(CP_UTF8, 0, client_id_data, client_id_length, osu_client_id, 64, 0, 0);
-        osu_client_id[client_bytes_written] = '\0';
+        if (client_id_offset)
+        {
+            uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + client_id_offset + sizeof(osu_client_id_function_signature));
+            uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
+            uintptr_t client_id_string = *(uintptr_t *)(client_id_array + 0x8);
+            uint32_t client_id_length = *(uint32_t *)(client_id_string + 0x4);
+            wchar_t *client_id_data = (wchar_t *)(client_id_string + 0x8);
+            int client_bytes_written = WideCharToMultiByte(CP_UTF8, 0, client_id_data, client_id_length, osu_client_id, 64, 0, 0);
+            osu_client_id[client_bytes_written] = '\0';
+        }
     }
     FR_INFO_FMT("client_id: %s", osu_client_id);
     if (osu_username_code_start)
     {
         uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x20, 0x14D);
-        uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
-        uint32_t username_length = *(uint32_t *)(username_string + 0x4);
-        wchar_t *username_data = (wchar_t *)(username_string + 0x8);
-        int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
-        osu_username[username_bytes_written] = '\0';
+        if (username_offset)
+        {
+            uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
+            uint32_t username_length = *(uint32_t *)(username_string + 0x4);
+            wchar_t *username_data = (wchar_t *)(username_string + 0x8);
+            int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
+            osu_username[username_bytes_written] = '\0';
+        }
     }
     FR_INFO_FMT("username: %s", osu_username);
     FR_PTR_INFO("window_manager_code_start", window_manager_code_start);
     if (window_manager_code_start)
     {
         window_manager_offset = find_opcodes(window_manager_signature, window_manager_code_start, 0x50, 0xC0A);
-        window_manager_ptr = *(uintptr_t *)(window_manager_code_start + window_manager_offset + sizeof(window_manager_signature));
+        if (window_manager_offset)
+            window_manager_ptr = *(uintptr_t *)(window_manager_code_start + window_manager_offset + sizeof(window_manager_signature));
     }
 }
 
