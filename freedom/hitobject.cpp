@@ -2,14 +2,20 @@
 
 BeatmapData current_beatmap;
 ReplayData current_replay;
-Scene current_scene = Scene::MAIN_MENU;
 
 bool beatmap_loaded = false;
 bool start_parse_replay = false;
 bool target_first_circle = true;
 
+static inline bool scene_is_game(Scene *current_scene_ptr)
+{
+    if (current_scene_ptr == 0) return false;
+    return *current_scene_ptr == Scene::GAME;
+}
+
 static inline bool is_playing(uintptr_t audio_time_ptr)
 {
+    if (audio_time_ptr == 0) return false;
     return *(bool *)(audio_time_ptr + 0x30);
 }
 
@@ -43,7 +49,7 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && current_scene == Scene::GAME && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
+    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && scene_is_game(current_scene_ptr) && current_replay.ready && audio_time_ptr && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
@@ -100,7 +106,7 @@ void process_hitobject()
     static float fraction_of_the_distance = 0.0f;
     static Vector2 direction(0.0f, 0.0f);
     static Vector2 mouse_position(0.0f, 0.0f);
-    if ((cfg_relax_lock || cfg_aimbot_lock) && current_scene == Scene::GAME && current_beatmap.ready && is_playing(audio_time_ptr))
+    if ((cfg_relax_lock || cfg_aimbot_lock) && scene_is_game(current_scene_ptr) && current_beatmap.ready && audio_time_ptr && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle* circle = current_beatmap.current_circle();

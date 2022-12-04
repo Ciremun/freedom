@@ -231,6 +231,10 @@ void update_ui()
                 }
                 ImGui::EndCombo();
             }
+            ImGui::Dummy(ImVec2(.0f, 5.0f));
+            static bool nt_user_send_input_patched = true;
+            if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
+                nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() - 10.0f);
             if (ImGui::Button("Unload DLL"))
                 unload_freedom();
@@ -265,6 +269,8 @@ void update_ui()
                 ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
                 ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
+                ImGui::Text("current_scene_ptr: %08X", current_scene_ptr);
+                ImGui::Text("current_scene: %d", current_scene_ptr ? *(int *)current_scene_ptr : -1);
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
@@ -287,7 +293,6 @@ void update_ui()
                 ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
                 ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
                 ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
-                ImGui::Text("notify_on_scene_change_original_mov_address: \n%08X", notify_on_scene_change_original_mov_address);
                 ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
                 ImGui::Text("window_manager_offset: 0x%X", window_manager_offset);
             }
@@ -297,7 +302,6 @@ void update_ui()
                 ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
                 ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
                 ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
-                ImGui::Text("current_scene_hook_jump_back: %08X", current_scene_hook_jump_back);
                 ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
             }
         }

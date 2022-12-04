@@ -42,16 +42,16 @@ std::vector<CodeStartTarget> code_starts = {
     // or signatures.h
 
     // class, method
-    {L"#=z9LeL3D52o1fSAqPDqfA4Edzg0X1At03UCCj1jMPHwfAV", L"#=zDQPJYto="},         // parse_beatmap
-    {L"#=zYURwUP2uJSsqnTKodmJE03TyPLeq", L"#=zatiWg0Szrt2L"},                     // beatmap_onload
-    {L"#=zdb8S9GZ2tpSdgXuEoQ==", L"#=zgJ06wy82Ev$i"},                             // current scene
-    {L"#=z6KkieAY6WWrjigcGIA==", L"#=zb0_LPxrHC214"},                             // selected song, audio time
-    {L"#=zLl42PvkI8UhE6qoDRkIGCOs=", L"#=zw3RHfpUNJFBO"},                         // osu manager
-    {L"#=zrJ8u2LMm4sx24BzivQ==", L"#=z3YLH4IA="},                                 // binding manager
-    {L"#=zhFqy59fyDDU$w2YsO7z89QEc0IwbUUjvkJtJWu0=", L"#=zpTKaeg$h_sSQy5vq$g=="}, // replay selected
-    {L"#=z5uF2wYKLAgvAca9vRkuYhcU=", L"#=zf5wOtqnLL1sV"},                         // client id
-    {L"#=zMWj8QQU=", L"#=zHQiGl5Wh7SlRaEwg0w=="},                                 // username
-    {L"#=zVn6sagACma0EgTqWXg==", L"#=z54et7IQ="},                                 // window_manager
+    {L"#=zq54uvRQkz7ELzbroZX9N6rKokqaWrn635IZFvUT__z2X", L"#=zOH5knGA="},         // parse_beatmap
+    {L"#=z_JoBdjCdwD3UqdPyMDTdmtx7HG8J", L"#=zpbRFhHIGLFX4"},                     // beatmap_onload
+    {L"#=ziSPxt1Kp2jWLH318Bw==", L"#=z3ka3V9eqXqYx"},                             // current scene
+    {L"#=zLvSKj3H4nW0tHOFJlA==", L"#=zoL49GTTkVSeu"},                             // selected song, audio time
+    {L"#=zX7J2Zh1muBpHxYm8YqPRZho=", L"#=zRs16rX_pPqoQ"},                         // osu manager
+    {L"#=zdVSfeCOMKHX_1zJnEg==", L"#=zm3BDwgA="},                                 // binding manager
+    {L"#=zuzcYy$AnALKJhx0RlLp1l4ahmCVSgkWbMNkerfg=", L"#=z$hHktWjcmnjerZy8LA=="}, // replay selected
+    {L"#=zDADKNEW66h$QjuJ82$UG4WY=", L"#=zxpkNP0XD0xWr"},                         // client id
+    {L"#=zWPdRjac=", L"#=zpTL7R82s6mdPflNoFA=="},                                 // username
+    {L"#=z8wwmZD9r9H1ng489fA==", L"#=z$v9QB0I="},                                 // window_manager
 
 };
 
@@ -74,8 +74,7 @@ uintptr_t beatmap_onload_hook_jump_back = 0;
 
 uintptr_t current_scene_code_start = 0;
 uintptr_t current_scene_offset = 0;
-uintptr_t notify_on_scene_change_original_mov_address = 0;
-uintptr_t current_scene_hook_jump_back = 0;
+Scene *current_scene_ptr = 0;
 
 uintptr_t selected_song_code_start = 0;
 uintptr_t selected_song_ptr = 0;
@@ -98,6 +97,9 @@ uintptr_t window_manager_code_start = 0;
 uintptr_t window_manager_offset = 0;
 uintptr_t window_manager_ptr = 0;
 
+uintptr_t nt_user_send_input_ptr = 0;
+uintptr_t nt_user_send_input_original_jmp_address = 0;
+
 uintptr_t osu_client_id_code_start = 0;
 char osu_client_id[64] = {0};
 
@@ -117,7 +119,6 @@ Hook<Detour32> OverallDifficultyHook1;
 Hook<Detour32> OverallDifficultyHook2;
 
 Hook<Detour32> BeatmapOnLoadHook;
-Hook<Detour32> SceneChangeHook;
 
 Hook<Detour32> SelectedReplayHook;
 
@@ -160,17 +161,17 @@ static void scan_for_code_starts()
 static void dotnet_collect_code_starts()
 {
     code_start_for_class_methods(code_starts);
-    parse_beatmap_code_start = code_starts[0].start;
-    beatmap_onload_code_start = code_starts[1].start;
-    current_scene_code_start = code_starts[2].start;
-    selected_song_code_start = code_starts[3].start;
-    audio_time_code_start = code_starts[3].start;
-    osu_manager_code_start = code_starts[4].start;
-    binding_manager_code_start = code_starts[5].start;
-    selected_replay_code_start = code_starts[6].start;
-    osu_client_id_code_start = code_starts[7].start;
-    osu_username_code_start = code_starts[8].start;
-    window_manager_code_start = code_starts[9].start;
+    parse_beatmap_code_start = code_starts[0].start;   if (!parse_beatmap_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "parse_beatmap_code_start");
+    beatmap_onload_code_start = code_starts[1].start;  if (!beatmap_onload_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "beatmap_onload_code_start");
+    current_scene_code_start = code_starts[2].start;   if (!current_scene_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "current_scene_code_start");
+    selected_song_code_start = code_starts[3].start;   if (!selected_song_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "selected_song_code_start");
+    audio_time_code_start = code_starts[3].start;      if (!audio_time_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "audio_time_code_start");
+    osu_manager_code_start = code_starts[4].start;     if (!osu_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_manager_code_start");
+    binding_manager_code_start = code_starts[5].start; if (!binding_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "binding_manager_code_start");
+    selected_replay_code_start = code_starts[6].start; if (!selected_replay_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "selected_replay_code_start");
+    osu_client_id_code_start = code_starts[7].start;   if (!osu_client_id_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_client_id_code_start");
+    osu_username_code_start = code_starts[8].start;    if (!osu_username_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_username_code_start");
+    window_manager_code_start = code_starts[9].start;  if (!window_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "window_manager_code_start");
 }
 
 static void try_find_hook_offsets()
@@ -213,8 +214,7 @@ static void try_find_hook_offsets()
             if (memcmp(signature, current_scene_signature, sizeof(current_scene_signature)) == 0)
             {
                 current_scene_offset = start - current_scene_code_start + 0xF;
-                current_scene_hook_jump_back = current_scene_code_start + current_scene_offset + 0x5;
-                notify_on_scene_change_original_mov_address = *(uintptr_t *)(current_scene_code_start + current_scene_offset + 0x1);
+                current_scene_ptr = *(Scene **)(current_scene_code_start + current_scene_offset + 0x1);
                 break;
             }
         }
@@ -355,18 +355,50 @@ void init_hooks()
             BeatmapOnLoadHook.Enable();
     }
 
-    if (current_scene_offset)
-    {
-        SceneChangeHook = Hook<Detour32>(current_scene_code_start + current_scene_offset, (BYTE *)notify_on_scene_change, 5);
-        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
-            SceneChangeHook.Enable();
-    }
-
     if (selected_replay_offset)
     {
         SelectedReplayHook = Hook<Detour32>(selected_replay_code_start + selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
         if (cfg_replay_enabled)
             SelectedReplayHook.Enable();
+    }
+
+    HMODULE win32u = GetModuleHandle(L"win32u.dll");
+    if (win32u != NULL)
+    {
+        nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
+        if (nt_user_send_input_ptr == NULL)
+            FR_INFO("NtUserSendInput is null");
+    }
+    else
+        FR_INFO("win32u.dll is null");
+
+    enable_nt_user_send_input_patch();
+}
+
+void enable_nt_user_send_input_patch()
+{
+    if (nt_user_send_input_ptr && *(uint8_t *)nt_user_send_input_ptr == (uint8_t)0xE9)
+    {
+        DWORD oldprotect;
+        VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, PAGE_EXECUTE_READWRITE, &oldprotect);
+        nt_user_send_input_original_jmp_address = *(uintptr_t *)(nt_user_send_input_ptr + 0x1);
+        uintptr_t dispatch_table_id = 0x0000107F;
+        FR_PTR_INFO("dispatch_table_id", dispatch_table_id);
+        *(uint8_t *)nt_user_send_input_ptr = (uint8_t)0xB8; // mov eax
+        *(uintptr_t *)(nt_user_send_input_ptr + 0x1) = dispatch_table_id;
+        VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, oldprotect, &oldprotect);
+    }
+}
+
+void disable_nt_user_send_input_patch()
+{
+    if (nt_user_send_input_ptr && nt_user_send_input_original_jmp_address)
+    {
+        DWORD oldprotect;
+        VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, PAGE_EXECUTE_READWRITE, &oldprotect);
+        *(uint8_t *)nt_user_send_input_ptr = (uint8_t)0xE9;
+        *(uintptr_t *)(nt_user_send_input_ptr + 0x1) = nt_user_send_input_original_jmp_address;
+        VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, oldprotect, &oldprotect);
     }
 }
 
@@ -413,7 +445,6 @@ void enable_notify_hooks()
     if (!cfg_relax_lock || !cfg_aimbot_lock || !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Enable();
-        SceneChangeHook.Enable();
     }
 }
 
@@ -422,11 +453,6 @@ void disable_notify_hooks()
     if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled)
     {
         BeatmapOnLoadHook.Disable();
-        SceneChangeHook.Disable();
-        // @@@ fixme
-        // this just avoids crashes caused by osu_manager deref
-        // use current scene pointer instead of a hook is the fix
-        current_scene = Scene::BEATMAP_SELECT;
     }
 }
 
@@ -484,17 +510,6 @@ __declspec(naked) void notify_on_beatmap_load()
     }
 }
 
-__declspec(naked) void notify_on_scene_change()
-{
-    __asm {
-        mov current_scene, eax
-        mov edx, notify_on_scene_change_original_mov_address
-        mov dword ptr [edx], eax
-        mov edx, 0
-        jmp [current_scene_hook_jump_back]
-    }
-}
-
 __declspec(naked) void notify_on_select_replay()
 {
     __asm {
@@ -513,9 +528,6 @@ void destroy_hooks()
     if (cs_parameter.lock)  disable_cs_hooks();
     if (od_parameter.lock)  disable_od_hooks();
     if (cfg_replay_enabled) SelectedReplayHook.Disable();
-    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
-    {
-        BeatmapOnLoadHook.Disable();
-        SceneChangeHook.Disable();
-    }
+    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock) BeatmapOnLoadHook.Disable();
+    disable_nt_user_send_input_patch();
 }

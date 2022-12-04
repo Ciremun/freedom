@@ -52,8 +52,7 @@ extern uintptr_t beatmap_onload_hook_jump_back;
 
 extern uintptr_t current_scene_code_start;
 extern uintptr_t current_scene_offset;
-extern uintptr_t notify_on_scene_change_original_mov_address;
-extern uintptr_t current_scene_hook_jump_back;
+extern Scene *current_scene_ptr;
 
 extern uintptr_t selected_song_code_start;
 extern uintptr_t selected_song_ptr;
@@ -108,7 +107,9 @@ void set_circle_size();
 void set_overall_difficulty();
 
 void notify_on_beatmap_load();
-void notify_on_scene_change();
 void notify_on_select_replay();
+
+void enable_nt_user_send_input_patch();
+void disable_nt_user_send_input_patch();
 
 void destroy_hooks();

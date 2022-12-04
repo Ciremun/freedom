@@ -53,6 +53,8 @@ void BeatmapData::clear()
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 {
+    FR_INFO("parse_beatmap");
+
     beatmap_data.clear();
 
     if (osu_manager_ptr == 0)
