@@ -1,3 +1,6 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "dotnet/icor_debug_data_target.h"
 
 STDMETHODIMP CMyIcorDebugDataTarget::QueryInterface(__in REFIID InterfaceId, __out PVOID *Interface)

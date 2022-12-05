@@ -1,3 +1,6 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 // dear imgui: Renderer Backend for modern OpenGL with shaders / programmatic pipeline
 // - Desktop GL: 2.x 3.x 4.x
 // - Embedded GL: ES 2.0 (WebGL 1.0), ES 3.0 (WebGL 2.0)

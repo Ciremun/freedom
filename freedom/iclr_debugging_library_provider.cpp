@@ -1,3 +1,6 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "dotnet/iclr_debugging_library_provider.h"
 
 STDMETHODIMP CMyICLRDebuggingLibraryProvider::QueryInterface(__in REFIID InterfaceId, __out PVOID *Interface)
