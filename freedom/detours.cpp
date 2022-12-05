@@ -129,6 +129,18 @@ static inline bool all_code_starts_found()
         osu_client_id_code_start && osu_username_code_start && window_manager_code_start;
 }
 
+int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+{
+    if (code == EXCEPTION_ACCESS_VIOLATION)
+    {
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+    else
+    {
+        return EXCEPTION_CONTINUE_SEARCH;
+    };
+}
+
 static void scan_for_code_starts()
 {
     prejit_all();
@@ -138,21 +150,26 @@ static void scan_for_code_starts()
             code_start = (uintptr_t)opcodes;
     };
 
-    scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x80000000, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
+    scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x7FFFFFFF, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
     {
-        uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
-
-        find_code_start(opcodes, parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
-        find_code_start(opcodes, beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
-        find_code_start(opcodes, current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
-        find_code_start(opcodes, selected_song_code_start,   (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
-        find_code_start(opcodes, audio_time_code_start,      (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
-        find_code_start(opcodes, osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
-        find_code_start(opcodes, binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
-        find_code_start(opcodes, selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
-        find_code_start(opcodes, osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
-        find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
-        find_code_start(opcodes, window_manager_code_start,  (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
+        __try {
+            uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
+            find_code_start(opcodes, parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
+            find_code_start(opcodes, beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
+            find_code_start(opcodes, current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
+            find_code_start(opcodes, selected_song_code_start,   (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
+            find_code_start(opcodes, audio_time_code_start,      (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
+            find_code_start(opcodes, osu_manager_code_start,     (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
+            find_code_start(opcodes, binding_manager_code_start, (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
+            find_code_start(opcodes, selected_replay_code_start, (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
+            find_code_start(opcodes, osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
+            find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
+            find_code_start(opcodes, window_manager_code_start,  (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
+        }
+        __except(filter(GetExceptionCode(), GetExceptionInformation()))
+        {
+            FR_PTR_INFO("exception in scan_memory", begin + idx * alignment);
+        }
 
         return all_code_starts_found();
     });
