@@ -102,6 +102,7 @@ uintptr_t window_manager_ptr = 0;
 
 uintptr_t nt_user_send_input_ptr = 0;
 uintptr_t nt_user_send_input_original_jmp_address = 0;
+uintptr_t dispatch_table_id = 0x0000107F;
 
 uintptr_t osu_client_id_code_start = 0;
 char osu_client_id[64] = {0};
@@ -155,7 +156,8 @@ static void scan_for_code_starts()
 
     scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x7FFFFFFF, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
     {
-        __try {
+        __try
+        {
             uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
             find_code_start(opcodes, parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
             find_code_start(opcodes, beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
@@ -171,7 +173,7 @@ static void scan_for_code_starts()
         }
         __except(filter(GetExceptionCode(), GetExceptionInformation()))
         {
-            FR_PTR_INFO("exception in scan_memory", begin + idx * alignment);
+            FR_PTR_INFO("exception in scan_for_code_starts", begin + idx * alignment);
         }
 
         return all_code_starts_found();
@@ -397,12 +399,30 @@ void init_hooks()
 
 void enable_nt_user_send_input_patch()
 {
-    if (nt_user_send_input_ptr && *(uint8_t *)nt_user_send_input_ptr == (uint8_t)0xE9)
+    if (nt_user_send_input_ptr /* && *(uint8_t *)nt_user_send_input_ptr == (uint8_t)0xE9 */)
     {
         DWORD oldprotect;
         VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, PAGE_EXECUTE_READWRITE, &oldprotect);
         nt_user_send_input_original_jmp_address = *(uintptr_t *)(nt_user_send_input_ptr + 0x1);
-        uintptr_t dispatch_table_id = 0x0000107F;
+        bool found = false;
+        scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x7FFFFFFF, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
+        {
+            __try
+            {
+                uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
+                if (*opcodes == (uint8_t)0xB8 && memcmp(opcodes + 0x5, dispatch_table_id_signature, sizeof(dispatch_table_id_signature)) == 0)
+                {
+                    dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
+                    found = true;
+                    FR_INFO_FMT("found dispatch_table_id: %X", dispatch_table_id);
+                }
+            }
+            __except(filter(GetExceptionCode(), GetExceptionInformation()))
+            {
+                FR_PTR_INFO("exception in enable_nt_user_send_input_patch", begin + idx * alignment);
+            }
+            return found;
+        });
         FR_PTR_INFO("dispatch_table_id", dispatch_table_id);
         *(uint8_t *)nt_user_send_input_ptr = (uint8_t)0xB8; // mov eax
         *(uintptr_t *)(nt_user_send_input_ptr + 0x1) = dispatch_table_id;

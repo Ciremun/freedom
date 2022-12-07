@@ -81,6 +81,8 @@ extern char osu_client_id[64];
 extern uintptr_t osu_username_code_start;
 extern char osu_username[32];
 
+extern uintptr_t dispatch_table_id;
+
 extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook<Trampoline32> SwapBuffersHook;
