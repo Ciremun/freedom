@@ -277,6 +277,8 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
+                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
+                ImGui::Text("dispatch_table_id_found: %d", nt_user_send_input_dispatch_table_id_found);
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
                 ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
@@ -288,7 +290,6 @@ void update_ui()
                 ImGui::Text("osu_client_id_code_start: %08X", osu_client_id_code_start);
                 ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
                 ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
-                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {

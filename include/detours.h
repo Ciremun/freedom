@@ -82,6 +82,7 @@ extern uintptr_t osu_username_code_start;
 extern char osu_username[32];
 
 extern uintptr_t dispatch_table_id;
+extern uintptr_t nt_user_send_input_dispatch_table_id_found;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 
