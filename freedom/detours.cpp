@@ -40,6 +40,7 @@ bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 
 std::vector<CodeStartTarget> code_starts = {
+    // @@@ deprecated
     // class and method names are changing every game update, lengths persist
     // to avoid memory scan fallback, update these using methods from debug tab
     // or signatures.h
@@ -103,6 +104,7 @@ uintptr_t window_manager_ptr = 0;
 uintptr_t nt_user_send_input_ptr = 0;
 uintptr_t nt_user_send_input_original_jmp_address = 0;
 uintptr_t dispatch_table_id = 0x0000107F;
+uintptr_t nt_user_send_input_dispatch_table_id_found = false;
 
 uintptr_t osu_client_id_code_start = 0;
 char osu_client_id[64] = {0};
@@ -130,7 +132,7 @@ static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
         audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
-        osu_client_id_code_start && osu_username_code_start && window_manager_code_start;
+        osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found;
 }
 
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -170,6 +172,14 @@ static void scan_for_code_starts()
             find_code_start(opcodes, osu_client_id_code_start,   (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
             find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
             find_code_start(opcodes, window_manager_code_start,  (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
+
+            if (*opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
+               (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5))
+            {
+                dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
+                nt_user_send_input_dispatch_table_id_found = true;
+                FR_INFO_FMT("found dispatch_table_id: %X", dispatch_table_id);
+            }
         }
         __except(filter(GetExceptionCode(), GetExceptionInformation()))
         {
@@ -336,6 +346,18 @@ static void try_find_hook_offsets()
 
 void init_hooks()
 {
+    HMODULE win32u = GetModuleHandle(L"win32u.dll");
+    if (win32u != NULL)
+    {
+        nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
+        if (nt_user_send_input_ptr == NULL)
+            FR_INFO("NtUserSendInput is null");
+    }
+    else
+        FR_INFO("win32u.dll is null");
+
+    enable_nt_user_send_input_patch();
+
     dotnet_collect_code_starts();
 
     if (!all_code_starts_found())
@@ -383,18 +405,6 @@ void init_hooks()
         if (cfg_replay_enabled)
             SelectedReplayHook.Enable();
     }
-
-    HMODULE win32u = GetModuleHandle(L"win32u.dll");
-    if (win32u != NULL)
-    {
-        nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
-        if (nt_user_send_input_ptr == NULL)
-            FR_INFO("NtUserSendInput is null");
-    }
-    else
-        FR_INFO("win32u.dll is null");
-
-    enable_nt_user_send_input_patch();
 }
 
 void enable_nt_user_send_input_patch()
@@ -404,27 +414,6 @@ void enable_nt_user_send_input_patch()
         DWORD oldprotect;
         VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, PAGE_EXECUTE_READWRITE, &oldprotect);
         nt_user_send_input_original_jmp_address = *(uintptr_t *)(nt_user_send_input_ptr + 0x1);
-        bool found = false;
-        scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x7FFFFFFF, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
-        {
-            __try
-            {
-                uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
-                if (*opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
-                    (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5))
-                {
-                    dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
-                    found = true;
-                    FR_INFO_FMT("found dispatch_table_id: %X", dispatch_table_id);
-                }
-            }
-            __except(filter(GetExceptionCode(), GetExceptionInformation()))
-            {
-                FR_PTR_INFO("exception in enable_nt_user_send_input_patch", begin + idx * alignment);
-            }
-            return found;
-        });
-        FR_PTR_INFO("dispatch_table_id", dispatch_table_id);
         *(uint8_t *)nt_user_send_input_ptr = (uint8_t)0xB8; // mov eax
         *(uintptr_t *)(nt_user_send_input_ptr + 0x1) = dispatch_table_id;
         VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, oldprotect, &oldprotect);
