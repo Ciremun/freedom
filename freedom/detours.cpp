@@ -361,14 +361,14 @@ void init_hooks()
     else
         FR_INFO("win32u.dll is null");
 
-    enable_nt_user_send_input_patch();
-
     dotnet_collect_code_starts();
 
     if (!all_code_starts_found())
         scan_for_code_starts();
 
     try_find_hook_offsets();
+
+    enable_nt_user_send_input_patch();
 
     init_input();
 
