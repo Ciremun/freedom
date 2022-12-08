@@ -410,7 +410,8 @@ void enable_nt_user_send_input_patch()
             __try
             {
                 uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
-                if (*opcodes == (uint8_t)0xB8 && memcmp(opcodes + 0x5, dispatch_table_id_signature, sizeof(dispatch_table_id_signature)) == 0)
+                if (*opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
+                    (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5))
                 {
                     dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
                     found = true;
