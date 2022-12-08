@@ -253,6 +253,12 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Debug)
         {
+            if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
+                ImGui::Text("dispatch_table_id_found: %d", nt_user_send_input_dispatch_table_id_found);
+                ImGui::Text("replay mode?: %d", is_replay_mode(osu_manager_ptr));
+            }
             if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("osu_client_id: \n%s", osu_client_id);
@@ -277,8 +283,6 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
-                ImGui::Text("dispatch_table_id_found: %d", nt_user_send_input_dispatch_table_id_found);
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
                 ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);

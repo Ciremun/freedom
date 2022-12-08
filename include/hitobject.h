@@ -14,6 +14,7 @@ extern BeatmapData current_beatmap;
 extern ReplayData current_replay;
 
 void process_hitobject();
+bool is_replay_mode(uintptr_t osu_manager_ptr);
 
 template <typename T>
 Vector2<T> prepare_hitcircle_target(uintptr_t osu_manager_ptr, const Vector2<float> &position, Vector2<T> &mouse_position)

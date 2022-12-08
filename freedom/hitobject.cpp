@@ -22,7 +22,7 @@ static inline bool is_playing(uintptr_t audio_time_ptr)
     return *(bool *)(audio_time_ptr + 0x30);
 }
 
-static inline bool is_replay_mode(uintptr_t osu_manager_ptr)
+bool is_replay_mode(uintptr_t osu_manager_ptr)
 {
     if (osu_manager_ptr == 0) return false;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
@@ -52,7 +52,7 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && scene_is_game(current_scene_ptr) && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
+    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && scene_is_game(current_scene_ptr) && current_replay.ready && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
@@ -109,7 +109,7 @@ void process_hitobject()
     static float fraction_of_the_distance = 0.0f;
     static Vector2 direction(0.0f, 0.0f);
     static Vector2 mouse_position(0.0f, 0.0f);
-    if ((cfg_relax_lock || cfg_aimbot_lock) && scene_is_game(current_scene_ptr) && current_beatmap.ready && audio_time_ptr && is_playing(audio_time_ptr))
+    if ((cfg_relax_lock || cfg_aimbot_lock) && scene_is_game(current_scene_ptr) && current_beatmap.ready && is_playing(audio_time_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         Circle* circle = current_beatmap.current_circle();
