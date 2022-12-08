@@ -65,7 +65,7 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
 
-    bool replay_mode = *(bool *)(osu_manager + 0x17A);
+    bool replay_mode = *(bool *)(osu_manager + 0x17B);
     if (replay_mode)
     {
         FR_INFO_FMT("skipping current beatmap: replay mode");

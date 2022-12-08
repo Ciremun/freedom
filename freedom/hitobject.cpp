@@ -27,7 +27,7 @@ static inline bool is_replay_mode(uintptr_t osu_manager_ptr)
     if (osu_manager_ptr == 0) return false;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
     if (osu_manager == 0) return false;
-    return *(bool *)(osu_manager + 0x17A);
+    return *(bool *)(osu_manager + 0x17B);
 }
 
 void process_hitobject()
@@ -52,7 +52,7 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && scene_is_game(current_scene_ptr) && current_replay.ready && audio_time_ptr && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
+    if (cfg_replay_enabled && (cfg_replay_aim || cfg_replay_keys) && scene_is_game(current_scene_ptr) && current_replay.ready && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
