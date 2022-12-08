@@ -147,6 +147,12 @@ int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
     };
 }
 
+static inline bool is_dispatch_table_id(uint8_t *opcodes)
+{
+    return *opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
+          (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5);
+}
+
 static void scan_for_code_starts()
 {
     prejit_all();
@@ -173,8 +179,7 @@ static void scan_for_code_starts()
             find_code_start(opcodes, osu_username_code_start,    (uint8_t *)username_function_signature,        sizeof(username_function_signature));
             find_code_start(opcodes, window_manager_code_start,  (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
 
-            if (*opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
-               (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5))
+            if (!nt_user_send_input_dispatch_table_id_found && is_dispatch_table_id(opcodes))
             {
                 dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
                 nt_user_send_input_dispatch_table_id_found = true;
