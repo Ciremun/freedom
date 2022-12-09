@@ -317,13 +317,20 @@ static void try_find_hook_offsets()
         uintptr_t client_id_offset = find_opcodes(osu_client_id_function_signature, osu_client_id_code_start, 0x0, 0xBF);
         if (client_id_offset)
         {
-            uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + client_id_offset + sizeof(osu_client_id_function_signature));
-            uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
-            uintptr_t client_id_string = *(uintptr_t *)(client_id_array + 0x8);
-            uint32_t client_id_length = *(uint32_t *)(client_id_string + 0x4);
-            wchar_t *client_id_data = (wchar_t *)(client_id_string + 0x8);
-            int client_bytes_written = WideCharToMultiByte(CP_UTF8, 0, client_id_data, client_id_length, osu_client_id, 64, 0, 0);
-            osu_client_id[client_bytes_written] = '\0';
+            __try
+            {
+                uintptr_t client_id_list = **(uintptr_t **)(osu_client_id_code_start + client_id_offset + sizeof(osu_client_id_function_signature));
+                uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
+                uintptr_t client_id_string = *(uintptr_t *)(client_id_array + 0x8);
+                uint32_t client_id_length = *(uint32_t *)(client_id_string + 0x4);
+                wchar_t *client_id_data = (wchar_t *)(client_id_string + 0x8);
+                int client_bytes_written = WideCharToMultiByte(CP_UTF8, 0, client_id_data, client_id_length, osu_client_id, 64, 0, 0);
+                osu_client_id[client_bytes_written] = '\0';
+            }
+            __except(filter(GetExceptionCode(), GetExceptionInformation()))
+            {
+                FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
+            }
         }
     }
     FR_INFO_FMT("client_id: %s", osu_client_id);
@@ -332,11 +339,18 @@ static void try_find_hook_offsets()
         uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x20, 0x14D);
         if (username_offset)
         {
-            uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
-            uint32_t username_length = *(uint32_t *)(username_string + 0x4);
-            wchar_t *username_data = (wchar_t *)(username_string + 0x8);
-            int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
-            osu_username[username_bytes_written] = '\0';
+            __try
+            {
+                uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
+                uint32_t username_length = *(uint32_t *)(username_string + 0x4);
+                wchar_t *username_data = (wchar_t *)(username_string + 0x8);
+                int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
+                osu_username[username_bytes_written] = '\0';
+            }
+            __except(filter(GetExceptionCode(), GetExceptionInformation()))
+            {
+                FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_username_code_start");
+            }
         }
     }
     FR_INFO_FMT("username: %s", osu_username);
