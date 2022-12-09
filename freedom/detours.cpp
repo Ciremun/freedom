@@ -39,26 +39,6 @@ Parameter od_parameter = {
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 
-std::vector<CodeStartTarget> code_starts = {
-    // @@@ deprecated
-    // class and method names are changing every game update, lengths persist
-    // to avoid memory scan fallback, update these using methods from debug tab
-    // or signatures.h
-
-    // class, method
-    {L"#=zq54uvRQkz7ELzbroZX9N6rKokqaWrn635IZFvUT__z2X", L"#=zOH5knGA="},         // parse_beatmap
-    {L"#=z_JoBdjCdwD3UqdPyMDTdmtx7HG8J", L"#=zpbRFhHIGLFX4"},                     // beatmap_onload
-    {L"#=ziSPxt1Kp2jWLH318Bw==", L"#=z3ka3V9eqXqYx"},                             // current scene
-    {L"#=zLvSKj3H4nW0tHOFJlA==", L"#=zoL49GTTkVSeu"},                             // selected song, audio time
-    {L"#=zX7J2Zh1muBpHxYm8YqPRZho=", L"#=zRs16rX_pPqoQ"},                         // osu manager
-    {L"#=zdVSfeCOMKHX_1zJnEg==", L"#=zm3BDwgA="},                                 // binding manager
-    {L"#=zuzcYy$AnALKJhx0RlLp1l4ahmCVSgkWbMNkerfg=", L"#=z$hHktWjcmnjerZy8LA=="}, // replay selected
-    {L"#=zDADKNEW66h$QjuJ82$UG4WY=", L"#=zxpkNP0XD0xWr"},                         // client id
-    {L"#=zWPdRjac=", L"#=zpTL7R82s6mdPflNoFA=="},                                 // username
-    {L"#=z8wwmZD9r9H1ng489fA==", L"#=z$v9QB0I="},                                 // window_manager
-
-};
-
 twglSwapBuffers wglSwapBuffersGateway;
 
 uintptr_t parse_beatmap_code_start = 0;
@@ -193,22 +173,6 @@ static void scan_for_code_starts()
 
         return all_code_starts_found();
     });
-}
-
-static void dotnet_collect_code_starts()
-{
-    code_start_for_class_methods(code_starts);
-    parse_beatmap_code_start = code_starts[0].start;   if (!parse_beatmap_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "parse_beatmap_code_start");
-    beatmap_onload_code_start = code_starts[1].start;  if (!beatmap_onload_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "beatmap_onload_code_start");
-    current_scene_code_start = code_starts[2].start;   if (!current_scene_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "current_scene_code_start");
-    selected_song_code_start = code_starts[3].start;   if (!selected_song_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "selected_song_code_start");
-    audio_time_code_start = code_starts[3].start;      if (!audio_time_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "audio_time_code_start");
-    osu_manager_code_start = code_starts[4].start;     if (!osu_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_manager_code_start");
-    binding_manager_code_start = code_starts[5].start; if (!binding_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "binding_manager_code_start");
-    selected_replay_code_start = code_starts[6].start; if (!selected_replay_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "selected_replay_code_start");
-    osu_client_id_code_start = code_starts[7].start;   if (!osu_client_id_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_client_id_code_start");
-    osu_username_code_start = code_starts[8].start;    if (!osu_username_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "osu_username_code_start");
-    window_manager_code_start = code_starts[9].start;  if (!window_manager_code_start) FR_INFO_FMT("%s was not found during dotnet_collect", "window_manager_code_start");
 }
 
 static void try_find_hook_offsets()
@@ -374,8 +338,6 @@ void init_hooks()
     }
     else
         FR_INFO("win32u.dll is null");
-
-    dotnet_collect_code_starts();
 
     if (!all_code_starts_found())
         scan_for_code_starts();

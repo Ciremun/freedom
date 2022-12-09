@@ -11,12 +11,4 @@
 
 #include <stdint.h>
 
-struct CodeStartTarget
-{
-    const wchar_t *class_;
-    const wchar_t *method;
-    uintptr_t start = 0;
-};
-
-bool code_start_for_class_methods(std::vector<CodeStartTarget> &targets);
 bool prejit_all();
