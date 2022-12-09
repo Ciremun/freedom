@@ -88,6 +88,8 @@ extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook<Trampoline32> SwapBuffersHook;
 
+extern float memory_scan_progress;
+
 void init_hooks();
 
 void enable_ar_hooks();

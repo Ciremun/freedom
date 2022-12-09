@@ -4,7 +4,7 @@
 #include "ui.h"
 
 ImFont *font = 0;
-char song_name_u8[256] = {'F', 'r', 'e', 'e', 'd', 'o', 'm', '\0'};
+char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
 
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -59,6 +59,7 @@ void init_ui()
     style.Colors[ImGuiCol_SliderGrab] = BLACK_TRANSPARENT;
     style.Colors[ImGuiCol_SliderGrabActive] = BLACK_TRANSPARENT;
     style.Colors[ImGuiCol_CheckMark] = WHITE;
+    style.Colors[ImGuiCol_PlotHistogram] = MAGENTA;
 
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplOpenGL3_Init();
@@ -98,6 +99,13 @@ void update_ui()
     ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("%s", song_name_u8);
+
+    if (memory_scan_progress < .99f)
+    {
+        static char overlay_buf[32] = {0};
+        ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), "Memory Scan: %.0f%%", memory_scan_progress * 100 + 0.01f);
+        ImGui::ProgressBar(memory_scan_progress, ImVec2(.0f, .0f), overlay_buf);
+    }
 
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
     if (ImGui::BeginPopupContextItem("##settings"))

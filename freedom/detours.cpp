@@ -108,6 +108,8 @@ Hook<Detour32> BeatmapOnLoadHook;
 
 Hook<Detour32> SelectedReplayHook;
 
+float memory_scan_progress = .0f;
+
 static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
@@ -147,6 +149,7 @@ static void scan_for_code_starts()
         __try
         {
             uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
+            memory_scan_progress = (uintptr_t)opcodes / (float)0x7FFFFFFF;
             find_code_start(opcodes, parse_beatmap_code_start,   (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
             find_code_start(opcodes, beatmap_onload_code_start,  (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
             find_code_start(opcodes, current_scene_code_start,   (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
@@ -173,6 +176,8 @@ static void scan_for_code_starts()
 
         return all_code_starts_found();
     });
+
+    memory_scan_progress = 1.f;
 }
 
 static void try_find_hook_offsets()
