@@ -32,6 +32,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Add/Remove Hard Rock (HR)
     * Replay Keys Only
     * Replay Aim Only
+    * Leaderboard Replay Download
 
 - Aimbot (*a bit buggy!*):
     * Cursor Speed
