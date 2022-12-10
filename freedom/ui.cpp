@@ -264,6 +264,11 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Debug)
         {
+            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
+            ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetWindowHeight() * 2.f), ImGuiCond_Always);
+            ImGui::Begin("Debug Log");
+            freedom_log.draw();
+            ImGui::End();
             if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);

@@ -46,8 +46,6 @@ bool prejit_all()
 
             memcpy(module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
 
-            FR_INFO_FMT("prejit.dll path: %S", module_path);
-
             HRESULT result = pClrRuntimeHost->ExecuteInDefaultAppDomain(module_path, L"Freedom.PreJit", L"prejit_all", L"", &dwRet);
             if (result != S_OK)
                 FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);

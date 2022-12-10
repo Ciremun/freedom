@@ -6,19 +6,7 @@
 
 #include <stdint.h>
 
-#ifndef NDEBUG
-#define FR_ERROR(message) fprintf(stderr, "ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
-#define FR_ERROR_FMT(fmt, ...) fprintf(stderr, "ERROR: %s:%d: " fmt "\n", __FUNCSIG__, __LINE__, __VA_ARGS__)
-#define FR_INFO(message) fprintf(stdout, "%s\n", message)
-#define FR_INFO_FMT(fmt, ...) fprintf(stdout, fmt "\n", __VA_ARGS__)
-#else
-#define FR_ERROR(message)
-#define FR_ERROR_FMT(fmt, ...)
-#define FR_INFO(message)
-#define FR_INFO_FMT(fmt, ...)
-#endif // NDEBUG
-
-#define FR_PTR_INFO(...) FR_INFO_FMT("%-35.35s 0x%X", __VA_ARGS__)
+#include "log.h"
 
 uintptr_t GetModuleBaseAddress(const wchar_t *modName);
 

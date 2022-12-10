@@ -6,6 +6,7 @@
 #include "font.h"
 #include "input.h"
 #include "hitobject.h"
+#include "log.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -35,6 +36,7 @@ enum class MenuTab
 
 extern WNDPROC oWndProc;
 extern char song_name_u8[256];
+extern ImGuiLogger freedom_log;
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void init_ui();
