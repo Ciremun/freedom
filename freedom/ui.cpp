@@ -266,7 +266,7 @@ void update_ui()
         {
             ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
             ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetWindowHeight() * 2.f), ImGuiCond_Always);
-            ImGui::Begin("Debug Log");
+            ImGui::Begin("Debug Log", NULL, ImGuiWindowFlags_NoResize);
             freedom_log.draw();
             ImGui::End();
             if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
