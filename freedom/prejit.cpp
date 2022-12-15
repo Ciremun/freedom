@@ -9,14 +9,6 @@ bool prejit_all()
     ICLRRuntimeInfo *pRuntimeInfo = 0;
     ICLRRuntimeHost *pClrRuntimeHost = 0;
 
-    DWORD processid = GetCurrentProcessId();
-    if (processid == 0)
-        return false;
-
-    HANDLE processhandle = GetCurrentProcess();
-    if (processhandle == 0)
-        return false;
-
     HMODULE hMscoree = GetModuleHandleA("mscoree.dll");
     if (hMscoree == 0)
         return false;
