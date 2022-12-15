@@ -44,6 +44,9 @@ BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
 
 BOOL __stdcall freedom_update(HDC hDc)
 {
+    if (!hDc)
+        return wglSwapBuffersGateway(hDc);
+
     static bool init = false;
     if (!init)
     {
