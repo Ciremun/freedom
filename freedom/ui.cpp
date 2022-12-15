@@ -222,8 +222,6 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Other)
         {
-            ImGui::Text("Other Settings");
-            ImGui::Dummy(ImVec2(0.0f, 5.0f));
             static char preview_font_size[16] = {0};
             stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);
             if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
@@ -272,8 +270,11 @@ void update_ui()
             if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
-                ImGui::Text("dispatch_table_id_found: %d", nt_user_send_input_dispatch_table_id_found);
-                ImGui::Text("replay mode?: %d", is_replay_mode(osu_manager_ptr));
+                ImGui::Text("dispatch_table_id_found: %s", nt_user_send_input_dispatch_table_id_found ? "Yes" : "No");
+                ImGui::Text("replay mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
+                static char window_name[256] = {0};
+                GetWindowTextA(g_hwnd, window_name, 256);
+                ImGui::Text("window name: %s", window_name);
             }
             if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
             {

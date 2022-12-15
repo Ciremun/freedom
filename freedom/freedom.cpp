@@ -30,18 +30,6 @@ void unload_freedom()
     std::thread(unload_module).detach();
 }
 
-BOOL CALLBACK find_osu_window(HWND hwnd, LPARAM lParam)
-{
-    DWORD lpdwProcessId;
-    GetWindowThreadProcessId(hwnd, &lpdwProcessId);
-    if (lpdwProcessId == lParam)
-    {
-        g_hwnd = hwnd;
-        return FALSE;
-    }
-    return TRUE;
-}
-
 BOOL __stdcall freedom_update(HDC hDc)
 {
     if (!hDc)
@@ -50,10 +38,7 @@ BOOL __stdcall freedom_update(HDC hDc)
     static bool init = false;
     if (!init)
     {
-        EnumWindows(find_osu_window, GetCurrentProcessId());
-
-        if (!IsWindowVisible(g_hwnd))
-            return wglSwapBuffersGateway(hDc);
+        g_hwnd = WindowFromDC(hDc);
 
 // #ifndef NDEBUG
 //         AllocConsole();
