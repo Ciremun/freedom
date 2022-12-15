@@ -60,6 +60,9 @@ void init_ui()
     style.Colors[ImGuiCol_SliderGrabActive] = BLACK_TRANSPARENT;
     style.Colors[ImGuiCol_CheckMark] = WHITE;
     style.Colors[ImGuiCol_PlotHistogram] = MAGENTA;
+    style.Colors[ImGuiCol_ResizeGrip] = PURPLE;
+    style.Colors[ImGuiCol_ResizeGripHovered] = MAGENTA;
+    style.Colors[ImGuiCol_ResizeGripActive] = BLACK_TRANSPARENT;
 
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplOpenGL3_Init();
@@ -262,9 +265,8 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Debug)
         {
-            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x / 2.f, ImGui::GetWindowHeight() * 2.f), ImGuiCond_Always);
-            ImGui::Begin("Debug Log", NULL, ImGuiWindowFlags_NoResize);
+            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Debug Log", NULL);
             freedom_log.draw();
             ImGui::End();
             if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
