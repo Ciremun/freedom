@@ -14,7 +14,6 @@
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
-uintptr_t osu_auth_base = NULL;
 
 static void unload_module()
 {
@@ -48,7 +47,6 @@ BOOL __stdcall freedom_update(HDC hDc)
 // #endif // NDEBUG
 
         g_process = GetCurrentProcess();
-        osu_auth_base = GetModuleBaseAddress(L"osu!auth.dll");
 
         init_ui();
         std::thread(init_hooks).detach();
