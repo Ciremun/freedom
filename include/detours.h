@@ -14,7 +14,7 @@
 
 #include "imgui.h"
 
-typedef BOOL(__stdcall *twglSwapBuffers)(HDC hDc);
+typedef void(*twglSwapBuffers)();
 
 struct Parameter
 {

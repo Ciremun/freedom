@@ -2,6 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #pragma comment(lib, "Winhttp.lib")
+#pragma comment(lib, "Opengl32.lib")
 
 #include "stdafx.h"
 
@@ -29,14 +30,17 @@ void unload_freedom()
     std::thread(unload_module).detach();
 }
 
-BOOL __stdcall freedom_update(HDC hDc)
+HDC hDc = 0;
+
+void freedom_update()
 {
-    if (!hDc)
-        return wglSwapBuffersGateway(hDc);
+    // if (!hDc)
+        // return wglSwapBuffersGateway(hDc);
 
     static bool init = false;
     if (!init)
     {
+        hDc = wglGetCurrentDC();
         g_hwnd = WindowFromDC(hDc);
 
 // #ifndef NDEBUG
@@ -49,7 +53,8 @@ BOOL __stdcall freedom_update(HDC hDc)
         g_process = GetCurrentProcess();
 
         init_ui();
-        std::thread(init_hooks).detach();
+        CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
+        // std::thread(init_hooks).detach();
 
         init = true;
     }
@@ -83,7 +88,7 @@ frame_end:
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    return wglSwapBuffersGateway(hDc);
+    wglSwapBuffersGateway();
 }
 
 DWORD WINAPI freedom_main(HMODULE hModule)
@@ -91,6 +96,7 @@ DWORD WINAPI freedom_main(HMODULE hModule)
     g_module = hModule;
 
     SwapBuffersHook = Hook<Trampoline32>("wglSwapBuffers", "opengl32.dll", (BYTE *)freedom_update, (BYTE *)&wglSwapBuffersGateway, 5);
+    SwapBuffersHook.src += 14;
     SwapBuffersHook.Enable();
 
     return 0;
