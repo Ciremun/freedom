@@ -172,14 +172,12 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (ImGui::RadioButton("SingleTap", &cfg_relax_style, 's'))
             {
-                cfg_relax_style = 's';
                 FR_INFO("SingleTap Mode");
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::SameLine();
             if (ImGui::RadioButton("Alternate", &cfg_relax_style, 'a'))
             {
-                cfg_relax_style = 'a';
                 FR_INFO("Alternate Mode");
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
