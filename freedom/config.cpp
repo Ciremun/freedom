@@ -11,6 +11,7 @@ bool cfg_replay_enabled = false;
 bool cfg_replay_aim = true;
 bool cfg_replay_keys = true;
 bool cfg_replay_hardrock = false;
+int cfg_relax_style = 'a'; // alternate
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
@@ -55,6 +56,7 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("visible=%d\n", cfg_mod_menu_visible);
     buf->appendf("font_size=%d\n", cfg_font_size);
     buf->appendf("relax=%d\n", cfg_relax_lock);
+    buf->appendf("relax_style=%c\n", (char)cfg_relax_style);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
     buf->appendf("fraction_modifier=%.3f\n", cfg_fraction_modifier);
@@ -69,6 +71,7 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i, relax_lock_i, aimbot_lock_i, spins_per_minute_i;
     int replay_i, replay_aim_i, replay_keys_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f;
+    char relax_style_c;
     if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)
         ar_parameter.lock = ar_lock_i;
     else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)
@@ -87,6 +90,8 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
         cfg_font_size = font_size_i;
     else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)
         cfg_relax_lock = relax_lock_i;
+    else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)
+        cfg_relax_style = (int)relax_style_c;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)
         cfg_aimbot_lock = aimbot_lock_i;
     else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)

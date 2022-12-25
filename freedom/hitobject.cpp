@@ -32,10 +32,13 @@ bool is_replay_mode(uintptr_t osu_manager_ptr)
 
 void process_hitobject()
 {
+    static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
+
     if (beatmap_loaded)
     {
         parse_beatmap(osu_manager_ptr, current_beatmap);
         target_first_circle = true;
+        current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
         if (current_replay.ready)
         {
@@ -175,7 +178,9 @@ void process_hitobject()
             }
             if (cfg_relax_lock && !circle->clicked)
             {
-                send_keyboard_input(left_click[0], 0);
+                if (cfg_relax_style == 'a')
+                    current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
+                send_keyboard_input(current_click, 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle->start_time, circle->end_time);
                 keyup_delay = circle->end_time ? circle->end_time - circle->start_time : 0.5;
                 if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
@@ -215,6 +220,6 @@ void process_hitobject()
     if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
-        send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+        send_keyboard_input(current_click, KEYEVENTF_KEYUP);
     }
 }

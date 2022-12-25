@@ -165,12 +165,26 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::PushItemWidth(24.0f);
+            ImGui::PushItemWidth(ImGui::CalcTextSize("X").x * 1.85f);
             ImGui::InputText("Left Click",  left_click,  2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::InputText("Right Click", right_click, 2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::PopItemWidth();
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            if (ImGui::RadioButton("SingleTap", &cfg_relax_style, 's'))
+            {
+                cfg_relax_style = 's';
+                FR_INFO("SingleTap Mode");
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::SameLine();
+            if (ImGui::RadioButton("Alternate", &cfg_relax_style, 'a'))
+            {
+                cfg_relax_style = 'a';
+                FR_INFO("Alternate Mode");
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
-            ImGui::Text("Singletap only!");
+            ImGui::Text("No hitscan variability, UR IS 0!");
         }
         if (selected_tab == MenuTab::Aimbot)
         {
