@@ -38,7 +38,9 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Cursor Speed
     * Spins Per Minute
 
-- Singletap Relax (*no hit timing randomization!*)
+- Relax (*no hit timing randomization!*):
+    * SingleTap
+    * Alternate
 
 - Misc:
     * Set Font Size
