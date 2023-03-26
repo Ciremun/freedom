@@ -530,7 +530,7 @@ __declspec(naked) void notify_on_beatmap_load()
 {
     __asm {
         mov beatmap_loaded, 1
-        mov eax, [esi+0x00000148]
+        mov eax, [esi+0x00000080]
         jmp [beatmap_onload_hook_jump_back]
     }
 }

@@ -72,7 +72,7 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     //     return false;
     // }
 
-    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x40);
+    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x48);
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
     int32_t hit_objects_count = *(int32_t *)(hit_manager_ptr + 0x90);
