@@ -15,11 +15,17 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
 
     MSG *message = (MSG *)lparam;
 
-    if (ImGui_ImplWin32_WndProcHandler(message->hwnd, message->message, message->wParam, message->lParam))
+    if (wparam == PM_REMOVE)
     {
-        message->message = WM_NULL;
-        return 1;
+        if (ImGui_ImplWin32_WndProcHandler(message->hwnd, message->message, message->wParam, message->lParam))
+        {
+            message->message = WM_NULL;
+            return 1;
+        }
     }
+
+    if (message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
+        cfg_mod_menu_visible = false;
 
     if (cfg_mod_menu_visible && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
@@ -263,11 +269,8 @@ void update_ui()
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
-            ImGui::SliderFloat("##score_multiplier_1", &cfg_score_multiplier_value, .0f, 10000.f, "Score Multiplier: %.0f");
-            if (ImGui::IsItemDeactivatedAfterEdit())
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-            ImGui::Dummy(ImVec2(.0f, 5.f));
-            ImGui::SliderFloat("##score_multiplier_2", &cfg_score_multiplier_value, .0f, 10.f, "Score Multiplier: %.2f");
+            ImGui::SliderFloat("##score_multiplier_2", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Hold Ctrl To Set a Custom Value");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             if (!cfg_score_multiplier_enabled)
