@@ -25,37 +25,8 @@ namespace Freedom
         public static ClassMethod[] classmethods = new ClassMethod[]{
             new ClassMethod {class_ = "#=z_JoBdjCdwD3UqdPyMDTdmtx7HG8J", method = "#=zpbRFhHIGLFX4", name="beatmap_onload"},
             new ClassMethod {class_ = "#=zuzcYy$AnALKJhx0RlLp1l4ahmCVSgkWbMNkerfg=", method = "#=z$hHktWjcmnjerZy8LA==", name="selected_replay"},
+            new ClassMethod {class_ = "#=zA68w2LnfHk3bAvNoTjj7pqCRs0P7Q2WkMrK0LXo=", method = "#=z_gY4$2rMOiN4", name="score_multiplier"},
         };
-
-        public static int main(String pwzArgument)
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            Type[] classes = assembly.GetTypes();
-            foreach (ClassMethod cm in classmethods)
-            {
-                foreach (Type class_ in classes)
-                {
-                    if (class_.Name == cm.class_)
-                    {
-                        MethodInfo[] methods = class_.GetMethods(
-                                BindingFlags.DeclaredOnly |
-                                BindingFlags.NonPublic |
-                                BindingFlags.Public |
-                                BindingFlags.Instance |
-                                BindingFlags.Static);
-                        foreach (MethodInfo method in methods)
-                        {
-                            if (method.Name == cm.method)
-                            {
-                                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(method.MethodHandle);
-                                Console.WriteLine(String.Format("prejit {0} {1}::{2}", cm.name, cm.class_, cm.method));
-                            }
-                        }
-                    }
-                }
-            }
-            return 1;
-        }
         public static int prejit_all(String pwzArgument)
         {
             Console.WriteLine("start prejit all");

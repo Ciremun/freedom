@@ -18,5 +18,8 @@ extern bool cfg_replay_keys;
 extern bool cfg_replay_hardrock;
 extern int cfg_relax_style;
 
+extern bool cfg_score_multiplier_enabled;
+extern float cfg_score_multiplier_value;
+
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

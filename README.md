@@ -42,6 +42,9 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * SingleTap
     * Alternate
 
+- Score:
+    * Score Multiplier Changer
+
 - Misc:
     * Set Font Size
     * Hide Mod Menu

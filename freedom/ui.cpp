@@ -136,8 +136,9 @@ void update_ui()
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
         selected_replay_offset ? update_tab("Replay", MenuTab::Replay) : inactive_tab("Replay");
+        score_multiplier_code_start ? update_tab("Score", MenuTab::Score) : inactive_tab("Score");
 
-        update_tab("Other", MenuTab::Other);
+        update_tab("Misc", MenuTab::Misc);
         update_tab("About", MenuTab::About);
         update_tab("Debug", MenuTab::Debug);
 
@@ -235,7 +236,31 @@ void update_ui()
                 ImGui::PopItemFlag();
             }
         }
-        if (selected_tab == MenuTab::Other)
+        if (selected_tab == MenuTab::Score)
+        {
+            if (ImGui::Checkbox("Enable", &cfg_score_multiplier_enabled))
+            {
+                cfg_score_multiplier_enabled ? enable_score_multiplier_hooks() : disable_score_multiplier_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            if (!cfg_score_multiplier_enabled)
+            {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+            }
+            ImGui::SliderFloat("##score_multiplier_1", &cfg_score_multiplier_value, .0f, 10000.f, "Score Multiplier: %.0f");
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            ImGui::SliderFloat("##score_multiplier_2", &cfg_score_multiplier_value, .0f, 10.f, "Score Multiplier: %.2f");
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            if (!cfg_score_multiplier_enabled)
+            {
+                ImGui::PopStyleColor();
+                ImGui::PopItemFlag();
+            }
+        }
+        if (selected_tab == MenuTab::Misc)
         {
             static char preview_font_size[16] = {0};
             stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);
@@ -258,7 +283,9 @@ void update_ui()
                 }
                 ImGui::EndCombo();
             }
-            ImGui::Dummy(ImVec2(.0f, 5.0f));
+
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+
             static bool nt_user_send_input_patched = true;
             if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
                 nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
@@ -325,6 +352,7 @@ void update_ui()
                 ImGui::Text("osu_client_id_code_start: %08X", osu_client_id_code_start);
                 ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
                 ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
+                ImGui::Text("score_multiplier_code_start: %08X", score_multiplier_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -343,6 +371,7 @@ void update_ui()
                 ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
                 ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
                 ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
+                ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
             }
         }
         ImGui::End();
