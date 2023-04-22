@@ -250,6 +250,8 @@ void update_ui()
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
             ImGui::SliderFloat("##score_multiplier_1", &cfg_score_multiplier_value, .0f, 10000.f, "Score Multiplier: %.0f");
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::SliderFloat("##score_multiplier_2", &cfg_score_multiplier_value, .0f, 10.f, "Score Multiplier: %.2f");
             if (ImGui::IsItemDeactivatedAfterEdit())
