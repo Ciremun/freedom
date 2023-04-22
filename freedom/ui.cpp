@@ -25,7 +25,10 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
     }
 
     if (message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
+    {
+        ImGui::GetIO().MouseDrawCursor = false;
         cfg_mod_menu_visible = false;
+    }
 
     if (cfg_mod_menu_visible && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
