@@ -35,7 +35,6 @@ enum class MenuTab
     Debug
 };
 
-extern WNDPROC oWndProc;
 extern char song_name_u8[256];
 extern ImGuiLogger freedom_log;
 

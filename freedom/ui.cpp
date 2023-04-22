@@ -6,19 +6,33 @@
 ImFont *font = 0;
 char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
 
-WNDPROC oWndProc;
+HHOOK oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
 {
-    if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-        return true;
+    if (code > 0)
+        return CallNextHookEx(oWndProc, code, wparam, lparam);
 
-    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+    MSG *message = (MSG *)lparam;
+
+    if (ImGui_ImplWin32_WndProcHandler(message->hwnd, message->message, message->wParam, message->lParam))
+    {
+        message->message = WM_NULL;
+        return 1;
+    }
+
+    if (cfg_mod_menu_visible && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
+    {
+        message->message = WM_NULL;
+        return 1;
+    }
+
+    return CallNextHookEx(oWndProc, code, wparam, lparam);
 }
 
 void init_ui()
 {
-    oWndProc = (WNDPROC)SetWindowLongPtrA(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+    oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -389,7 +403,7 @@ void destroy_ui()
     // ImGui_ImplOpenGL3_Shutdown();
     // ImGui_ImplWin32_Shutdown();
     // ImGui::DestroyContext();
-    SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
+    UnhookWindowsHookEx(oWndProc);
 }
 
 void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
