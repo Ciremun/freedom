@@ -328,7 +328,7 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("approach_rate_offsets: 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1]);
+                ImGui::Text("approach_rate_offsets: 0x%X 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1], approach_rate_offsets[2]);
                 ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
                 ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
                 ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);

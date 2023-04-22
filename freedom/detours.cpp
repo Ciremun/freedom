@@ -43,7 +43,7 @@ twglSwapBuffers wglSwapBuffersGateway;
 
 uintptr_t parse_beatmap_code_start = 0;
 
-uintptr_t approach_rate_offsets[2] = {0};
+uintptr_t approach_rate_offsets[3] = {0};
 uintptr_t ar_hook_jump_back = 0;
 
 uintptr_t circle_size_offsets[3] = {0};
@@ -96,6 +96,7 @@ Hook<Trampoline32> SwapBuffersHook;
 
 Hook<Detour32> ApproachRateHook1;
 Hook<Detour32> ApproachRateHook2;
+Hook<Detour32> ApproachRateHook3;
 
 Hook<Detour32> CircleSizeHook1;
 Hook<Detour32> CircleSizeHook2;
@@ -193,6 +194,9 @@ static void try_find_hook_offsets()
             if (approach_rate_offsets_idx < 2 &&
                 memcmp((uint8_t *)start, approach_rate_signature, sizeof(approach_rate_signature)) == 0)
                 approach_rate_offsets[approach_rate_offsets_idx++] = start - parse_beatmap_code_start;
+            if (!approach_rate_offsets[2] &&
+                memcmp((uint8_t *)start, approach_rate_signature_2, sizeof(approach_rate_signature_2)) == 0)
+                approach_rate_offsets[2] = start - parse_beatmap_code_start;
             if (circle_size_offsets_idx < 3 &&
                 memcmp((uint8_t *)start, circle_size_signature, sizeof(circle_size_signature)) == 0)
                 circle_size_offsets[circle_size_offsets_idx++] = start - parse_beatmap_code_start;
@@ -203,7 +207,7 @@ static void try_find_hook_offsets()
         ar_hook_jump_back = parse_beatmap_code_start + approach_rate_offsets[1] + 0x9;
         cs_hook_jump_back = parse_beatmap_code_start + circle_size_offsets[0] + 0x9;
         od_hook_jump_back = parse_beatmap_code_start + overall_difficulty_offsets[1] + 0x9;
-        ar_parameter.found = approach_rate_offsets[1] > 0;
+        ar_parameter.found = approach_rate_offsets[1] > 0 && approach_rate_offsets[2] > 0;
         cs_parameter.found = circle_size_offsets[2] > 0;
         od_parameter.found = overall_difficulty_offsets[1] > 0;
         FR_INFO_FMT("ar_parameter.found: %d", ar_parameter.found);
@@ -366,6 +370,7 @@ void init_hooks()
     {
         ApproachRateHook1 = Hook<Detour32>(parse_beatmap_code_start + approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
         ApproachRateHook2 = Hook<Detour32>(parse_beatmap_code_start + approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
+        ApproachRateHook3 = Hook<Detour32>(parse_beatmap_code_start + approach_rate_offsets[2], (BYTE *)set_approach_rate_2, 12);
         if (ar_parameter.lock)
             enable_ar_hooks();
     }
@@ -457,12 +462,14 @@ void enable_ar_hooks()
 {
     ApproachRateHook1.Enable();
     ApproachRateHook2.Enable();
+    ApproachRateHook3.Enable();
 }
 
 void disable_ar_hooks()
 {
     ApproachRateHook1.Disable();
     ApproachRateHook2.Disable();
+    ApproachRateHook3.Disable();
 }
 
 void enable_notify_hooks()
@@ -497,6 +504,18 @@ __declspec(naked) void set_approach_rate()
 {
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
+        fstp dword ptr [eax+0x2C]
+        mov ebx, ar_parameter.value
+        mov dword ptr [eax+0x2C], ebx
+        jmp [ar_hook_jump_back]
+    }
+}
+
+__declspec(naked) void set_approach_rate_2()
+{
+    __asm {
+        mov eax,[ebp-0x00000150]
+        fld dword ptr [eax+0x38]
         fstp dword ptr [eax+0x2C]
         mov ebx, ar_parameter.value
         mov dword ptr [eax+0x2C], ebx

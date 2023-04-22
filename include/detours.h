@@ -37,7 +37,7 @@ extern bool cfg_aimbot_lock;
 
 extern uintptr_t parse_beatmap_code_start;
 
-extern uintptr_t approach_rate_offsets[2];
+extern uintptr_t approach_rate_offsets[3];
 extern uintptr_t ar_hook_jump_back;
 
 extern uintptr_t circle_size_offsets[3];
@@ -108,6 +108,7 @@ void enable_replay_hooks();
 void disable_replay_hooks();
 
 void set_approach_rate();
+void set_approach_rate_2();
 void set_circle_size();
 void set_overall_difficulty();
 
