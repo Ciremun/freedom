@@ -23,5 +23,7 @@ extern float cfg_score_multiplier_value;
 
 extern bool cfg_discord_rich_presence_enabled;
 
+extern bool cfg_flashlight_enabled;
+
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

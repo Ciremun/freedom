@@ -160,8 +160,8 @@ void update_ui()
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
         selected_replay_offset ? update_tab("Replay", MenuTab::Replay) : inactive_tab("Replay");
-        score_multiplier_code_start ? update_tab("Score", MenuTab::Score) : inactive_tab("Score");
 
+        update_tab("Mods", MenuTab::Mods);
         update_tab("Misc", MenuTab::Misc);
         update_tab("About", MenuTab::About);
         update_tab("Debug", MenuTab::Debug);
@@ -260,8 +260,18 @@ void update_ui()
                 ImGui::PopItemFlag();
             }
         }
-        if (selected_tab == MenuTab::Score)
+        if (selected_tab == MenuTab::Mods)
         {
+            ImGui::Text("Unmod Flashlight");
+            ImGui::Dummy(ImVec2(.0f, 1.f));
+            if (ImGui::Checkbox("Enable", &cfg_flashlight_enabled))
+            {
+                cfg_flashlight_enabled ? enable_flashlight_hooks() : disable_flashlight_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::Dummy(ImVec2(.0f, 10.f));
+            ImGui::Text("Score Multiplier");
+            ImGui::Dummy(ImVec2(.0f, 1.f));
             if (ImGui::Checkbox("Enable", &cfg_score_multiplier_enabled))
             {
                 cfg_score_multiplier_enabled ? enable_score_multiplier_hooks() : disable_score_multiplier_hooks();
@@ -360,7 +370,7 @@ void update_ui()
                 ImGui::PopItemFlag();
             }
 
-            ImGui::Dummy(ImVec2(.0f, 20.f));
+            ImGui::Dummy(ImVec2(.0f, 10.f));
 
             static char preview_font_size[16] = {0};
             stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);

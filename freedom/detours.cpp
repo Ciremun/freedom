@@ -65,6 +65,12 @@ DWORD discord_rich_presence_state_string_ptr = NULL;
 DWORD discord_rich_presence_large_text_string_ptr = NULL;
 DWORD discord_rich_presence_small_text_string_ptr = NULL;
 
+uintptr_t update_flashlight_code_start = 0;
+uint8_t update_flashlight_original_byte = 0xC3;
+
+uintptr_t check_flashlight_code_start = 0;
+uint8_t check_flashlight_original_byte = 0xC3;
+
 uintptr_t current_scene_code_start = 0;
 uintptr_t current_scene_offset = 0;
 Scene *current_scene_ptr = 0;
@@ -128,7 +134,8 @@ static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
-           osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found && score_multiplier_code_start;
+           osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
+           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start;
 }
 
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -164,18 +171,20 @@ static void scan_for_code_starts()
         {
             uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
             memory_scan_progress = (uintptr_t)opcodes / (float)0x7FFFFFFF;
-            find_code_start(opcodes, parse_beatmap_code_start,    (uint8_t *)parse_beatmap_function_signature,   sizeof(parse_beatmap_function_signature));
-            find_code_start(opcodes, beatmap_onload_code_start,   (uint8_t *)beatmap_onload_function_signature,  sizeof(beatmap_onload_function_signature));
-            find_code_start(opcodes, current_scene_code_start,    (uint8_t *)current_scene_function_signature,   sizeof(current_scene_function_signature));
-            find_code_start(opcodes, selected_song_code_start,    (uint8_t *)selected_song_function_signature,   sizeof(selected_song_function_signature));
-            find_code_start(opcodes, audio_time_code_start,       (uint8_t *)audio_time_function_signature,      sizeof(audio_time_function_signature));
-            find_code_start(opcodes, osu_manager_code_start,      (uint8_t *)osu_manager_function_signature,     sizeof(osu_manager_function_signature));
-            find_code_start(opcodes, binding_manager_code_start,  (uint8_t *)binding_manager_function_signature, sizeof(binding_manager_function_signature));
-            find_code_start(opcodes, selected_replay_code_start,  (uint8_t *)selected_replay_function_signature, sizeof(selected_replay_function_signature));
-            find_code_start(opcodes, osu_client_id_code_start,    (uint8_t *)osu_client_id_function_signature,   sizeof(osu_client_id_function_signature));
-            find_code_start(opcodes, osu_username_code_start,     (uint8_t *)username_function_signature,        sizeof(username_function_signature));
-            find_code_start(opcodes, window_manager_code_start,   (uint8_t *)window_manager_function_signature,  sizeof(window_manager_function_signature));
-            find_code_start(opcodes, score_multiplier_code_start, (uint8_t *)score_multiplier_signature,         sizeof(score_multiplier_signature));
+            find_code_start(opcodes, parse_beatmap_code_start,     (uint8_t *)parse_beatmap_function_signature,     sizeof(parse_beatmap_function_signature));
+            find_code_start(opcodes, beatmap_onload_code_start,    (uint8_t *)beatmap_onload_function_signature,    sizeof(beatmap_onload_function_signature));
+            find_code_start(opcodes, current_scene_code_start,     (uint8_t *)current_scene_function_signature,     sizeof(current_scene_function_signature));
+            find_code_start(opcodes, selected_song_code_start,     (uint8_t *)selected_song_function_signature,     sizeof(selected_song_function_signature));
+            find_code_start(opcodes, audio_time_code_start,        (uint8_t *)audio_time_function_signature,        sizeof(audio_time_function_signature));
+            find_code_start(opcodes, osu_manager_code_start,       (uint8_t *)osu_manager_function_signature,       sizeof(osu_manager_function_signature));
+            find_code_start(opcodes, binding_manager_code_start,   (uint8_t *)binding_manager_function_signature,   sizeof(binding_manager_function_signature));
+            find_code_start(opcodes, selected_replay_code_start,   (uint8_t *)selected_replay_function_signature,   sizeof(selected_replay_function_signature));
+            find_code_start(opcodes, osu_client_id_code_start,     (uint8_t *)osu_client_id_function_signature,     sizeof(osu_client_id_function_signature));
+            find_code_start(opcodes, osu_username_code_start,      (uint8_t *)username_function_signature,          sizeof(username_function_signature));
+            find_code_start(opcodes, window_manager_code_start,    (uint8_t *)window_manager_function_signature,    sizeof(window_manager_function_signature));
+            find_code_start(opcodes, score_multiplier_code_start,  (uint8_t *)score_multiplier_signature,           sizeof(score_multiplier_signature));
+            find_code_start(opcodes, update_flashlight_code_start, (uint8_t *)update_flashlight_function_signature, sizeof(update_flashlight_function_signature));
+            find_code_start(opcodes, check_flashlight_code_start,  (uint8_t *)check_flashlight_function_signature,  sizeof(check_flashlight_function_signature));
 
             if (!nt_user_send_input_dispatch_table_id_found && is_dispatch_table_id(opcodes))
             {
@@ -363,6 +372,9 @@ static void try_find_hook_offsets()
         score_multiplier_code_start += 0x2;
         score_multiplier_hook_jump_back = score_multiplier_code_start + 0x5;
     }
+
+    FR_PTR_INFO("update_flashlight_code_start", update_flashlight_code_start);
+    FR_PTR_INFO("check_flashlight_code_start", check_flashlight_code_start);
 }
 
 void init_hooks()
@@ -378,11 +390,10 @@ void init_hooks()
         memcpy(clr_module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
 
         clr_do([](ICLRRuntimeHost *p)
-        {
+               {
             HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
             if (result != S_OK)
-                FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
-        });
+                FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result); });
 
         FR_PTR_INFO("discord_rich_presence_code_start", discord_rich_presence_code_start);
 
@@ -462,6 +473,18 @@ void init_hooks()
         if (cfg_discord_rich_presence_enabled)
             enable_discord_rich_presence_hooks();
     }
+
+    if (update_flashlight_code_start)
+    {
+        if (cfg_flashlight_enabled)
+            enable_flashlight_hooks();
+    }
+
+    if (check_flashlight_code_start)
+    {
+        if (cfg_flashlight_enabled)
+            enable_flashlight_hooks();
+    }
 }
 
 void enable_nt_user_send_input_patch()
@@ -531,7 +554,7 @@ void disable_ar_hooks()
 
 void enable_notify_hooks()
 {
-    if (!cfg_relax_lock || !cfg_aimbot_lock || !cfg_replay_enabled)
+    if (!cfg_relax_lock || !cfg_aimbot_lock || !cfg_replay_enabled || !cfg_flashlight_enabled)
     {
         BeatmapOnLoadHook.Enable();
     }
@@ -539,7 +562,7 @@ void enable_notify_hooks()
 
 void disable_notify_hooks()
 {
-    if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled)
+    if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled && !cfg_flashlight_enabled)
     {
         BeatmapOnLoadHook.Disable();
     }
@@ -575,6 +598,58 @@ void enable_discord_rich_presence_hooks()
 void disable_discord_rich_presence_hooks()
 {
     DiscordRichPresenceHook.Disable();
+}
+
+void enable_flashlight_hooks()
+{
+    enable_notify_hooks();
+    if (update_flashlight_code_start)
+    {
+        update_flashlight_original_byte = *(uint8_t *)update_flashlight_code_start;
+        *(uint8_t *)update_flashlight_code_start = (uint8_t)0xC3; // ret
+    }
+    if (check_flashlight_code_start)
+    {
+        check_flashlight_original_byte = *(uint8_t *)check_flashlight_code_start;
+        *(uint8_t *)check_flashlight_code_start = (uint8_t)0xC3; // ret
+    }
+    if (osu_manager_ptr)
+    {
+        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+        if (osu_manager)
+        {
+            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
+            if (osu_ruleset_ptr)
+            {
+                uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
+                if (flashlight_sprite_manager)
+                    *(float *)(flashlight_sprite_manager + 0x28) = .0f;
+            }
+        }
+    }
+}
+
+void disable_flashlight_hooks()
+{
+    disable_notify_hooks();
+    if (update_flashlight_code_start)
+        *(uint8_t *)update_flashlight_code_start = update_flashlight_original_byte;
+    if (check_flashlight_code_start)
+        *(uint8_t *)check_flashlight_code_start = check_flashlight_original_byte;
+    if (osu_manager_ptr)
+    {
+        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+        if (osu_manager)
+        {
+            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
+            if (osu_ruleset_ptr)
+            {
+                uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
+                if (flashlight_sprite_manager)
+                    *(float *)(flashlight_sprite_manager + 0x28) = 1.f;
+            }
+        }
+    }
 }
 
 __declspec(naked) void set_approach_rate()
@@ -688,5 +763,7 @@ void destroy_hooks()
         disable_score_multiplier_hooks();
     if (cfg_discord_rich_presence_enabled)
         disable_discord_rich_presence_hooks();
+    if (cfg_flashlight_enabled)
+        disable_flashlight_hooks();
     disable_nt_user_send_input_patch();
 }

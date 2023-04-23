@@ -46,6 +46,17 @@ void process_hitobject()
             current_replay.entries_idx = 0;
         }
 
+        if (cfg_flashlight_enabled)
+        {
+            uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+            FR_PTR_INFO("osu_manager", osu_manager);
+            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
+            FR_PTR_INFO("osu_ruleset_ptr", osu_ruleset_ptr);
+            uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
+            FR_PTR_INFO("flashlight_sprite_manager", flashlight_sprite_manager);
+            *(float *)(flashlight_sprite_manager + 0x28) = .0f;
+        }
+
         beatmap_loaded = false;
     }
 

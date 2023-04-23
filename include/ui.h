@@ -29,7 +29,7 @@ enum class MenuTab
     Relax,
     Aimbot,
     Replay,
-    Score,
+    Mods,
     Misc,
     About,
     Debug

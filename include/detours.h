@@ -132,6 +132,9 @@ void disable_score_multiplier_hooks();
 void enable_discord_rich_presence_hooks();
 void disable_discord_rich_presence_hooks();
 
+void enable_flashlight_hooks();
+void disable_flashlight_hooks();
+
 void enable_nt_user_send_input_patch();
 void disable_nt_user_send_input_patch();
 
