@@ -264,26 +264,30 @@ void update_ui()
         {
             ImGui::Text("Unmod Flashlight");
             ImGui::Dummy(ImVec2(.0f, 1.f));
+            ImGui::PushID(69);
             if (ImGui::Checkbox("Enable", &cfg_flashlight_enabled))
             {
                 cfg_flashlight_enabled ? enable_flashlight_hooks() : disable_flashlight_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            ImGui::PopID();
             ImGui::Dummy(ImVec2(.0f, 10.f));
             ImGui::Text("Score Multiplier");
             ImGui::Dummy(ImVec2(.0f, 1.f));
+            ImGui::PushID(70);
             if (ImGui::Checkbox("Enable", &cfg_score_multiplier_enabled))
             {
                 cfg_score_multiplier_enabled ? enable_score_multiplier_hooks() : disable_score_multiplier_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            ImGui::PopID();
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (!cfg_score_multiplier_enabled)
             {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
-            ImGui::SliderFloat("##score_multiplier_2", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
+            ImGui::SliderFloat("##score_multiplier", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Hold Ctrl To Set a Custom Value");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
@@ -298,7 +302,7 @@ void update_ui()
             ImGui::Text("Discord RPC Settings");
             ImGui::Dummy(ImVec2(.0f, 5.f));
 
-            if (ImGui::Checkbox("Enabled", &cfg_discord_rich_presence_enabled))
+            if (ImGui::Checkbox("Enable", &cfg_discord_rich_presence_enabled))
             {
                 cfg_discord_rich_presence_enabled ? enable_discord_rich_presence_hooks() : disable_discord_rich_presence_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
