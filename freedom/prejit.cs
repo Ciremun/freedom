@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Freedom
 {
@@ -18,6 +19,19 @@ namespace Freedom
         public String class_ { get; set; }
         public String method { get; set; }
         public String name { get; set; }
+    }
+
+    public class SetPresence
+    {
+        public static int GetSetPresencePtr(String pwzArgument)
+        {
+            return (int)Assembly.GetEntryAssembly().GetType("DiscordRPC.DiscordRpcClient").GetMethod("SetPresence").MethodHandle.GetFunctionPointer();
+        }
+        public static int GetCSharpStringPtr(String pwzArgument)
+        {
+            GCHandle handle = GCHandle.Alloc(pwzArgument, GCHandleType.Pinned);
+            return (int)(handle.AddrOfPinnedObject() - 0x8);
+        }
     }
 
     public class PreJit

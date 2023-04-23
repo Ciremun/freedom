@@ -16,6 +16,8 @@ int cfg_relax_style = 'a'; // alternate
 bool cfg_score_multiplier_enabled = false;
 float cfg_score_multiplier_value = 1.f;
 
+bool cfg_discord_rich_presence_enabled = false;
+
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
     static wchar_t module_path[MAX_PATH * 2];

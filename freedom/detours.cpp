@@ -59,6 +59,12 @@ uintptr_t beatmap_onload_hook_jump_back = 0;
 uintptr_t score_multiplier_code_start = 0;
 uintptr_t score_multiplier_hook_jump_back = 0;
 
+DWORD discord_rich_presence_code_start = 0;
+DWORD discord_rich_presence_jump_back = 0;
+DWORD discord_rich_presence_state_string_ptr = NULL;
+DWORD discord_rich_presence_large_text_string_ptr = NULL;
+DWORD discord_rich_presence_small_text_string_ptr = NULL;
+
 uintptr_t current_scene_code_start = 0;
 uintptr_t current_scene_offset = 0;
 Scene *current_scene_ptr = 0;
@@ -114,13 +120,15 @@ Hook<Detour32> SelectedReplayHook;
 
 Hook<Detour32> ScoreMultiplierHook;
 
+Hook<Detour32> DiscordRichPresenceHook;
+
 float memory_scan_progress = .0f;
 
 static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
-        audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
-        osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found && score_multiplier_code_start;
+           audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
+           osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found && score_multiplier_code_start;
 }
 
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -138,7 +146,7 @@ int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 static inline bool is_dispatch_table_id(uint8_t *opcodes)
 {
     return *opcodes == (uint8_t)0xB8 && opcodes[5] == (uint8_t)0xE9 &&
-          (*(uintptr_t*)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5);
+           (*(uintptr_t *)(opcodes + 0x6) + (uintptr_t)opcodes + 0x5 + 0x5) == (uintptr_t)(nt_user_send_input_ptr + 0x5);
 }
 
 static void scan_for_code_starts()
@@ -151,7 +159,7 @@ static void scan_for_code_starts()
     };
 
     scan_memory(GetModuleBaseAddress(L"osu!.exe"), 0x7FFFFFFF, 8, [&](uintptr_t begin, int alignment, unsigned char *block, unsigned int idx)
-    {
+                {
         __try
         {
             uint8_t *opcodes = (uint8_t *)(begin + idx * alignment);
@@ -181,8 +189,7 @@ static void scan_for_code_starts()
             FR_PTR_INFO("exception in scan_for_code_starts", begin + idx * alignment);
         }
 
-        return all_code_starts_found();
-    });
+        return all_code_starts_found(); });
 
     memory_scan_progress = 1.f;
 }
@@ -316,7 +323,7 @@ static void try_find_hook_offsets()
                 }
             }
         }
-        __except(filter(GetExceptionCode(), GetExceptionInformation()))
+        __except (filter(GetExceptionCode(), GetExceptionInformation()))
         {
             FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
         }
@@ -329,14 +336,14 @@ static void try_find_hook_offsets()
             uintptr_t username_offset = find_opcodes(osu_username_signature, osu_username_code_start, 0x20, 0x14D);
             if (username_offset)
             {
-                    uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
-                    uint32_t username_length = *(uint32_t *)(username_string + 0x4);
-                    wchar_t *username_data = (wchar_t *)(username_string + 0x8);
-                    int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
-                    osu_username[username_bytes_written] = '\0';
-                }
+                uintptr_t username_string = **(uintptr_t **)(osu_username_code_start + username_offset + sizeof(osu_username_signature));
+                uint32_t username_length = *(uint32_t *)(username_string + 0x4);
+                wchar_t *username_data = (wchar_t *)(username_string + 0x8);
+                int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
+                osu_username[username_bytes_written] = '\0';
             }
-        __except(filter(GetExceptionCode(), GetExceptionInformation()))
+        }
+        __except (filter(GetExceptionCode(), GetExceptionInformation()))
         {
             FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_username_code_start");
         }
@@ -360,6 +367,29 @@ static void try_find_hook_offsets()
 
 void init_hooks()
 {
+    DWORD module_path_length = GetModuleFileNameW(g_module, clr_module_path, MAX_PATH * 2);
+    if (module_path_length != 0)
+    {
+        DWORD backslash_index = module_path_length - 1;
+        while (backslash_index)
+            if (clr_module_path[--backslash_index] == '\\')
+                break;
+
+        memcpy(clr_module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
+
+        clr_do([](ICLRRuntimeHost *p)
+        {
+            HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
+            if (result != S_OK)
+                FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+        });
+
+        FR_PTR_INFO("discord_rich_presence_code_start", discord_rich_presence_code_start);
+
+        if (discord_rich_presence_code_start)
+            discord_rich_presence_jump_back = discord_rich_presence_code_start + 0x5;
+    }
+
     HMODULE win32u = GetModuleHandle(L"win32u.dll");
     if (win32u != NULL)
     {
@@ -424,6 +454,13 @@ void init_hooks()
         ScoreMultiplierHook = Hook<Detour32>(score_multiplier_code_start, (BYTE *)set_score_multiplier, 5);
         if (cfg_score_multiplier_enabled)
             enable_score_multiplier_hooks();
+    }
+
+    if (discord_rich_presence_code_start)
+    {
+        DiscordRichPresenceHook = Hook<Detour32>(discord_rich_presence_code_start, (BYTE *)set_discord_rich_presence, 5);
+        if (cfg_discord_rich_presence_enabled)
+            enable_discord_rich_presence_hooks();
     }
 }
 
@@ -530,6 +567,16 @@ void disable_score_multiplier_hooks()
     ScoreMultiplierHook.Disable();
 }
 
+void enable_discord_rich_presence_hooks()
+{
+    DiscordRichPresenceHook.Enable();
+}
+
+void disable_discord_rich_presence_hooks()
+{
+    DiscordRichPresenceHook.Disable();
+}
+
 __declspec(naked) void set_approach_rate()
 {
     __asm {
@@ -604,14 +651,42 @@ __declspec(naked) void set_score_multiplier()
     }
 }
 
+__declspec(naked) void set_discord_rich_presence()
+{
+    __asm {
+        push esi
+        mov eax, discord_rich_presence_state_string_ptr
+        mov dword ptr [edx+0x4], eax
+        mov esi, discord_rich_presence_large_text_string_ptr
+        mov eax, [edx+0x10]
+        mov dword ptr [eax+0x8], esi
+        mov esi, discord_rich_presence_small_text_string_ptr
+        mov dword ptr [eax+0x10], esi
+        pop esi
+        push ebp
+        mov ebp,esp
+        push edi
+        push esi
+        jmp [discord_rich_presence_jump_back]
+    }
+}
+
 void destroy_hooks()
 {
     SwapBuffersHook.Disable();
-    if (ar_parameter.lock)  disable_ar_hooks();
-    if (cs_parameter.lock)  disable_cs_hooks();
-    if (od_parameter.lock)  disable_od_hooks();
-    if (cfg_replay_enabled) SelectedReplayHook.Disable();
-    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock) BeatmapOnLoadHook.Disable();
-    if (cfg_score_multiplier_enabled) disable_score_multiplier_hooks();
+    if (ar_parameter.lock)
+        disable_ar_hooks();
+    if (cs_parameter.lock)
+        disable_cs_hooks();
+    if (od_parameter.lock)
+        disable_od_hooks();
+    if (cfg_replay_enabled)
+        SelectedReplayHook.Disable();
+    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+        BeatmapOnLoadHook.Disable();
+    if (cfg_score_multiplier_enabled)
+        disable_score_multiplier_hooks();
+    if (cfg_discord_rich_presence_enabled)
+        disable_discord_rich_presence_hooks();
     disable_nt_user_send_input_patch();
 }

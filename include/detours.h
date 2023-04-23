@@ -53,6 +53,12 @@ extern uintptr_t beatmap_onload_hook_jump_back;
 extern uintptr_t score_multiplier_code_start;
 extern uintptr_t score_multiplier_hook_jump_back;
 
+extern DWORD discord_rich_presence_code_start;
+extern DWORD discord_rich_presence_jump_back;
+extern DWORD discord_rich_presence_state_string_ptr;
+extern DWORD discord_rich_presence_large_text_string_ptr;
+extern DWORD discord_rich_presence_small_text_string_ptr;
+
 extern uintptr_t current_scene_code_start;
 extern uintptr_t current_scene_offset;
 extern Scene *current_scene_ptr;
@@ -115,12 +121,16 @@ void set_approach_rate_2();
 void set_circle_size();
 void set_overall_difficulty();
 void set_score_multiplier();
+void set_discord_rich_presence();
 
 void notify_on_beatmap_load();
 void notify_on_select_replay();
 
 void enable_score_multiplier_hooks();
 void disable_score_multiplier_hooks();
+
+void enable_discord_rich_presence_hooks();
+void disable_discord_rich_presence_hooks();
 
 void enable_nt_user_send_input_patch();
 void disable_nt_user_send_input_patch();

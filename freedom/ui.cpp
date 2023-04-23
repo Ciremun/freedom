@@ -55,6 +55,7 @@ void init_ui()
     ImFontConfig config;
     config.OversampleH = config.OversampleV = 1;
     config.PixelSnapH = true;
+    config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
 
     for (int size = 34; size > 16; size -= 2)
     {
@@ -166,7 +167,7 @@ void update_ui()
         update_tab("Debug", MenuTab::Debug);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
-        if (selected_tab == MenuTab::Debug)
+        if (selected_tab == MenuTab::Debug || selected_tab == MenuTab::Misc)
             ImGui::SetNextWindowSize(ImVec2(.0f, .0f), ImGuiCond_Always);
         else
             ImGui::SetNextWindowSize(ImVec2(.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
@@ -284,6 +285,83 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Misc)
         {
+            ImGui::Text("Discord RPC Settings");
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+
+            if (ImGui::Checkbox("Enabled", &cfg_discord_rich_presence_enabled))
+            {
+                cfg_discord_rich_presence_enabled ? enable_discord_rich_presence_hooks() : disable_discord_rich_presence_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+
+            if (!cfg_discord_rich_presence_enabled)
+            {
+                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+            }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
+
+            static char discord_rich_presence_state[512] = {0};
+            if (ImGui::InputTextEx("##rpc_state", "State", discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                static wchar_t discord_rich_presence_state_wchar[512] = {0};
+                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, NULL, 0);
+                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, discord_rich_presence_state_wchar, wchars_count);
+                discord_rich_presence_state_wchar[bytes_written] = '\0';
+                clr_do([](ICLRRuntimeHost *p)
+                {
+                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_state_wchar, &discord_rich_presence_state_string_ptr);
+                    if (result != S_OK)
+                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                });
+            }
+
+            static char discord_rich_presence_large_text[512] = {0};
+            if (ImGui::InputTextEx("##rpc_large_text", "Large Text", discord_rich_presence_large_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                static wchar_t discord_rich_presence_large_text_wchar[512] = {0};
+                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, NULL, 0);
+                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, discord_rich_presence_large_text_wchar, wchars_count);
+                discord_rich_presence_large_text_wchar[bytes_written] = '\0';
+                clr_do([](ICLRRuntimeHost *p)
+                {
+                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar, &discord_rich_presence_large_text_string_ptr);
+                    if (result != S_OK)
+                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                });
+            }
+
+            static char discord_rich_presence_small_text[512] = {0};
+            if (ImGui::InputTextEx("##rpc_small_text", "Small Text", discord_rich_presence_small_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                static wchar_t discord_rich_presence_small_text_wchar[512] = {0};
+                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, NULL, 0);
+                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, discord_rich_presence_small_text_wchar, wchars_count);
+                discord_rich_presence_small_text_wchar[bytes_written] = '\0';
+                clr_do([](ICLRRuntimeHost *p)
+                {
+                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar, &discord_rich_presence_small_text_string_ptr);
+                    if (result != S_OK)
+                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                });
+            }
+
+            ImGui::PopStyleVar();
+
+            if (!cfg_discord_rich_presence_enabled)
+            {
+                ImGui::PopStyleColor();
+                ImGui::PopItemFlag();
+            }
+
+            ImGui::Dummy(ImVec2(.0f, 20.f));
+
             static char preview_font_size[16] = {0};
             stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);
             if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
@@ -311,7 +389,7 @@ void update_ui()
             static bool nt_user_send_input_patched = true;
             if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
                 nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
-            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing() - 10.0f);
+            ImGui::Dummy(ImVec2(.0f, 5.f));
             if (ImGui::Button("Unload DLL"))
                 unload_freedom();
         }
@@ -375,6 +453,7 @@ void update_ui()
                 ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
                 ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
                 ImGui::Text("score_multiplier_code_start: %08X", score_multiplier_code_start);
+                ImGui::Text("discord_rich_presence_code_start: %08X", discord_rich_presence_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -394,6 +473,7 @@ void update_ui()
                 ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
                 ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
                 ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
+                ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
             }
         }
         ImGui::End();
