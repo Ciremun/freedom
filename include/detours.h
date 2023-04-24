@@ -84,6 +84,14 @@ extern uintptr_t window_manager_code_start;
 extern uintptr_t window_manager_offset;
 extern uintptr_t window_manager_ptr;
 
+extern uintptr_t update_timing_code_start;
+extern uintptr_t update_timing_offset_1;
+extern uintptr_t update_timing_offset_2;
+extern uintptr_t update_timing_offset_3;
+
+extern uintptr_t set_playback_rate_code_start;
+extern uintptr_t set_playback_rate_jump_back;
+
 extern uintptr_t osu_client_id_code_start;
 extern char osu_client_id[64];
 
@@ -135,7 +143,12 @@ void disable_discord_rich_presence_hooks();
 void enable_flashlight_hooks();
 void disable_flashlight_hooks();
 
+void enable_timewarp_hooks();
+void disable_timewarp_hooks();
+
 void enable_nt_user_send_input_patch();
 void disable_nt_user_send_input_patch();
+
+void set_playback_rate();
 
 void destroy_hooks();

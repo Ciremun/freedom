@@ -489,6 +489,14 @@ void update_ui()
                 ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
                 ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
             }
+            if (ImGui::CollapsingHeader("NEW!", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("update_timing_code_start: 0x%X", update_timing_code_start);
+                ImGui::Text("update_timing_offset_1: 0x%X", update_timing_offset_1);
+                ImGui::Text("update_timing_offset_2: 0x%X", update_timing_offset_2);
+                ImGui::Text("update_timing_offset_3: 0x%X", update_timing_offset_3);
+                ImGui::Text("set_playback_rate_code_start: 0x%X", set_playback_rate_code_start);
+            }
         }
         ImGui::End();
         ImGui::EndPopup();
