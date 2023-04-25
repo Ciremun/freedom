@@ -132,23 +132,34 @@ Hook<Detour32> DiscordRichPresenceHook;
 
 uintptr_t set_playback_rate_code_start = 0;
 uintptr_t set_playback_rate_jump_back = 0;
+uintptr_t set_playback_rate_original_mov_addr = 0;
+
+uintptr_t check_timewarp_code_start = 0;
+uintptr_t check_timewarp_value_1 = 64;
+uintptr_t check_timewarp_value_2 = 32;
+
+uintptr_t check_timewarp_hook_1 = 0;
+uintptr_t check_timewarp_hook_1_jump_back = 0;
+
+uintptr_t check_timewarp_hook_2 = 0;
+uintptr_t check_timewarp_hook_2_jump_back = 0;
 
 uintptr_t update_timing_code_start = 0;
-uintptr_t update_timing_offset_1 = 0;
-uintptr_t update_timing_offset_2 = 0;
-uintptr_t update_timing_offset_3 = 0;
-uintptr_t update_timing_frame_ms_ptr_1 = 0;
-uintptr_t update_timing_frame_ms_ptr_2 = 0;
-uintptr_t update_timing_frame_ms_ptr_3 = 0;
+uintptr_t update_timing_ptr_1 = 0;
+uintptr_t update_timing_ptr_2 = 0;
+uintptr_t update_timing_ptr_3 = 0;
+uintptr_t update_timing_ptr_4 = 0;
 
 Hook<Detour32> SetPlaybackRateHook;
+Hook<Detour32> CheckTimewarpHook1;
+Hook<Detour32> CheckTimewarpHook2;
 
 static inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
-           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start;
+           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start;
 }
 
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -173,7 +184,8 @@ static inline bool is_set_playback_rate(uint8_t *opcodes)
 {
     // 55 8B EC 56 8B 35 ?? ?? ?? ?? 85 F6
     const uint8_t set_playback_rate_signature_first_part[] = { 0x55, 0x8B, 0xEC, 0x56, 0x8B, 0x35 };
-    return (memcmp(opcodes, set_playback_rate_signature_first_part, sizeof(set_playback_rate_signature_first_part)) == 0) && (opcodes[10] == (uint8_t)0x85) && (opcodes[11] == (uint8_t)0xF6);
+    const uint8_t set_playback_rate_signature_second_part[] = { 0x85, 0xF6, 0x75, 0x05, 0x5E, 0x5D, 0xC2, 0x08, 0x00, 0x33, 0xD2, 0x89, 0x15 };
+    return (memcmp(opcodes, set_playback_rate_signature_first_part, sizeof(set_playback_rate_signature_first_part)) == 0) && (memcmp(opcodes + 10, set_playback_rate_signature_second_part, sizeof(set_playback_rate_signature_second_part)) == 0);
 }
 
 static void scan_for_code_starts()
@@ -206,6 +218,7 @@ static void scan_for_code_starts()
             find_code_start(opcodes, update_flashlight_code_start, (uint8_t *)update_flashlight_function_signature, sizeof(update_flashlight_function_signature));
             find_code_start(opcodes, check_flashlight_code_start,  (uint8_t *)check_flashlight_function_signature,  sizeof(check_flashlight_function_signature));
             find_code_start(opcodes, update_timing_code_start,     (uint8_t *)update_timing_function_signature,     sizeof(update_timing_function_signature));
+            find_code_start(opcodes, check_timewarp_code_start,    (uint8_t *)check_timewarp_function_signature,    sizeof(check_timewarp_function_signature));
 
             if (!nt_user_send_input_dispatch_table_id_found && is_dispatch_table_id(opcodes))
             {
@@ -217,7 +230,9 @@ static void scan_for_code_starts()
             if (!set_playback_rate_code_start && is_set_playback_rate(opcodes))
             {
                 set_playback_rate_code_start = (uintptr_t)opcodes;
+                set_playback_rate_original_mov_addr = *(uintptr_t *)(opcodes + 0x6);
                 FR_PTR_INFO("set_playback_rate_code_start", set_playback_rate_code_start);
+                FR_PTR_INFO("set_playback_rate_original_mov_addr", set_playback_rate_original_mov_addr);
             }
         }
         __except(filter(GetExceptionCode(), GetExceptionInformation()))
@@ -403,19 +418,33 @@ static void try_find_hook_offsets()
     FR_PTR_INFO("update_flashlight_code_start", update_flashlight_code_start);
     FR_PTR_INFO("check_flashlight_code_start", check_flashlight_code_start);
 
+    FR_PTR_INFO("check_timewarp_code_start", check_timewarp_code_start);
+    if (check_timewarp_code_start)
+    {
+        // D9 E8 DE F1 DE C9
+        uintptr_t check_timewarp_offset = find_opcodes(check_timewarp_signature, check_timewarp_code_start, 0x1000, 0x16EA);
+        check_timewarp_hook_1 = (uintptr_t)(check_timewarp_code_start + check_timewarp_offset - 0x24);
+        check_timewarp_hook_2 = (uintptr_t)(check_timewarp_code_start + sizeof(check_timewarp_signature) + check_timewarp_offset + 0x5);
+        check_timewarp_hook_1_jump_back = check_timewarp_hook_1 + 0x6;
+        check_timewarp_hook_2_jump_back = check_timewarp_hook_2 + 0x6;
+    }
+
     FR_PTR_INFO("update_timing_code_start", update_timing_code_start);
     if (update_timing_code_start)
     {
-        // FIXME
-        update_timing_offset_1 = find_opcodes(update_timing_signature, update_timing_code_start, 0x0, 0x1000);
-        update_timing_offset_2 = find_opcodes(update_timing_signature, update_timing_code_start, 0x0, 0x1000);
-        update_timing_offset_3 = find_opcodes(update_timing_signature, update_timing_code_start, 0x0, 0x1000);
+        uintptr_t update_timing_ptr_1_offset = find_opcodes(update_timing_signature, update_timing_code_start, 0x100, 0x1F4);
+        update_timing_ptr_1 = *(uintptr_t *)(update_timing_code_start + update_timing_ptr_1_offset + sizeof(update_timing_signature));
+        FR_PTR_INFO("update_timing_ptr_1", update_timing_ptr_1);
+        uintptr_t offset_of_something_in_between = find_opcodes(update_timing_signature_2, update_timing_code_start, 0x1F4, 0x280);
+        update_timing_ptr_2 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between - 0x24);
+        update_timing_ptr_3 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between - 0x4);
+        update_timing_ptr_4 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between + 0x39);
     }
     
     FR_PTR_INFO("set_playback_rate_code_start", set_playback_rate_code_start);
     if (set_playback_rate_code_start)
     {
-        set_playback_rate_jump_back = update_timing_code_start + 0xA;
+        set_playback_rate_jump_back = set_playback_rate_code_start + 0xA;
     }
 }
 
@@ -531,6 +560,13 @@ void init_hooks()
     if (set_playback_rate_code_start)
     {
         SetPlaybackRateHook = Hook<Detour32>(set_playback_rate_code_start, (BYTE *)set_playback_rate, 10);
+        if (cfg_timewarp_enabled)
+            enable_timewarp_hooks();
+    }
+    if (check_timewarp_code_start)
+    {
+        CheckTimewarpHook1 = Hook<Detour32>(check_timewarp_hook_1, (BYTE *)set_check_timewarp_hook_1, 6);
+        CheckTimewarpHook2 = Hook<Detour32>(check_timewarp_hook_2, (BYTE *)set_check_timewarp_hook_2, 6);
         if (cfg_timewarp_enabled)
             enable_timewarp_hooks();
     }
@@ -704,11 +740,15 @@ void disable_flashlight_hooks()
 void enable_timewarp_hooks()
 {
     SetPlaybackRateHook.Enable();
+    // CheckTimewarpHook1.Enable();
+    // CheckTimewarpHook2.Enable();
 }
 
 void disable_timewarp_hooks()
 {
     SetPlaybackRateHook.Disable();
+    // CheckTimewarpHook1.Disable();
+    // CheckTimewarpHook2.Disable();
 }
 
 __declspec(naked) void set_approach_rate()
@@ -808,16 +848,31 @@ __declspec(naked) void set_discord_rich_presence()
 __declspec(naked) void set_playback_rate()
 {
     __asm {
-        // push eax
+        push ebp
         // mov eax, dword ptr [cfg_timewarp_playback_rate]
-        // mov [symbol+0x8], eax
+        mov dword ptr [esp+0xC], 0x4075e000
         // mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
-        // mov [symbol+0xC], eax
-        // pop eax
-        // mov ebp,esp
-        // push esi
-        // mov esi,[04714A64]
+        mov dword ptr [esp+0x10], 0x00000000
+        mov ebp,esp
+        push esi
+        mov esi, dword ptr [set_playback_rate_original_mov_addr]
         jmp [set_playback_rate_jump_back]
+    }
+}
+
+__declspec(naked) void set_check_timewarp_hook_1()
+{
+    __asm {
+        mov eax, check_timewarp_value_1
+        jmp [check_timewarp_hook_1_jump_back]
+    }
+}
+
+__declspec(naked) void set_check_timewarp_hook_2()
+{
+    __asm {
+        mov eax, check_timewarp_value_2
+        jmp [check_timewarp_hook_2_jump_back]
     }
 }
 

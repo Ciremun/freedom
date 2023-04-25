@@ -492,10 +492,17 @@ void update_ui()
             if (ImGui::CollapsingHeader("NEW!", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("update_timing_code_start: 0x%X", update_timing_code_start);
-                ImGui::Text("update_timing_offset_1: 0x%X", update_timing_offset_1);
-                ImGui::Text("update_timing_offset_2: 0x%X", update_timing_offset_2);
-                ImGui::Text("update_timing_offset_3: 0x%X", update_timing_offset_3);
+                ImGui::Text("update_timing_ptr_1: 0x%X", update_timing_ptr_1);
+                ImGui::Text("update_timing_ptr_2: 0x%X", update_timing_ptr_2);
+                ImGui::Text("update_timing_ptr_3: 0x%X", update_timing_ptr_3);
+                ImGui::Text("update_timing_ptr_4: 0x%X", update_timing_ptr_4);
                 ImGui::Text("set_playback_rate_code_start: 0x%X", set_playback_rate_code_start);
+                ImGui::Text("check_timewarp_code_start: 0x%X", check_timewarp_code_start);
+                if (ImGui::Checkbox("Enable Timewarp", &cfg_timewarp_enabled))
+                    cfg_timewarp_enabled ? enable_timewarp_hooks() : disable_timewarp_hooks();
+                
+                ImGui::SliderFloat2("Timewarp scale", (float *)&cfg_timewarp_playback_rate, 1.f, 1000.f, "%lf");
+                ImGui::Text("Actual scale: %lf", cfg_timewarp_enabled);
             }
         }
         ImGui::End();
