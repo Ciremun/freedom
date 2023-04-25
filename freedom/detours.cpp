@@ -131,7 +131,7 @@ Hook<Detour32> ScoreMultiplierHook;
 Hook<Detour32> DiscordRichPresenceHook;
 
 uintptr_t set_playback_rate_code_start = 0;
-uintptr_t set_playbacK_rate_jump_back = 0;
+uintptr_t set_playback_rate_jump_back = 0;
 
 uintptr_t update_timing_code_start = 0;
 uintptr_t update_timing_offset_1 = 0;
@@ -808,16 +808,15 @@ __declspec(naked) void set_discord_rich_presence()
 __declspec(naked) void set_playback_rate()
 {
     __asm {
-        push eax
-        mov eax, dword ptr [cfg_timewarp_playback_rate]
-        mov [symbol+0x8], eax
-        mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
-        mov [symbol+0xC], eax
-        pop eax
-        mov ebp,esp
-        push esi
-        // fixme
-        mov esi,[04714A64]
+        // push eax
+        // mov eax, dword ptr [cfg_timewarp_playback_rate]
+        // mov [symbol+0x8], eax
+        // mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
+        // mov [symbol+0xC], eax
+        // pop eax
+        // mov ebp,esp
+        // push esi
+        // mov esi,[04714A64]
         jmp [set_playback_rate_jump_back]
     }
 }

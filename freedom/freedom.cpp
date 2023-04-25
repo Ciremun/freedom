@@ -32,7 +32,7 @@ void unload_freedom()
 
 HDC hDc = 0;
 
-void freedom_update()
+__declspec(naked) void freedom_update()
 {
     // if (!hDc)
         // return wglSwapBuffersGateway(hDc);
@@ -54,7 +54,6 @@ void freedom_update()
 
         init_ui();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
-        // std::thread(init_hooks).detach();
 
         init = true;
     }
@@ -63,16 +62,14 @@ void freedom_update()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiIO &io = ImGui::GetIO();
-
     process_hitobject();
 
     if (GetAsyncKeyState(VK_F11) & 1)
     {
         cfg_mod_menu_visible = !cfg_mod_menu_visible;
         if (!cfg_mod_menu_visible)
-            io.MouseDrawCursor = false;
-        ImGui::SaveIniSettingsToDisk(io.IniFilename);
+            ImGui::GetIO().MouseDrawCursor = false;
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
 
     if (!cfg_mod_menu_visible)
@@ -80,7 +77,7 @@ void freedom_update()
 
     update_ui();
 
-    io.MouseDrawCursor = io.WantCaptureMouse;
+    ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
 
 frame_end:
 
