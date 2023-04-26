@@ -850,9 +850,9 @@ __declspec(naked) void set_playback_rate()
     __asm {
         push ebp
         // mov eax, dword ptr [cfg_timewarp_playback_rate]
-        mov dword ptr [esp+0xC], 0x4075e000
+        mov dword ptr [esp+0xC], 0x40690000
         // mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
-        mov dword ptr [esp+0x10], 0x00000000
+        mov dword ptr [esp+0x8], 0x00000000
         mov ebp,esp
         push esi
         mov esi, dword ptr [set_playback_rate_original_mov_addr]
