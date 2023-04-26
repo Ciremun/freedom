@@ -501,8 +501,9 @@ void update_ui()
                 if (ImGui::Checkbox("Enable Timewarp", &cfg_timewarp_enabled))
                     cfg_timewarp_enabled ? enable_timewarp_hooks() : disable_timewarp_hooks();
                 
-                ImGui::SliderFloat2("Timewarp scale", (float *)&cfg_timewarp_playback_rate, 1.f, 1000.f, "%lf");
-                ImGui::Text("Actual scale: %lf", cfg_timewarp_enabled);
+                static double p_min = 1;
+                static double p_max = 1000;
+                ImGui::SliderScalar("Timewarp Scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "%lf");
             }
         }
         ImGui::End();

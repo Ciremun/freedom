@@ -740,15 +740,15 @@ void disable_flashlight_hooks()
 void enable_timewarp_hooks()
 {
     SetPlaybackRateHook.Enable();
-    // CheckTimewarpHook1.Enable();
-    // CheckTimewarpHook2.Enable();
+    CheckTimewarpHook1.Enable();
+    CheckTimewarpHook2.Enable();
 }
 
 void disable_timewarp_hooks()
 {
     SetPlaybackRateHook.Disable();
-    // CheckTimewarpHook1.Disable();
-    // CheckTimewarpHook2.Disable();
+    CheckTimewarpHook1.Disable();
+    CheckTimewarpHook2.Disable();
 }
 
 __declspec(naked) void set_approach_rate()
@@ -849,13 +849,18 @@ __declspec(naked) void set_playback_rate()
 {
     __asm {
         push ebp
-        // mov eax, dword ptr [cfg_timewarp_playback_rate]
-        mov dword ptr [esp+0xC], 0x40690000
-        // mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
-        mov dword ptr [esp+0x8], 0x00000000
+        push eax
+        mov eax, dword ptr [cfg_timewarp_playback_rate]
+        mov dword ptr [esp+0xC], eax
+        mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
+        mov dword ptr [esp+0x10], eax
+        pop eax
         mov ebp,esp
         push esi
-        mov esi, dword ptr [set_playback_rate_original_mov_addr]
+        push ebx
+        mov ebx, dword ptr [set_playback_rate_original_mov_addr]
+        mov esi, dword ptr [ebx]
+        pop ebx
         jmp [set_playback_rate_jump_back]
     }
 }
