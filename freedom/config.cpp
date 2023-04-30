@@ -75,51 +75,44 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("replay_keys=%d\n", (int)cfg_replay_keys);
     buf->appendf("sm_lock=%d\n", (int)cfg_score_multiplier_enabled);
     buf->appendf("sm_value=%.2f\n", cfg_score_multiplier_value);
+    buf->appendf("drpc=%d\n", (int)cfg_discord_rich_presence_enabled);
+    buf->appendf("fl=%d\n", (int)cfg_flashlight_enabled);
+    buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
+    buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
     buf->append("\n");
 }
 
 static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
-    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i, relax_lock_i, aimbot_lock_i, spins_per_minute_i;
+    int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
+        relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
+        flashlight_enabled_i, timewarp_enabled_i;
     int replay_i, replay_aim_i, replay_keys_i, score_multiplier_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
+    double timewarp_playback_rate_d;
     char relax_style_c;
-    if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)
-        ar_parameter.lock = ar_lock_i;
-    else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)
-        ar_parameter.value = ar_value_f;
-    else if (sscanf(line, "cs_lock=%d", &cs_lock_i) == 1)
-        cs_parameter.lock = cs_lock_i;
-    else if (sscanf(line, "cs_value=%f", &cs_value_f) == 1)
-        cs_parameter.value = cs_value_f;
-    else if (sscanf(line, "od_lock=%d", &od_lock_i) == 1)
-        od_parameter.lock = od_lock_i;
-    else if (sscanf(line, "od_value=%f", &od_value_f) == 1)
-        od_parameter.value = od_value_f;
-    else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)
-        cfg_mod_menu_visible = mod_menu_visible_i;
-    else if (sscanf(line, "font_size=%d", &font_size_i) == 1)
-        cfg_font_size = font_size_i;
-    else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)
-        cfg_relax_lock = relax_lock_i;
-    else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)
-        cfg_relax_style = (int)relax_style_c;
-    else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)
-        cfg_aimbot_lock = aimbot_lock_i;
-    else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)
-        cfg_spins_per_minute = spins_per_minute_i;
-    else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1)
-        cfg_fraction_modifier = fraction_modifier_f;
-    else if (sscanf(line, "replay=%d", &replay_i) == 1)
-        cfg_replay_enabled = replay_i;
-    else if (sscanf(line, "replay_aim=%d", &replay_aim_i) == 1)
-        cfg_replay_aim = replay_aim_i;
-    else if (sscanf(line, "replay_keys=%d", &replay_keys_i) == 1)
-        cfg_replay_keys = replay_keys_i;
-    else if (sscanf(line, "sm_lock=%d", &score_multiplier_i) == 1)
-        cfg_score_multiplier_enabled = score_multiplier_i;
-    else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)
-        cfg_score_multiplier_value = score_multiplier_value_f;
+    if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)                           ar_parameter.lock = ar_lock_i;
+    else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)                    ar_parameter.value = ar_value_f;
+    else if (sscanf(line, "cs_lock=%d", &cs_lock_i) == 1)                      cs_parameter.lock = cs_lock_i;
+    else if (sscanf(line, "cs_value=%f", &cs_value_f) == 1)                    cs_parameter.value = cs_value_f;
+    else if (sscanf(line, "od_lock=%d", &od_lock_i) == 1)                      od_parameter.lock = od_lock_i;
+    else if (sscanf(line, "od_value=%f", &od_value_f) == 1)                    od_parameter.value = od_value_f;
+    else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)             cfg_mod_menu_visible = mod_menu_visible_i;
+    else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                  cfg_font_size = font_size_i;
+    else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                     cfg_relax_lock = relax_lock_i;
+    else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)              cfg_relax_style = (int)relax_style_c;
+    else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                   cfg_aimbot_lock = aimbot_lock_i;
+    else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)    cfg_spins_per_minute = spins_per_minute_i;
+    else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1)  cfg_fraction_modifier = fraction_modifier_f;
+    else if (sscanf(line, "replay=%d", &replay_i) == 1)                        cfg_replay_enabled = replay_i;
+    else if (sscanf(line, "replay_aim=%d", &replay_aim_i) == 1)                cfg_replay_aim = replay_aim_i;
+    else if (sscanf(line, "replay_keys=%d", &replay_keys_i) == 1)              cfg_replay_keys = replay_keys_i;
+    else if (sscanf(line, "sm_lock=%d", &score_multiplier_i) == 1)             cfg_score_multiplier_enabled = score_multiplier_i;
+    else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)      cfg_score_multiplier_value = score_multiplier_value_f;
+    else if (sscanf(line, "drpc=%d", &discord_rich_presence_enabled_i) == 1)   cfg_discord_rich_presence_enabled = discord_rich_presence_enabled_i;
+    else if (sscanf(line, "fl=%d", &flashlight_enabled_i) == 1)                cfg_flashlight_enabled = flashlight_enabled_i;
+    else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)             cfg_timewarp_enabled = timewarp_enabled_i;
+    else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)     cfg_timewarp_playback_rate = timewarp_playback_rate_d;
 }
 
 void set_imgui_ini_handler()

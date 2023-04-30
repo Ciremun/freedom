@@ -240,6 +240,8 @@ void update_ui()
             static double p_min = 1;
             static double p_max = 1000;
             ImGui::SliderScalar("##timewarp_scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "Timewarp Scale: %.1lf");
+            if (ImGui::IsItemDeactivatedAfterEdit())
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
         if (selected_tab == MenuTab::Replay)
         {
