@@ -49,11 +49,8 @@ void process_hitobject()
         if (cfg_flashlight_enabled)
         {
             uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-            FR_PTR_INFO("osu_manager", osu_manager);
             uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
-            FR_PTR_INFO("osu_ruleset_ptr", osu_ruleset_ptr);
             uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
-            FR_PTR_INFO("flashlight_sprite_manager", flashlight_sprite_manager);
             *(float *)(flashlight_sprite_manager + 0x28) = .0f;
         }
 
@@ -193,7 +190,9 @@ void process_hitobject()
                     current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
                 send_keyboard_input(current_click, 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle->start_time, circle->end_time);
+                double timewarp_playback_rate_div_100 = cfg_timewarp_enabled ? cfg_timewarp_playback_rate / 100.0 : 1.0;
                 keyup_delay = circle->end_time ? circle->end_time - circle->start_time : 0.5;
+                keyup_delay = keyup_delay / timewarp_playback_rate_div_100;
                 if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
                 {
                     if (current_beatmap.mods & Mods::DoubleTime)

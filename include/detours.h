@@ -53,6 +53,9 @@ extern uintptr_t beatmap_onload_hook_jump_back;
 extern uintptr_t score_multiplier_code_start;
 extern uintptr_t score_multiplier_hook_jump_back;
 
+extern uintptr_t update_flashlight_code_start;
+extern uintptr_t check_flashlight_code_start;
+
 extern DWORD discord_rich_presence_code_start;
 extern DWORD discord_rich_presence_jump_back;
 extern DWORD discord_rich_presence_state_string_ptr;

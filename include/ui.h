@@ -28,6 +28,7 @@ enum class MenuTab
     Difficulty = 0,
     Relax,
     Aimbot,
+    Timewarp,
     Replay,
     Mods,
     Misc,

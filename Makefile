@@ -10,7 +10,7 @@ INJECTOR_LINKER_FLAGS = -link -MACHINE:x86
 FREEDOM = freedom.dll
 FREEDOM_SRC := $(wildcard freedom/*.cpp) $(wildcard imgui/*.cpp) $(wildcard imgui/backends/*.cpp)
 FREEDOM_OBJ = $(addsuffix .obj, $(basename $(notdir $(FREEDOM_SRC))))
-FREEDOM_CXXFLAGS = -DWIN32_LEAN_AND_MEAN -DUNICODE -std:c++17 -DIMGUI_USE_STB_SPRINTF -Z7 -Od -MDd -EHsc -nologo -Iinclude -Iimgui -Iimgui/backends
+FREEDOM_CXXFLAGS = -DWIN32_LEAN_AND_MEAN -DUNICODE -std:c++17 -DIMGUI_USE_STB_SPRINTF -DIMGUI_DEFINE_MATH_OPERATORS -Z7 -Od -MDd -EHsc -nologo -Iinclude -Iimgui -Iimgui/backends
 FREEDOM_LINKER_FLAGS = -link -DLL -DEBUG -MACHINE:x86 -OUT:freedom.dll
 
 PREJIT = prejit.dll
