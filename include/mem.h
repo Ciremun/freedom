@@ -11,6 +11,7 @@
 uintptr_t GetModuleBaseAddress(const wchar_t *modName);
 
 void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);
+void internal_memory_set(void* dst, int val, unsigned int size);
 
 template <typename T>
 int internal_memory_read(HANDLE hProc, uintptr_t base, T *buffer)

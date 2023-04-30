@@ -489,6 +489,22 @@ void update_ui()
                 ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
                 ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
             }
+            if (ImGui::CollapsingHeader("NEW!", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("update_timing_code_start: 0x%X", update_timing_code_start);
+                ImGui::Text("update_timing_ptr_1: 0x%X", update_timing_ptr_1);
+                ImGui::Text("update_timing_ptr_2: 0x%X", update_timing_ptr_2);
+                ImGui::Text("update_timing_ptr_3: 0x%X", update_timing_ptr_3);
+                ImGui::Text("update_timing_ptr_4: 0x%X", update_timing_ptr_4);
+                ImGui::Text("set_playback_rate_code_start: 0x%X", set_playback_rate_code_start);
+                ImGui::Text("check_timewarp_code_start: 0x%X", check_timewarp_code_start);
+                if (ImGui::Checkbox("Enable Timewarp", &cfg_timewarp_enabled))
+                    cfg_timewarp_enabled ? enable_timewarp_hooks() : disable_timewarp_hooks();
+                
+                static double p_min = 1;
+                static double p_max = 1000;
+                ImGui::SliderScalar("Timewarp Scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "%lf");
+            }
         }
         ImGui::End();
         ImGui::EndPopup();

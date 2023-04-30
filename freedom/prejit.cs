@@ -42,10 +42,10 @@ namespace Freedom
             new ClassMethod {class_ = "#=zA68w2LnfHk3bAvNoTjj7pqCRs0P7Q2WkMrK0LXo=", method = "#=z_gY4$2rMOiN4", name="score_multiplier"},
             new ClassMethod {class_ = "#=zeXZ7VnmadWamDozl0oXkDPqWT5QR", method = "#=zoJ$lkAitqMlX_A7fquS9JXw=", name="check_flashlight"},
             new ClassMethod {class_ = "#=z3IHB5x6iL4Inl$QwFAFv76H$3LpsrelgWgSbeoryU20bd26QUw==", method = "#=zcgVusFUaiISsN8SiLg==", name="update_flashlight"},
+            new ClassMethod {class_ = "#=zeXZ7VnmadWamDozl0oXkDPqWT5QR", method = "#=zfdtqQPU=", name="check_timewarp"},
         };
         public static int prejit_all(String pwzArgument)
         {
-            Console.WriteLine("start prejit all");
             var assembly = Assembly.GetEntryAssembly();
             Type[] classes = assembly.GetTypes();
             foreach (Type class_ in classes)
@@ -70,7 +70,6 @@ namespace Freedom
                     }
                 }
             }
-            Console.WriteLine("done prejit all");
             return 1;
         }
     }
