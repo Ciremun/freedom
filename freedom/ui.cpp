@@ -68,6 +68,7 @@ void init_ui()
     ImGui::StyleColorsDark();
     ImGuiStyle &style = ImGui::GetStyle();
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    style.FrameRounding = 3.f;
     style.Colors[ImGuiCol_TitleBgActive] = PURPLE;
     style.Colors[ImGuiCol_Button] = PURPLE;
     style.Colors[ImGuiCol_ButtonHovered] = MAGENTA;
@@ -159,6 +160,7 @@ void update_ui()
 
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
+        set_playback_rate_code_start ? update_tab("Timewarp", MenuTab::Timewarp) : inactive_tab("Timewarp");
         selected_replay_offset ? update_tab("Replay", MenuTab::Replay) : inactive_tab("Replay");
 
         update_tab("Mods", MenuTab::Mods);
@@ -227,6 +229,18 @@ void update_ui()
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
             ImGui::Text("Partial support for sliders!");
         }
+        if (selected_tab == MenuTab::Timewarp)
+        {
+            if (ImGui::Checkbox("Enable", &cfg_timewarp_enabled))
+            {
+                cfg_timewarp_enabled ? enable_timewarp_hooks() : disable_timewarp_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::Dummy(ImVec2(0.0f, 5.0f));
+            static double p_min = 1;
+            static double p_max = 1000;
+            ImGui::SliderScalar("##timewarp_scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "Timewarp Scale: %.1lf");
+        }
         if (selected_tab == MenuTab::Replay)
         {
             ImGui::Text("%s", current_replay.song_name_u8);
@@ -263,7 +277,7 @@ void update_ui()
         if (selected_tab == MenuTab::Mods)
         {
             ImGui::Text("Unmod Flashlight");
-            ImGui::Dummy(ImVec2(.0f, 1.f));
+            ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::PushID(69);
             if (ImGui::Checkbox("Enable", &cfg_flashlight_enabled))
             {
@@ -271,9 +285,9 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::PopID();
-            ImGui::Dummy(ImVec2(.0f, 10.f));
+            ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::Text("Score Multiplier");
-            ImGui::Dummy(ImVec2(.0f, 1.f));
+            ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::PushID(70);
             if (ImGui::Checkbox("Enable", &cfg_score_multiplier_enabled))
             {
@@ -315,8 +329,6 @@ void update_ui()
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
-
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.f);
 
             static char discord_rich_presence_state[512] = {0};
             if (ImGui::InputTextEx("##rpc_state", "State", discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
@@ -365,8 +377,6 @@ void update_ui()
                         FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
                 });
             }
-
-            ImGui::PopStyleVar();
 
             if (!cfg_discord_rich_presence_enabled)
             {
@@ -418,7 +428,8 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Debug)
         {
-            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
+            ImGui::SetNextWindowSize(ImVec2(900.f, 1200.f), ImGuiCond_Once);
             ImGui::Begin("Debug Log", NULL);
             freedom_log.draw();
             ImGui::End();
@@ -444,6 +455,23 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
             {
+                const auto scene_ptr_to_str = [](Scene *s){
+                    if (!s) return "Unknown";
+                    Scene scene = *s;
+                    switch (scene)
+                    {
+                        case Scene::MAIN_MENU: return "Main Menu";
+                        case Scene::EDITOR: return "Editor";
+                        case Scene::GAME: return "Game";
+                        case Scene::EXIT: return "Exit";
+                        case Scene::EDITOR_BEATMAP_SELECT: return "Editor Beatmap Select";
+                        case Scene::BEATMAP_SELECT: return "Beatmap Select";
+                        case Scene::BEATMAP_SELECT_DRAWINGS: return "Beatmap Select Drawings";
+                        case Scene::REPLAY_PREVIEW: return "Replay Preview";
+                        default:
+                            return "Unknown";
+                    }
+                };
                 ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
                 ImGui::Text("audio_time_ptr: %08X", audio_time_ptr);
                 ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
@@ -451,7 +479,7 @@ void update_ui()
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
                 ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
                 ImGui::Text("current_scene_ptr: %08X", current_scene_ptr);
-                ImGui::Text("current_scene: %d", current_scene_ptr ? *(int *)current_scene_ptr : -1);
+                ImGui::Text("current_scene: %d", scene_ptr_to_str(current_scene_ptr));
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
@@ -468,6 +496,8 @@ void update_ui()
                 ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
                 ImGui::Text("score_multiplier_code_start: %08X", score_multiplier_code_start);
                 ImGui::Text("discord_rich_presence_code_start: %08X", discord_rich_presence_code_start);
+                ImGui::Text("check_flashlight_code_start: %08X", check_flashlight_code_start);
+                ImGui::Text("update_flashlight_code_start: %08X", update_flashlight_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -491,19 +521,13 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("NEW!", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("update_timing_code_start: 0x%X", update_timing_code_start);
-                ImGui::Text("update_timing_ptr_1: 0x%X", update_timing_ptr_1);
-                ImGui::Text("update_timing_ptr_2: 0x%X", update_timing_ptr_2);
-                ImGui::Text("update_timing_ptr_3: 0x%X", update_timing_ptr_3);
-                ImGui::Text("update_timing_ptr_4: 0x%X", update_timing_ptr_4);
-                ImGui::Text("set_playback_rate_code_start: 0x%X", set_playback_rate_code_start);
-                ImGui::Text("check_timewarp_code_start: 0x%X", check_timewarp_code_start);
-                if (ImGui::Checkbox("Enable Timewarp", &cfg_timewarp_enabled))
-                    cfg_timewarp_enabled ? enable_timewarp_hooks() : disable_timewarp_hooks();
-                
-                static double p_min = 1;
-                static double p_max = 1000;
-                ImGui::SliderScalar("Timewarp Scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "%lf");
+                ImGui::Text("update_timing_code_start: %08X", update_timing_code_start);
+                ImGui::Text("update_timing_ptr_1: %08X", update_timing_ptr_1);
+                ImGui::Text("update_timing_ptr_2: %08X", update_timing_ptr_2);
+                ImGui::Text("update_timing_ptr_3: %08X", update_timing_ptr_3);
+                ImGui::Text("update_timing_ptr_4: %08X", update_timing_ptr_4);
+                ImGui::Text("set_playback_rate_code_start: %08X", set_playback_rate_code_start);
+                ImGui::Text("check_timewarp_code_start: %08X", check_timewarp_code_start);
             }
         }
         ImGui::End();

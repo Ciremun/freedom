@@ -379,7 +379,7 @@ static void try_find_hook_offsets()
             FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
         }
     }
-    FR_INFO_FMT("client_id: %s", osu_client_id);
+    // FR_INFO_FMT("client_id: %s", osu_client_id);
     if (osu_username_code_start)
     {
         __try
@@ -545,26 +545,15 @@ void init_hooks()
             enable_discord_rich_presence_hooks();
     }
 
-    if (update_flashlight_code_start)
+    if (update_flashlight_code_start && check_flashlight_code_start)
     {
         if (cfg_flashlight_enabled)
             enable_flashlight_hooks();
     }
 
-    if (check_flashlight_code_start)
-    {
-        if (cfg_flashlight_enabled)
-            enable_flashlight_hooks();
-    }
-
-    if (set_playback_rate_code_start)
+    if (set_playback_rate_code_start && check_timewarp_code_start)
     {
         SetPlaybackRateHook = Hook<Detour32>(set_playback_rate_code_start, (BYTE *)set_playback_rate, 10);
-        if (cfg_timewarp_enabled)
-            enable_timewarp_hooks();
-    }
-    if (check_timewarp_code_start)
-    {
         CheckTimewarpHook1 = Hook<Detour32>(check_timewarp_hook_1, (BYTE *)set_check_timewarp_hook_1, 6);
         CheckTimewarpHook2 = Hook<Detour32>(check_timewarp_hook_2, (BYTE *)set_check_timewarp_hook_2, 6);
         if (cfg_timewarp_enabled)
