@@ -28,6 +28,9 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Circle Size (CS)
     * Overall Difficulty (OD)
 
+- Timewarp:
+    * Scale
+
 - Replay Copy (*a bit buggy!*):
     * Add/Remove Hard Rock (HR)
     * Replay Keys Only
@@ -47,7 +50,6 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 - Misc:
     * Set Font Size
-    * Hide Mod Menu
     * Automatically Detects Beatmap, Saves Mod Settings
 
 ## Build
@@ -63,9 +65,4 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 open command prompt (cmd.exe) and run:  
 
     vcvarsall x86
-    build.bat
-
-Makefile provides debug build:  
-
-    vcvarsall x86
-    make -B -j16
+    cl nobuild.c && nobuild.exe
