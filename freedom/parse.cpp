@@ -94,39 +94,42 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
             Slider *slider = new Slider();
 
             uintptr_t curve_points_ptr = *(uintptr_t *)(hit_object_ptr + 0xC4);
-            uintptr_t curve_points_list_ptr = *(uintptr_t *)(curve_points_ptr + 0x4);
-            int32_t curve_points_count = *(int32_t *)(curve_points_ptr + 0xC);
-
-            int32_t repeats_count = *(int32_t *)(hit_object_ptr + 0x20);
-
-            slider->curves.reserve(curve_points_count * repeats_count + 1);
-
-            for (int32_t j = 0; j < curve_points_count; ++j)
+            if (curve_points_ptr)
             {
-                uintptr_t curve_point = *(uintptr_t *)(curve_points_list_ptr + 0x8 + 0x4 * j);
-                Vector2 p1(*(float *)(curve_point + 0x8), *(float *)(curve_point + 0xC));
-                slider->curves.push_back(p1);
-                if (j + 1 == curve_points_count)
+                uintptr_t curve_points_list_ptr = *(uintptr_t *)(curve_points_ptr + 0x4);
+                int32_t curve_points_count = *(int32_t *)(curve_points_ptr + 0xC);
+
+                int32_t repeats_count = *(int32_t *)(hit_object_ptr + 0x20);
+
+                slider->curves.reserve(curve_points_count * repeats_count + 1);
+
+                for (int32_t j = 0; j < curve_points_count; ++j)
                 {
-                    Vector2 p2(*(float *)(curve_point + 0x10), *(float *)(curve_point + 0x14));
-                    slider->curves.push_back(p2);
+                    uintptr_t curve_point = *(uintptr_t *)(curve_points_list_ptr + 0x8 + 0x4 * j);
+                    Vector2 p1(*(float *)(curve_point + 0x8), *(float *)(curve_point + 0xC));
+                    slider->curves.push_back(p1);
+                    if (j + 1 == curve_points_count)
+                    {
+                        Vector2 p2(*(float *)(curve_point + 0x10), *(float *)(curve_point + 0x14));
+                        slider->curves.push_back(p2);
+                    }
                 }
-            }
 
-            if (repeats_count > 1)
-            {
-                bool reversed = true;
-                std::vector<Vector2<float>> reversed_curves;
-                reversed_curves.reserve(slider->curves.size());
-                reversed_curves.insert(reversed_curves.end(), slider->curves.rbegin(), slider->curves.rend());
-
-                for (int k = 0; k < repeats_count - 1; ++k)
+                if (repeats_count > 1)
                 {
-                    if (reversed)
-                        slider->curves.insert(slider->curves.end(), reversed_curves.begin(), reversed_curves.end());
-                    else
-                        slider->curves.insert(slider->curves.end(), reversed_curves.rbegin(), reversed_curves.rend());
-                    reversed = !reversed;
+                    bool reversed = true;
+                    std::vector<Vector2<float>> reversed_curves;
+                    reversed_curves.reserve(slider->curves.size());
+                    reversed_curves.insert(reversed_curves.end(), slider->curves.rbegin(), slider->curves.rend());
+
+                    for (int k = 0; k < repeats_count - 1; ++k)
+                    {
+                        if (reversed)
+                            slider->curves.insert(slider->curves.end(), reversed_curves.begin(), reversed_curves.end());
+                        else
+                            slider->curves.insert(slider->curves.end(), reversed_curves.rbegin(), reversed_curves.rend());
+                        reversed = !reversed;
+                    }
                 }
             }
 

@@ -870,6 +870,8 @@ __declspec(naked) void set_check_timewarp_hook_2()
     }
 }
 
+void destroy_ui();
+
 void destroy_hooks()
 {
     SwapBuffersHook.Disable();
@@ -881,15 +883,35 @@ void destroy_hooks()
         disable_od_hooks();
     if (cfg_replay_enabled)
         SelectedReplayHook.Disable();
-    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock || cfg_flashlight_enabled)
         BeatmapOnLoadHook.Disable();
+    if (cfg_flashlight_enabled)
+    {
+        if (update_flashlight_code_start)
+            *(uint8_t *)update_flashlight_code_start = update_flashlight_original_byte;
+        if (check_flashlight_code_start)
+            *(uint8_t *)check_flashlight_code_start = check_flashlight_original_byte;
+        if (osu_manager_ptr)
+        {
+            uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+            if (osu_manager)
+            {
+                uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
+                if (osu_ruleset_ptr)
+                {
+                    uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
+                    if (flashlight_sprite_manager)
+                        *(float *)(flashlight_sprite_manager + 0x28) = 1.f;
+                }
+            }
+        }
+    }
     if (cfg_score_multiplier_enabled)
         disable_score_multiplier_hooks();
     if (cfg_discord_rich_presence_enabled)
         disable_discord_rich_presence_hooks();
-    if (cfg_flashlight_enabled)
-        disable_flashlight_hooks();
     if (cfg_timewarp_enabled)
         disable_timewarp_hooks();
     disable_nt_user_send_input_patch();
+    destroy_ui();
 }
