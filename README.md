@@ -45,8 +45,9 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * SingleTap
     * Alternate
 
-- Score:
+- Mods:
     * Score Multiplier Changer
+    * Unmod Flashlight
 
 - Misc:
     * Set Font Size
