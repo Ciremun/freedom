@@ -7,7 +7,7 @@
 #define DLL_DIRS "freedom/", "imgui/", "imgui/backends/"
 
 #define MSVC_COMMON_FLAGS "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_USE_STB_SPRINTF", "/DIMGUI_DEFINE_MATH_OPERATORS", "/std:c++17", "/EHsc", "/Iinclude", "/Iimgui", "/Iimgui/backends"
-#define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", "/O2", "/MD"
+#define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", "/O2", "/MT"
 #define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, "/Od", "/Z7", "/MDd", "/FS"
 
 #define MSVC_LINK_RELEASE_FLAGS "/MACHINE:x86"
@@ -132,7 +132,7 @@ void build()
         CALL_LINK(".obj", "LINK", "/DLL", "/OUT:freedom.dll", MSVC_LINK_DEBUG_FLAGS);
     else
         CALL_LINK(".obj", "LINK", "/DLL", "/OUT:freedom.dll", MSVC_LINK_RELEASE_FLAGS);
-    CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++17", "/O2", "/EHsc", "/nologo", "/Fe:freedom.exe", "injector.cpp", "/link", "/MACHINE:x86");
+    CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++17", "/O2", "/MT", "/EHsc", "/nologo", "/Fe:freedom.exe", "injector.cpp", "/link", "/MACHINE:x86");
     CMD("csc", "/nologo", "/optimize", "/target:library", "/out:prejit.dll", "freedom/prejit.cs");
 }
 
