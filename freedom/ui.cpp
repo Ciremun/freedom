@@ -481,7 +481,7 @@ void update_ui()
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
                 ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
                 ImGui::Text("current_scene_ptr: %08X", current_scene_ptr);
-                ImGui::Text("current_scene: %d", scene_ptr_to_str(current_scene_ptr));
+                ImGui::Text("current_scene: %s", scene_ptr_to_str(current_scene_ptr));
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
