@@ -913,5 +913,4 @@ void destroy_hooks()
     if (cfg_timewarp_enabled)
         disable_timewarp_hooks();
     disable_nt_user_send_input_patch();
-    destroy_ui();
 }
