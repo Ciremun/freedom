@@ -16,6 +16,7 @@ extern bool cfg_replay_enabled;
 extern bool cfg_replay_aim;
 extern bool cfg_replay_keys;
 extern bool cfg_replay_hardrock;
+extern bool cfg_relax_checks_od;
 extern int cfg_relax_style;
 
 extern bool cfg_score_multiplier_enabled;

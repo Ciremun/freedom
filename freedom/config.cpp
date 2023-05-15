@@ -23,6 +23,8 @@ bool cfg_flashlight_enabled = false;
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
 
+bool cfg_relax_checks_od = true;
+
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
     static wchar_t module_path[MAX_PATH * 2];
@@ -67,6 +69,7 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("font_size=%d\n", cfg_font_size);
     buf->appendf("relax=%d\n", cfg_relax_lock);
     buf->appendf("relax_style=%c\n", (char)cfg_relax_style);
+    buf->appendf("relax_checks_od=%d\n", (int)cfg_relax_checks_od);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
     buf->appendf("fraction_modifier=%.3f\n", cfg_fraction_modifier);
@@ -86,7 +89,7 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
-        flashlight_enabled_i, timewarp_enabled_i;
+        flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i;
     int replay_i, replay_aim_i, replay_keys_i, score_multiplier_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
     double timewarp_playback_rate_d;
@@ -101,6 +104,7 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
     else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                  cfg_font_size = font_size_i;
     else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                     cfg_relax_lock = relax_lock_i;
     else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)              cfg_relax_style = (int)relax_style_c;
+    else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)      cfg_relax_checks_od = relax_checks_od_i;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                   cfg_aimbot_lock = aimbot_lock_i;
     else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)    cfg_spins_per_minute = spins_per_minute_i;
     else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1)  cfg_fraction_modifier = fraction_modifier_f;

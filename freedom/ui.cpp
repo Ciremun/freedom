@@ -169,7 +169,7 @@ void update_ui()
         update_tab("Debug", MenuTab::Debug);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
-        if (selected_tab == MenuTab::Debug || selected_tab == MenuTab::Misc)
+        if (selected_tab == MenuTab::Debug || selected_tab == MenuTab::Misc || selected_tab == MenuTab::Relax)
             ImGui::SetNextWindowSize(ImVec2(.0f, .0f), ImGuiCond_Always);
         else
             ImGui::SetNextWindowSize(ImVec2(.0f, ImGui::GetWindowHeight()), ImGuiCond_Always);
@@ -208,8 +208,9 @@ void update_ui()
                 FR_INFO("Alternate Mode");
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
-            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
-            ImGui::Text("No hitscan variability, UR IS 0!");
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            if (ImGui::Checkbox("Variable Unstable Rate", &cfg_relax_checks_od))
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
         if (selected_tab == MenuTab::Aimbot)
         {

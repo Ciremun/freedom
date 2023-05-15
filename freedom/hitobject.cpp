@@ -153,7 +153,15 @@ void process_hitobject()
                 target_first_circle = false;
             }
         }
-        if (audio_time >= circle->start_time)
+        static const auto rand_range_f = [](float f_min, float f_max) -> float
+        {
+            float scale = rand() / (float)RAND_MAX;
+            return f_min + scale * (f_max - f_min);
+        };
+        static float act_before_ms = .0f;
+        if (cfg_relax_checks_od && (act_before_ms == .0f))
+            act_before_ms = rand_range_f(.1337f, current_beatmap.od_window - .5f);
+        if (audio_time + act_before_ms >= circle->start_time)
         {
             if (cfg_aimbot_lock)
             {
@@ -197,9 +205,12 @@ void process_hitobject()
                     current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
                 send_keyboard_input(current_click, 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle->start_time, circle->end_time);
-                double timewarp_playback_rate_div_100 = cfg_timewarp_enabled ? cfg_timewarp_playback_rate / 100.0 : 1.0;
                 keyup_delay = circle->end_time ? circle->end_time - circle->start_time : 0.5;
-                keyup_delay = keyup_delay / timewarp_playback_rate_div_100;
+                float random_delay = rand_range_f(.1337f, current_beatmap.od_window - .5f);
+                if ((keyup_delay + random_delay) < (circle->end_time - circle->start_time))
+                    keyup_delay += random_delay;
+                double timewarp_playback_rate_div_100 = cfg_timewarp_enabled ? cfg_timewarp_playback_rate / 100.0 : 1.0;
+                keyup_delay /= timewarp_playback_rate_div_100;
                 if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
                 {
                     if (current_beatmap.mods & Mods::DoubleTime)
@@ -209,6 +220,7 @@ void process_hitobject()
                 }
                 keydown_time = ImGui::GetTime();
                 circle->clicked = true;
+                act_before_ms = .0f;
             }
         }
         if (audio_time >= circle->end_time)

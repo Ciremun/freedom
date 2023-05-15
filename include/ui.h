@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdlib.h>
+
 #include "detours.h"
 #include "freedom.h"
 #include "config.h"

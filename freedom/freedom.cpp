@@ -55,6 +55,8 @@ __declspec(naked) void freedom_update()
         init_ui();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
 
+        srand(time(NULL));
+
         init = true;
     }
 

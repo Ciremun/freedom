@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <stdint.h>
+#include <math.h>
 
 #include "mem.h"
 #include "vector.h"
@@ -93,6 +94,7 @@ struct BeatmapData
     std::vector<Circle *> hit_objects;
     uint32_t hit_object_idx = 0;
     bool ready = false;
+    float od_window = .0f;
     Mods mods;
 
     void clear();

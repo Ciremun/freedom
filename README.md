@@ -41,9 +41,10 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Cursor Speed
     * Spins Per Minute
 
-- Relax (*no hit timing randomization!*):
+- Relax (*unstable rate beta!*):
     * SingleTap
     * Alternate
+    * Variable Unstable Rate
 
 - Mods:
     * Score Multiplier Changer
