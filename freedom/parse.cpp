@@ -74,6 +74,10 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 
     uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + 0xDC);
     float od = *(float *)(selected_song_ptr + 0x38);
+
+    if (beatmap_data.mods & Mods::HardRock)  od = fmin(od * 1.4f, 10.f);
+    else if (beatmap_data.mods & Mods::Easy) od /= 2.f;
+
     beatmap_data.od_window = 80.f - 6.f * od;
 
     // osu! and osu!taiko
@@ -161,11 +165,8 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
     beatmap_data.mods = (Mods)(encrypted_value ^ decryption_key);
 
-    if (beatmap_data.mods & Mods::HardRock)        beatmap_data.od_window = fmin(beatmap_data.od_window * 1.4f, 10.f);
-    else if (beatmap_data.mods & Mods::Easy)       beatmap_data.od_window /= 2.f;
-
-    if (beatmap_data.mods & Mods::DoubleTime)      beatmap_data.od_window *= 0.67f;
-    else if (beatmap_data.mods & Mods::HalfTime)   beatmap_data.od_window *= 1.33f;
+    // if (beatmap_data.mods & Mods::DoubleTime)      beatmap_data.od_window *= 0.67f;
+    // else if (beatmap_data.mods & Mods::HalfTime)   beatmap_data.od_window *= 1.33f;
 
     beatmap_data.ready = true;
     return true;
