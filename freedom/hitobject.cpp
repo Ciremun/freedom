@@ -206,9 +206,12 @@ void process_hitobject()
                 send_keyboard_input(current_click, 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle->start_time, circle->end_time);
                 keyup_delay = circle->end_time ? circle->end_time - circle->start_time : 0.5;
-                float random_delay = rand_range_f(.1337f, current_beatmap.od_window - .5f);
-                if ((keyup_delay + random_delay) < (circle->end_time - circle->start_time))
-                    keyup_delay += random_delay;
+                if (cfg_relax_checks_od)
+                {
+                    float random_delay = rand_range_f(.1337f, current_beatmap.od_window - .5f);
+                    if ((keyup_delay + random_delay) < (circle->end_time - circle->start_time))
+                        keyup_delay += random_delay;
+                }
                 double timewarp_playback_rate_div_100 = cfg_timewarp_enabled ? cfg_timewarp_playback_rate / 100.0 : 1.0;
                 keyup_delay /= timewarp_playback_rate_div_100;
                 if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
