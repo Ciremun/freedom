@@ -253,11 +253,11 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
             static char replay_url[128];
             stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%u&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
+            FR_INFO_FMT("replay_url: %s", replay_url);
 
             static wchar_t replay_url_w[256];
             int bytes_written = MultiByteToWideChar(CP_UTF8, 0, replay_url, 127, replay_url_w, 256);
             replay_url_w[bytes_written] = '\0';
-            FR_INFO_FMT("replay_url_w: https://%S%S", osu_domain, replay_url_w);
 
             DWORD dwSize = 0;
             DWORD dwDownloaded = 0;
@@ -344,7 +344,8 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
     FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
     static std::vector<uint8_t> replay_data;
-    replay_data.reserve(replay_data_size);
+    replay_data.clear();
+    replay_data.resize(replay_data_size);
     lzma_uncompress(&replay_data[0], &replay_data_size, compressed_data, &compressed_data_size);
     const char *replay_data_ptr = (const char *)&replay_data[0];
     size_t next_comma_position = 0;
