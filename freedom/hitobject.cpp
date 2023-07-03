@@ -167,25 +167,17 @@ void process_hitobject()
             {
                 if (circle->type == HitObjectType::Slider)
                 {
-                    Slider *slider = (Slider *)circle;
-                    if (slider->curves.size() == 2)
-                    {
-                        direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[1], mouse_position);
-                        fraction_of_the_distance = cfg_fraction_modifier;
-                    }
-                    else
-                    {
-                        if (slider->curve_idx < slider->curves.size())
-                        {
-                            float single_curve_span = (slider->end_time - slider->start_time) / slider->curves.size();
-                            if (audio_time + single_curve_span >=
-                                slider->start_time + single_curve_span * (slider->curve_idx + 1))
-                            {
-                                direction = prepare_hitcircle_target(osu_manager_ptr, slider->curves[slider->curve_idx++], mouse_position);
-                                fraction_of_the_distance = 1.0f;
-                            }
-                        }
-                    }
+                    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+                    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x48);
+                    uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
+                    uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
+                    uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
+                    uintptr_t animation_ptr = *(uintptr_t *)(hit_object_ptr + 0xA4);
+                    float slider_ball_x = *(float *)(animation_ptr + 0x4C);
+                    float slider_ball_y = *(float *)(animation_ptr + 0x50);
+                    Vector2<float> slider_ball(slider_ball_x, slider_ball_y);
+                    direction = prepare_hitcircle_target(osu_manager_ptr, slider_ball, mouse_position);
+                    fraction_of_the_distance = cfg_fraction_modifier;
                 }
                 if (circle->type == HitObjectType::Spinner)
                 {
