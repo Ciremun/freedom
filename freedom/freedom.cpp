@@ -87,7 +87,9 @@ frame_end:
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    wglSwapBuffersGateway();
+    __asm {
+        jmp [wglSwapBuffersGateway]
+    }
 }
 
 DWORD WINAPI freedom_main(HMODULE hModule)
