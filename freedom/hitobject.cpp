@@ -204,9 +204,12 @@ void process_hitobject()
                     if ((keyup_delay + random_delay) < (circle->end_time - circle->start_time))
                         keyup_delay += random_delay;
                 }
-                double timewarp_playback_rate_div_100 = cfg_timewarp_enabled ? cfg_timewarp_playback_rate / 100.0 : 1.0;
-                keyup_delay /= timewarp_playback_rate_div_100;
-                if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
+                if (cfg_timewarp_enabled)
+                {
+                    double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
+                    keyup_delay /= timewarp_playback_rate_div_100;
+                }
+                else if (circle->type == HitObjectType::Slider || circle->type == HitObjectType::Spinner)
                 {
                     if (current_beatmap.mods & Mods::DoubleTime)
                         keyup_delay /= 1.5;
