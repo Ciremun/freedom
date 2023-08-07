@@ -154,7 +154,7 @@ Hook<Detour32> SetPlaybackRateHook;
 Hook<Detour32> CheckTimewarpHook1;
 Hook<Detour32> CheckTimewarpHook2;
 
-static inline bool all_code_starts_found()
+bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
@@ -628,18 +628,12 @@ void disable_ar_hooks()
 
 void enable_notify_hooks()
 {
-    if (!cfg_relax_lock || !cfg_aimbot_lock || !cfg_replay_enabled || !cfg_flashlight_enabled)
-    {
-        BeatmapOnLoadHook.Enable();
-    }
+    BeatmapOnLoadHook.Enable();
 }
 
 void disable_notify_hooks()
 {
-    if (!cfg_relax_lock && !cfg_aimbot_lock && !cfg_replay_enabled && !cfg_flashlight_enabled)
-    {
-        BeatmapOnLoadHook.Disable();
-    }
+    BeatmapOnLoadHook.Disable();
 }
 
 void enable_replay_hooks()
@@ -875,42 +869,13 @@ void destroy_ui();
 void destroy_hooks()
 {
     SwapBuffersHook.Disable();
-    if (ar_parameter.lock)
-        disable_ar_hooks();
-    if (cs_parameter.lock)
-        disable_cs_hooks();
-    if (od_parameter.lock)
-        disable_od_hooks();
-    if (cfg_replay_enabled)
-        SelectedReplayHook.Disable();
-    if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock || cfg_flashlight_enabled)
-        BeatmapOnLoadHook.Disable();
-    if (cfg_flashlight_enabled)
-    {
-        if (update_flashlight_code_start)
-            *(uint8_t *)update_flashlight_code_start = update_flashlight_original_byte;
-        if (check_flashlight_code_start)
-            *(uint8_t *)check_flashlight_code_start = check_flashlight_original_byte;
-        if (osu_manager_ptr)
-        {
-            uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-            if (osu_manager)
-            {
-                uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
-                if (osu_ruleset_ptr)
-                {
-                    uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
-                    if (flashlight_sprite_manager)
-                        *(float *)(flashlight_sprite_manager + 0x28) = 1.f;
-                }
-            }
-        }
-    }
-    if (cfg_score_multiplier_enabled)
-        disable_score_multiplier_hooks();
-    if (cfg_discord_rich_presence_enabled)
-        disable_discord_rich_presence_hooks();
-    if (cfg_timewarp_enabled)
-        disable_timewarp_hooks();
+    disable_ar_hooks();
+    disable_cs_hooks();
+    disable_od_hooks();
+    disable_replay_hooks();
+    disable_flashlight_hooks();
+    disable_score_multiplier_hooks();
+    disable_discord_rich_presence_hooks();
+    disable_timewarp_hooks();
     disable_nt_user_send_input_patch();
 }

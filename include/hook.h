@@ -21,6 +21,7 @@ struct Hook
     BYTE *PtrToGatewayFnPtr = 0;
     uintptr_t len = 0;
     BYTE originalBytes[16] = {0};
+    bool enabled = false;
 
     Hook() {}
     Hook(uintptr_t src, BYTE *dst, uintptr_t len) : src((BYTE *)src), dst(dst), len(len) {}
@@ -34,7 +35,11 @@ struct Hook
     void Enable();
     void Disable()
     {
-        internal_memory_patch(src, originalBytes, len);
+        if (enabled)
+        {
+            internal_memory_patch(src, originalBytes, len);
+            enabled = false;
+        }
     }
 };
 
@@ -42,14 +47,22 @@ template <>
 inline void Hook<Trampoline32>::Enable()
 {
     assert(len <= 16);
-    memcpy(originalBytes, src, len);
-    *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
+    if (!enabled)
+    {
+        memcpy(originalBytes, src, len);
+        *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
+        enabled = true;
+    }
 }
 
 template <>
 inline void Hook<Detour32>::Enable()
 {
     assert(len <= 16);
-    memcpy(originalBytes, src, len);
-    detour_32(src, dst, len);
+    if (!enabled)
+    {
+        memcpy(originalBytes, src, len);
+        detour_32(src, dst, len);
+        enabled = true;
+    }
 }

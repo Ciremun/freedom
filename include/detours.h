@@ -160,3 +160,4 @@ void set_check_timewarp_hook_1();
 void set_check_timewarp_hook_2();
 
 void destroy_hooks();
+bool all_code_starts_found();
