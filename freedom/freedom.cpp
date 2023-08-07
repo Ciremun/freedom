@@ -43,12 +43,10 @@ __declspec(naked) void freedom_update()
         hDc = wglGetCurrentDC();
         g_hwnd = WindowFromDC(hDc);
 
-// #ifndef NDEBUG
-//         AllocConsole();
-//         FILE *f;
-//         freopen_s(&f, "CONOUT$", "w", stdout);
-//         freopen_s(&f, "CONOUT$", "w", stderr);
-// #endif // NDEBUG
+        // AllocConsole();
+        // FILE *f;
+        // freopen_s(&f, "CONOUT$", "w", stdout);
+        // freopen_s(&f, "CONOUT$", "w", stderr);
 
         g_process = GetCurrentProcess();
 
