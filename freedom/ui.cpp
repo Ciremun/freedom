@@ -419,6 +419,8 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (ImGui::Button("Unload DLL"))
                 unload_freedom();
+            if (ImGui::Button("Rescan Memory"))
+                CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
         }
         if (selected_tab == MenuTab::About)
         {
