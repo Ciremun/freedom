@@ -21,7 +21,7 @@ void ImGuiLogger::clear()
 
 void ImGuiLogger::add(const char *fmt, ...)
 {
-    if (buf.size() >= 1 << 12)
+    if (buf.size() >= 1 << 11)
         buf.clear();
     va_list args;
     va_start(args, fmt);

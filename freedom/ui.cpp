@@ -427,12 +427,18 @@ void update_ui()
             ImGui::Text("Special Thanks to Maple Syrup");
             ImGui::Text("@mrflashstudio");
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::Text("Discord: Ciremun#8516");
+            ImGui::PushItemWidth(ImGui::CalcTextSize("Ciremun").x + 10.f);
+            ImGui::InputText(" - Discord", (char *)"Ciremun", 8, ImGuiInputTextFlags_ReadOnly);
+            ImGui::PopItemWidth();
+            ImGui::Dummy(ImVec2(0.0f, 2.5f));
+            ImGui::PushItemWidth(ImGui::CalcTextSize("https://discord.gg/FyCrwed6jv").x + 10.f);
+            ImGui::InputText(" - Discord Server ", "https://discord.gg/FyCrwed6jv", 29, ImGuiInputTextFlags_ReadOnly);
+            ImGui::PopItemWidth();
         }
         if (selected_tab == MenuTab::Debug)
         {
             ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(900.f, 1200.f), ImGuiCond_Once);
+            ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
             ImGui::Begin("Debug Log", NULL);
             freedom_log.draw();
             ImGui::End();
