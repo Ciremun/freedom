@@ -34,9 +34,6 @@ HDC hDc = 0;
 
 __declspec(naked) void freedom_update()
 {
-    // if (!hDc)
-        // return wglSwapBuffersGateway(hDc);
-
     static bool init = false;
     if (!init)
     {
