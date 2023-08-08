@@ -2,38 +2,38 @@
 
 #include <stdint.h>
 
-const uint8_t approach_rate_signature[]              = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x2C };
-const uint8_t approach_rate_signature_2[]            = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x40, 0x38, 0xD9, 0x58, 0x2C };
-const uint8_t circle_size_signature[]                = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x30 };
-const uint8_t overall_difficulty_signature[]         = { 0x8B, 0x85, 0xB0, 0xFE, 0xFF, 0xFF, 0xD9, 0x58, 0x38 };
-const uint8_t beatmap_onload_signature[]             = { 0x8B, 0x86, 0x80, 0x00, 0x00, 0x00 };
-const uint8_t current_scene_signature[]              = { 0xA1, 0xA3, 0xA1, 0xA3 };
-const uint8_t selected_song_signature[]              = { 0xD9, 0xEE, 0xDD, 0x5C, 0x24, 0x10, 0x83, 0x3D };
-const uint8_t audio_time_signature[]                 = { 0xF7, 0xDA, 0x3B, 0xC2 };
-const uint8_t osu_manager_signature[]                = { 0x85, 0xC9 };
-const uint8_t binding_manager_signature[]            = { 0x8D, 0x45, 0xD8, 0x50, 0x8B, 0x0D };
-const uint8_t selected_replay_signature[]            = { 0x8B, 0x46, 0x38, 0x83, 0x78, 0x30, 0x00 };
-const uint8_t osu_username_signature[]               = { 0x8B, 0x01, 0x8B, 0x40, 0x28, 0xFF, 0x50, 0x18, 0x8B, 0x15 };
-const uint8_t window_manager_signature[]             = { 0x83, 0xC2, 0x04, 0x8B, 0x0D };
-const uint8_t score_multiplier_signature[]           = { 0x8B, 0xF1, 0xD9, 0xE8, 0x83, 0xFA, 0x04, 0x0F, 0x83 };
-const uint8_t update_timing_signature[]              = { 0xD9, 0xC0, 0xDD, 0x05 };
-const uint8_t update_timing_signature_2[]            = { 0xDE, 0xE9, 0xDD, 0x1D };
-const uint8_t check_timewarp_signature[]             = { 0xD9, 0xE8, 0xDE, 0xF1, 0xDE, 0xC9 };
+#include "pattern.h"
 
-const uint8_t parse_beatmap_function_signature[]     = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x81, 0xEC, 0x58, 0x01, 0x00, 0x00, 0x8B, 0xF1, 0x8D, 0xBD, 0xB8, 0xFE, 0xFF, 0xFF, 0xB9, 0x4E, 0x00, 0x00, 0x00, 0x33, 0xC0, 0xF3, 0xAB, 0x8B, 0xCE, 0x89, 0x8D, 0xB0, 0xFE, 0xFF, 0xFF };
-const uint8_t current_scene_function_signature[]     = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x50, 0x8B, 0xD9, 0x83, 0x3D };
-const uint8_t beatmap_onload_function_signature[]    = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x83, 0xEC, 0x44, 0x8B, 0xF1, 0xB9 };
-const uint8_t selected_song_function_signature[]     = { 0x55, 0x8B, 0xEC, 0x83, 0xE4, 0xF8, 0x57, 0x56, 0x83, 0xEC, 0x38, 0x83, 0x3D };
-const uint8_t audio_time_function_signature[]        = { 0x55, 0x8B, 0xEC, 0x83, 0xE4, 0xF8, 0x57, 0x56, 0x83, 0xEC, 0x38, 0x83, 0x3D };
-const uint8_t osu_manager_function_signature[]       = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x83, 0xEC, 0x14, 0x80, 0x3D };
-const uint8_t binding_manager_function_signature[]   = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x83, 0xEC, 0x58, 0x8B, 0xF1, 0x8D, 0x7D, 0xA0 };
-const uint8_t selected_replay_function_signature[]   = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x81, 0xEC, 0xA0, 0x00, 0x00, 0x00, 0x8B, 0xF1, 0x8D, 0xBD, 0x68, 0xFF, 0xFF, 0xFF, 0xB9, 0x22, 0x00, 0x00, 0x00, 0x33, 0xC0, 0xF3, 0xAB, 0x8B, 0xCE, 0x8B, 0xF1, 0x8D, 0x7D, 0xE0 };
-const uint8_t window_manager_function_signature[]    = { 0x57, 0x56, 0x53, 0x83, 0xEC, 0x6C, 0x8B, 0xF1, 0x8D, 0x7D, 0xA8, 0xB9, 0x12, 0x00, 0x00, 0x00, 0x33, 0xC0, 0xF3, 0xAB, 0x8B, 0xCE, 0x89, 0x4D, 0x94 };
-const uint8_t update_timing_function_signature[]     = { 0x55, 0x8B, 0xEC, 0x83, 0xE4, 0xF8, 0x57, 0x56, 0x83, 0xEC, 0x18, 0x8B, 0xF9, 0x8B, 0x0D };
-const uint8_t check_timewarp_function_signature[]    = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x81, 0xEC, 0xB0, 0x01, 0x00, 0x00, 0x8B, 0xF1, 0x8D, 0xBD, 0x50, 0xFE, 0xFF, 0xFF, 0xB9, 0x68, 0x00, 0x00, 0x00, 0x33, 0xC0 };
+constexpr auto approach_rate_signature              { pattern::build<"8B 85 B0 FE FF FF D9 58 2C"> };
+constexpr auto approach_rate_signature_2            { pattern::build<"8B 85 B0 FE FF FF D9 40 38 D9 58 2C"> };
+constexpr auto circle_size_signature                { pattern::build<"8B 85 B0 FE FF FF D9 58 30"> };
+constexpr auto overall_difficulty_signature         { pattern::build<"8B 85 B0 FE FF FF D9 58 38"> };
+constexpr auto beatmap_onload_signature             { pattern::build<"8B 86 80 00 00 00"> };
+constexpr auto current_scene_signature              { pattern::build<"A1....A3....A1....A3"> };
+constexpr auto selected_song_signature              { pattern::build<"D9 EE DD 5C 24 10 83 3D"> };
+constexpr auto audio_time_signature                 { pattern::build<"F7 DA 3B C2"> };
+constexpr auto osu_manager_signature                { pattern::build<"85 C9"> };
+constexpr auto binding_manager_signature            { pattern::build<"8D 45 D8 50 8B 0D"> };
+constexpr auto selected_replay_signature            { pattern::build<"8B 46 38 83 78 30 00"> };
+constexpr auto osu_username_signature               { pattern::build<"8B 01 8B 40 28 FF 50 18 8B 15"> };
+constexpr auto window_manager_signature             { pattern::build<"83 C2 04 8B 0D"> };
+constexpr auto score_multiplier_signature           { pattern::build<"8B F1 D9 E8 83 FA 04 0F 83"> };
+constexpr auto update_timing_signature              { pattern::build<"D9 C0 DD 05"> };
+constexpr auto update_timing_signature_2            { pattern::build<"DE E9 DD 1D"> };
+constexpr auto check_timewarp_signature             { pattern::build<"D9 E8 DE F1 DE C9"> };
 
-const uint8_t osu_client_id_function_signature[]     = { 0x8B, 0xF1, 0x8D, 0x7D, 0xC4, 0xB9, 0x0C, 0x00, 0x00, 0x00, 0x33, 0xC0, 0xF3, 0xAB, 0x8B, 0xCE, 0x89, 0x4D, 0xC0, 0x8B, 0x15 };
-const uint8_t username_function_signature[]          = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x83, 0xEC, 0x08, 0x33, 0xC0, 0x89, 0x45, 0xEC, 0x89, 0x45, 0xF0, 0x8B, 0xF2, 0x8B, 0xCE, 0x8B, 0x01, 0x8B, 0x40, 0x30 };
-
-const uint8_t update_flashlight_function_signature[] = { 0x55, 0x8B, 0xEC, 0x56, 0x83, 0xEC, 0x14, 0x8B, 0xF1, 0x8B, 0x56, 0x5C };
-const uint8_t check_flashlight_function_signature[]  = { 0x55, 0x8B, 0xEC, 0x57, 0x56, 0x53, 0x83, 0xEC, 0x18, 0x8B, 0xF9, 0x80 };
+constexpr auto parse_beatmap_function_signature     { pattern::build<"55 8B EC 57 56 53 81 EC 58 01 00 00 8B F1 8D BD B8 FE FF FF B9 4E 00 00 00 33 C0 F3 AB 8B CE 89 8D B0 FE FF FF"> };
+constexpr auto current_scene_function_signature     { pattern::build<"55 8B EC 57 56 53 50 8B D9 83 3D"> };
+constexpr auto beatmap_onload_function_signature    { pattern::build<"55 8B EC 57 56 53 83 EC 44 8B F1 B9"> };
+constexpr auto selected_song_function_signature     { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 38 83 3D"> };
+constexpr auto audio_time_function_signature        { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 38 83 3D"> };
+constexpr auto osu_manager_function_signature       { pattern::build<"55 8B EC 57 56 53 83 EC 14 80 3D"> };
+constexpr auto binding_manager_function_signature   { pattern::build<"55 8B EC 57 56 83 EC 58 8B F1 8D 7D A0"> };
+constexpr auto selected_replay_function_signature   { pattern::build<"55 8B EC 57 56 53 81 EC A0 00 00 00 8B F1 8D BD 68 FF FF FF B9 22 00 00 00 33 C0 F3 AB 8B CE 8B F1 8D 7D E0"> };
+constexpr auto window_manager_function_signature    { pattern::build<"57 56 53 83 EC 6C 8B F1 8D 7D A8 B9 12 00 00 00 33 C0 F3 AB 8B CE 89 4D 94"> };
+constexpr auto update_timing_function_signature     { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 18 8B F9 8B 0D"> };
+constexpr auto check_timewarp_function_signature    { pattern::build<"55 8B EC 57 56 53 81 EC B0 01 00 00 8B F1 8D BD 50 FE FF FF B9 68 00 00 00 33 C0"> };
+constexpr auto osu_client_id_function_signature     { pattern::build<"8B F1 8D 7D C4 B9 0C 00 00 00 33 C0 F3 AB 8B CE 89 4D C0 8B 15"> };
+constexpr auto username_function_signature          { pattern::build<"55 8B EC 57 56 53 83 EC 08 33 C0 89 45 EC 89 45 F0 8B F2 8B CE 8B 01 8B 40 30"> };
+constexpr auto update_flashlight_function_signature { pattern::build<"55 8B EC 56 83 EC 14 8B F1 8B 56 5C"> };
+constexpr auto check_flashlight_function_signature  { pattern::build<"55 8B EC 57 56 53 83 EC 18 8B F9 80"> };

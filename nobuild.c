@@ -6,7 +6,7 @@
 
 #define DLL_DIRS "freedom/", "imgui/", "imgui/backends/"
 
-#define MSVC_COMMON_FLAGS "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_USE_STB_SPRINTF", "/DIMGUI_DEFINE_MATH_OPERATORS", "/std:c++17", "/EHsc", "/Iinclude", "/Iimgui", "/Iimgui/backends"
+#define MSVC_COMMON_FLAGS "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_USE_STB_SPRINTF", "/DIMGUI_DEFINE_MATH_OPERATORS", "/std:c++latest", "/EHsc", "/Iinclude", "/Iimgui", "/Iimgui/backends"
 #define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", "/O2", "/MT"
 #define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, "/Od", "/Z7", "/MDd", "/FS"
 

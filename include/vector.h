@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 template <typename T>
 struct Vector2
 {

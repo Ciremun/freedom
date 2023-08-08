@@ -11,6 +11,7 @@
 
 extern wchar_t clr_module_path[MAX_PATH * 2];
 
+bool prejit_all_f();
 bool prejit_all();
 
 template <typename T>

@@ -93,6 +93,17 @@ extern uintptr_t update_timing_ptr_2;
 extern uintptr_t update_timing_ptr_3;
 extern uintptr_t update_timing_ptr_4;
 
+extern uintptr_t selected_song_offset;
+extern uintptr_t audio_time_offset;
+extern uintptr_t osu_manager_offset;
+extern uintptr_t binding_manager_offset;
+extern uintptr_t client_id_offset;
+extern uintptr_t username_offset;
+extern uintptr_t check_timewarp_offset;
+
+extern uintptr_t check_timewarp_hook_1_jump_back;
+extern uintptr_t check_timewarp_hook_2_jump_back;
+
 extern uintptr_t set_playback_rate_code_start;
 extern uintptr_t set_playback_rate_jump_back;
 

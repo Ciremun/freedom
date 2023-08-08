@@ -439,7 +439,7 @@ void update_ui()
             ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(0.0f, 2.5f));
             ImGui::PushItemWidth(ImGui::CalcTextSize("https://discord.gg/FyCrwed6jv").x + 10.f);
-            ImGui::InputText(" - Discord Server ", "https://discord.gg/FyCrwed6jv", 29, ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputText(" - Discord Server ", (char *)"https://discord.gg/FyCrwed6jv", 29, ImGuiInputTextFlags_ReadOnly);
             ImGui::PopItemWidth();
         }
         if (selected_tab == MenuTab::Debug)
@@ -449,28 +449,9 @@ void update_ui()
             ImGui::Begin("Debug Log", NULL);
             freedom_log.draw();
             ImGui::End();
-            if (ImGui::CollapsingHeader("Buggy Stuff", ImGuiTreeNodeFlags_None))
+            if (ImGui::CollapsingHeader("Game", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
-                ImGui::Text("dispatch_table_id_found: %s", nt_user_send_input_dispatch_table_id_found ? "Yes" : "No");
-                ImGui::Text("replay mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
-                static char window_name[256] = {0};
-                GetWindowTextA(g_hwnd, window_name, 256);
-                ImGui::Text("window name: %s", window_name);
-            }
-            if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
-            {
-                ImGui::Text("osu_client_id: \n%s", osu_client_id);
-                ImGui::Text("osu_username: %s", osu_username);
-            }
-            if (ImGui::CollapsingHeader("Playfield", ImGuiTreeNodeFlags_None))
-            {
-                ImGui::Text("window_size: %f %f", window_size.x, window_size.y);
-                ImGui::Text("playfield_size: %f %f", playfield_size.x, playfield_size.y);
-                ImGui::Text("playfield_position: %f %f", playfield_position.x, playfield_position.y);
-            }
-            if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
-            {
+                ImGui::Text("Audio Time: %d", audio_time_ptr ? *(int32_t *)audio_time_ptr : 0);
                 const auto scene_ptr_to_str = [](Scene *s){
                     if (!s) return "Unknown";
                     Scene scene = *s;
@@ -488,14 +469,33 @@ void update_ui()
                             return "Unknown";
                     }
                 };
-                ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
-                ImGui::Text("audio_time_ptr: %08X", audio_time_ptr);
-                ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
+                ImGui::Text("Current Scene: %s", scene_ptr_to_str(current_scene_ptr));
+                ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
+            }
+            if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("Client ID: \n%s", osu_client_id);
+                ImGui::Text("Username: %s", osu_username);
+            }
+            if (ImGui::CollapsingHeader("Playfield", ImGuiTreeNodeFlags_None))
+            {
+                ImGui::Text("window_size: %f %f", window_size.x, window_size.y);
+                ImGui::Text("playfield_size: %f %f", playfield_size.x, playfield_size.y);
+                ImGui::Text("playfield_position: %f %f", playfield_position.x, playfield_position.y);
+            }
+            if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
+            {
                 ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
+                ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
                 ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
+                ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
+                ImGui::Text("update_timing_ptr_1: %08X", update_timing_ptr_1);
+                ImGui::Text("update_timing_ptr_2: %08X", update_timing_ptr_2);
+                ImGui::Text("update_timing_ptr_3: %08X", update_timing_ptr_3);
+                ImGui::Text("update_timing_ptr_4: %08X", update_timing_ptr_4);
                 ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
-                ImGui::Text("current_scene_ptr: %08X", current_scene_ptr);
-                ImGui::Text("current_scene: %s", scene_ptr_to_str(current_scene_ptr));
+                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
+                ImGui::Text("dispatch_table_id_found: %s", nt_user_send_input_dispatch_table_id_found ? "Yes" : "No");
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
@@ -514,6 +514,9 @@ void update_ui()
                 ImGui::Text("discord_rich_presence_code_start: %08X", discord_rich_presence_code_start);
                 ImGui::Text("check_flashlight_code_start: %08X", check_flashlight_code_start);
                 ImGui::Text("update_flashlight_code_start: %08X", update_flashlight_code_start);
+                ImGui::Text("update_timing_code_start: %08X", update_timing_code_start);
+                ImGui::Text("set_playback_rate_code_start: %08X", set_playback_rate_code_start);
+                ImGui::Text("check_timewarp_code_start: %08X", check_timewarp_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -524,26 +527,26 @@ void update_ui()
                 ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
                 ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
                 ImGui::Text("window_manager_offset: 0x%X", window_manager_offset);
+                ImGui::Text("selected_song_offset: 0x%X", selected_song_offset);
+                ImGui::Text("audio_time_offset: 0x%X", audio_time_offset);
+                ImGui::Text("osu_manager_offset: 0x%X", osu_manager_offset);
+                ImGui::Text("binding_manager_offset: 0x%X", binding_manager_offset);
+                ImGui::Text("client_id_offset: 0x%X", client_id_offset);
+                ImGui::Text("username_offset: 0x%X", username_offset);
+                ImGui::Text("check_timewarp_offset: 0x%X", check_timewarp_offset);
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {
+                ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
                 ImGui::Text("ar_hook_jump_back: %08X", ar_hook_jump_back);
+                ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
+                ImGui::Text("check_timewarp_hook_1_jump_back: %08X", check_timewarp_hook_1_jump_back);
+                ImGui::Text("check_timewarp_hook_2_jump_back: %08X", check_timewarp_hook_2_jump_back);
                 ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
                 ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
-                ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
-                ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
                 ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
-                ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
-            }
-            if (ImGui::CollapsingHeader("NEW!", ImGuiTreeNodeFlags_None))
-            {
-                ImGui::Text("update_timing_code_start: %08X", update_timing_code_start);
-                ImGui::Text("update_timing_ptr_1: %08X", update_timing_ptr_1);
-                ImGui::Text("update_timing_ptr_2: %08X", update_timing_ptr_2);
-                ImGui::Text("update_timing_ptr_3: %08X", update_timing_ptr_3);
-                ImGui::Text("update_timing_ptr_4: %08X", update_timing_ptr_4);
-                ImGui::Text("set_playback_rate_code_start: %08X", set_playback_rate_code_start);
-                ImGui::Text("check_timewarp_code_start: %08X", check_timewarp_code_start);
+                ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
+                ImGui::Text("set_playback_rate_jump_back: %08X", set_playback_rate_jump_back);
             }
         }
         ImGui::End();

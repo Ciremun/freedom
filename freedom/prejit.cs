@@ -20,7 +20,7 @@ namespace Freedom
         }
     }
 
-    enum ClassMethodType : int
+    public enum ClassMethodType : int
     {
         Load = 0,
         Replay = 1,
@@ -32,22 +32,56 @@ namespace Freedom
 
     struct ClassMethod
     {
-        ClassMethod(int c_, int m_, int n_, ClassMethodType t_)
-        {
-            c = c_;
-            m = m_;
-            n = n_;
-            t = t_;
-        }
-
         public int c { get; set; }
         public int m { get; set; }
-        public int n { get; set; }
+        public ClassMethodType t { get; set; }
+    }
+
+    public struct ClassMethodF
+    {
+        public String c { get; set; }
+        public String m { get; set; }
         public ClassMethodType t { get; set; }
     }
 
     public class PreJit
     {
+        public static int prejit_all_f(String s)
+        {
+            ClassMethodF[] classmethods = new ClassMethodF[]{
+                new ClassMethodF {c = "#=zOTWUr4vq60U15SRmD_JItyatbhdR", m = "#=zQ0BzTMmHMslK", t = ClassMethodType.Load},
+                new ClassMethodF {c = "#=zImjlgOWc5_OOhYavAOGdufVmsem_hUPRKq75Spg=", m = "#=z3EFQLcObB3UFr7eHXw==", t = ClassMethodType.Replay},
+                new ClassMethodF {c = "#=zH0M3f8p46pS8pXcQsRD98exEqdyNHOTUSsRVX0w=", m = "#=zmSXoRp0Eyp4Q", t = ClassMethodType.Score},
+                new ClassMethodF {c = "#=zOTWUr4vq60U15SRmD_JItyatbhdR", m = "#=z9D9oHDkdx1V_oPJ5DVS3F_Y=", t = ClassMethodType.CheckFlashlight},
+                new ClassMethodF {c = "#=zmkr0gBO9O_1YsQB4j4wz5GMMCTsyQoSERtD4iXqQ4yQUe4gn8Q==", m = "#=zEfzFcsIXc9HpZcy7rQ==", t = ClassMethodType.UpdateFlashlight},
+                new ClassMethodF {c = "#=zOTWUr4vq60U15SRmD_JItyatbhdR", m = "#=z_S0hF4Y=", t = ClassMethodType.CheckTime}
+            };
+            int ret = 1;
+            var assembly = Assembly.GetEntryAssembly();
+            foreach (ClassMethodF cm in classmethods)
+            {
+                try
+                {
+                    var c = assembly.GetType(cm.c);
+                    MethodInfo m = null;
+                    if (cm.t == ClassMethodType.Score) {
+                        foreach (MethodInfo me in c.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)) {
+                            if (me.Name == cm.m) {
+                                foreach (ParameterInfo p in me.GetParameters()) {
+                                    if (p.Name == "#=znuwh7sAl6Yx2") {
+                                        m = me;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (m == null)
+                        m = c.GetMethod(cm.m, BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                    System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
+                } catch (Exception) { ret = 0; }
+            }
+            return ret;
+        }
         public static int prejit_all(String s)
         {
             ClassMethod[] classmethods = new ClassMethod[]{
@@ -62,12 +96,7 @@ namespace Freedom
             Type[] classes = assembly.GetTypes();
             foreach (Type c in classes)
             {
-                MethodInfo[] methods = c.GetMethods(
-                        BindingFlags.DeclaredOnly |
-                        BindingFlags.NonPublic |
-                        BindingFlags.Public |
-                        BindingFlags.Instance |
-                        BindingFlags.Static);
+                MethodInfo[] methods = c.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                 foreach (MethodInfo m in methods)
                 {
                     foreach (ClassMethod cm in classmethods)
