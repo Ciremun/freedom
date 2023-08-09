@@ -27,6 +27,7 @@ struct Hook
     Hook(uintptr_t src, BYTE *dst, uintptr_t len) : src((BYTE *)src), dst(dst), len(len) {}
     Hook(BYTE *src, BYTE *dst, uintptr_t len) : src(src), dst(dst), len(len) {}
     Hook(BYTE *src, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len) : src(src), dst(dst), len(len), PtrToGatewayFnPtr(PtrToGatewayFnPtr) {}
+    Hook(uintptr_t src, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len) : src((BYTE *)src), dst(dst), len(len), PtrToGatewayFnPtr(PtrToGatewayFnPtr) {}
     Hook(const char *exportName, const char *modName, BYTE *dst, BYTE *PtrToGatewayFnPtr, uintptr_t len) : dst(dst), len(len), PtrToGatewayFnPtr(PtrToGatewayFnPtr)
     {
         HMODULE hMod = GetModuleHandleA(modName);

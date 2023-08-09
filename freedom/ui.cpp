@@ -279,15 +279,17 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Mods)
         {
-            ImGui::Text("Unmod Flashlight");
-            ImGui::Dummy(ImVec2(.0f, 5.f));
-            ImGui::PushID(69);
-            if (ImGui::Checkbox("Enable", &cfg_flashlight_enabled))
+            if (ImGui::Checkbox("Unmod Flashlight", &cfg_flashlight_enabled))
             {
                 cfg_flashlight_enabled ? enable_flashlight_hooks() : disable_flashlight_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
-            ImGui::PopID();
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            if (ImGui::Checkbox("Unmod Hidden", &cfg_hidden_remover_enabled))
+            {
+                cfg_hidden_remover_enabled ? enable_hidden_remover_hooks() : disable_hidden_remover_hooks();
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
             ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::Text("Score Multiplier");
             ImGui::Dummy(ImVec2(.0f, 5.f));

@@ -25,6 +25,8 @@ double cfg_timewarp_playback_rate = 200.0;
 
 bool cfg_relax_checks_od = true;
 
+bool cfg_hidden_remover_enabled = false;
+
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
     static wchar_t module_path[MAX_PATH * 2];
@@ -80,6 +82,7 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("sm_value=%.2f\n", cfg_score_multiplier_value);
     buf->appendf("drpc=%d\n", (int)cfg_discord_rich_presence_enabled);
     buf->appendf("fl=%d\n", (int)cfg_flashlight_enabled);
+    buf->appendf("hd=%d\n", (int)cfg_hidden_remover_enabled);
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
     buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
     buf->append("\n");
@@ -89,7 +92,7 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
-        flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i;
+        flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i, hidden_remover_enabled_i;
     int replay_i, replay_aim_i, replay_keys_i, score_multiplier_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
     double timewarp_playback_rate_d;
@@ -115,6 +118,7 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
     else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)      cfg_score_multiplier_value = score_multiplier_value_f;
     else if (sscanf(line, "drpc=%d", &discord_rich_presence_enabled_i) == 1)   cfg_discord_rich_presence_enabled = discord_rich_presence_enabled_i;
     else if (sscanf(line, "fl=%d", &flashlight_enabled_i) == 1)                cfg_flashlight_enabled = flashlight_enabled_i;
+    else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)            cfg_hidden_remover_enabled = hidden_remover_enabled_i;
     else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)             cfg_timewarp_enabled = timewarp_enabled_i;
     else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)     cfg_timewarp_playback_rate = timewarp_playback_rate_d;
 }

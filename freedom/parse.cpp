@@ -31,7 +31,7 @@ void ReplayData::toggle_hardrock()
     }
 }
 
-Circle* BeatmapData::current_circle()
+Circle& BeatmapData::current_circle()
 {
     return hit_objects[hit_object_idx];
 }
@@ -40,17 +40,6 @@ void BeatmapData::clear()
 {
     hit_object_idx = 0;
     ready = false;
-    for (Circle *circle : hit_objects)
-    {
-        if (circle->type == HitObjectType::Slider)
-        {
-            Slider *slider = (Slider *)circle;
-            slider->curves.clear();
-            delete slider;
-        }
-        else
-            delete circle;
-    }
     hit_objects.clear();
 }
 
@@ -75,17 +64,6 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + 0xDC);
     float od = *(float *)(selected_song_ptr + 0x38);
 
-    if (beatmap_data.mods & Mods::HardRock)  od = fmin(od * 1.4f, 10.f);
-    else if (beatmap_data.mods & Mods::Easy) od /= 2.f;
-
-    beatmap_data.od_window = 80.f - 6.f * od;
-
-    // osu! and osu!taiko
-    beatmap_data.od_window -= .5f;
-
-    FR_INFO_FMT("od: %f", od);
-    FR_INFO_FMT("od_window: %f", beatmap_data.od_window);
-
     uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x48);
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
@@ -101,62 +79,11 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
         circle_type &= ~HitObjectType::ComboOffset;
         circle_type &= ~HitObjectType::NewCombo;
 
-        Circle *circle;
-
-        if (circle_type == HitObjectType::Slider)
-        {
-            Slider *slider = new Slider();
-
-            uintptr_t curve_points_ptr = *(uintptr_t *)(hit_object_ptr + 0xC4);
-            if (curve_points_ptr)
-            {
-                uintptr_t curve_points_list_ptr = *(uintptr_t *)(curve_points_ptr + 0x4);
-                int32_t curve_points_count = *(int32_t *)(curve_points_ptr + 0xC);
-
-                int32_t repeats_count = *(int32_t *)(hit_object_ptr + 0x20);
-
-                slider->curves.reserve(curve_points_count * repeats_count + 1);
-
-                for (int32_t j = 0; j < curve_points_count; ++j)
-                {
-                    uintptr_t curve_point = *(uintptr_t *)(curve_points_list_ptr + 0x8 + 0x4 * j);
-                    Vector2 p1(*(float *)(curve_point + 0x8), *(float *)(curve_point + 0xC));
-                    slider->curves.push_back(p1);
-                    if (j + 1 == curve_points_count)
-                    {
-                        Vector2 p2(*(float *)(curve_point + 0x10), *(float *)(curve_point + 0x14));
-                        slider->curves.push_back(p2);
-                    }
-                }
-
-                if (repeats_count > 1)
-                {
-                    bool reversed = true;
-                    std::vector<Vector2<float>> reversed_curves;
-                    reversed_curves.reserve(slider->curves.size());
-                    reversed_curves.insert(reversed_curves.end(), slider->curves.rbegin(), slider->curves.rend());
-
-                    for (int k = 0; k < repeats_count - 1; ++k)
-                    {
-                        if (reversed)
-                            slider->curves.insert(slider->curves.end(), reversed_curves.begin(), reversed_curves.end());
-                        else
-                            slider->curves.insert(slider->curves.end(), reversed_curves.rbegin(), reversed_curves.rend());
-                        reversed = !reversed;
-                    }
-                }
-            }
-
-            circle = (Circle *)slider;
-        }
-        else
-        {
-            circle = new Circle();
-        }
-        circle->start_time = *(int32_t *)(hit_object_ptr + 0x10);
-        circle->end_time = *(int32_t *)(hit_object_ptr + 0x14);
-        circle->type = circle_type;
-        circle->position = Vector2(*(float *)(hit_object_ptr + 0x38), *(float *)(hit_object_ptr + 0x3C));
+        Circle circle;
+        circle.start_time = *(int32_t *)(hit_object_ptr + 0x10);
+        circle.end_time = *(int32_t *)(hit_object_ptr + 0x14);
+        circle.type = circle_type;
+        circle.position = Vector2(*(float *)(hit_object_ptr + 0x38), *(float *)(hit_object_ptr + 0x3C));
         beatmap_data.hit_objects.push_back(circle);
     }
 
@@ -165,8 +92,16 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
     beatmap_data.mods = (Mods)(encrypted_value ^ decryption_key);
 
-    // if (beatmap_data.mods & Mods::DoubleTime)      beatmap_data.od_window *= 0.67f;
-    // else if (beatmap_data.mods & Mods::HalfTime)   beatmap_data.od_window *= 1.33f;
+    if (beatmap_data.mods & Mods::HardRock)  od = fmin(od * 1.4f, 10.f);
+    else if (beatmap_data.mods & Mods::Easy) od /= 2.f;
+
+    beatmap_data.od_window = 80.f - 6.f * od;
+
+    // osu! and osu!taiko
+    beatmap_data.od_window -= .5f;
+
+    FR_INFO_FMT("od: %f", od);
+    FR_INFO_FMT("od_window: %f", beatmap_data.od_window);
 
     beatmap_data.ready = true;
     return true;

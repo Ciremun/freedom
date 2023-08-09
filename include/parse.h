@@ -83,22 +83,16 @@ struct Circle
     Vector2<float> position;
 };
 
-struct Slider : Circle
-{
-    std::vector<Vector2<float>> curves;
-    uint32_t curve_idx = 0;
-};
-
 struct BeatmapData
 {
-    std::vector<Circle *> hit_objects;
+    std::vector<Circle> hit_objects;
     uint32_t hit_object_idx = 0;
     bool ready = false;
     float od_window = .0f;
     Mods mods;
 
     void clear();
-    Circle* current_circle();
+    Circle& current_circle();
 };
 
 enum ReplayKeys : uint32_t

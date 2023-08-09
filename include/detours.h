@@ -118,6 +118,8 @@ extern char osu_username[32];
 extern uintptr_t dispatch_table_id;
 extern uintptr_t nt_user_send_input_dispatch_table_id_found;
 
+extern int32_t hom_mods_original_value;
+
 extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook<Trampoline32> SwapBuffersHook;
@@ -147,9 +149,9 @@ void set_circle_size();
 void set_overall_difficulty();
 void set_score_multiplier();
 void set_discord_rich_presence();
-
 void notify_on_beatmap_load();
 void notify_on_select_replay();
+void hk_hom_update_vars_hidden();
 
 void enable_score_multiplier_hooks();
 void disable_score_multiplier_hooks();
@@ -162,6 +164,9 @@ void disable_flashlight_hooks();
 
 void enable_timewarp_hooks();
 void disable_timewarp_hooks();
+
+void enable_hidden_remover_hooks();
+void disable_hidden_remover_hooks();
 
 void enable_nt_user_send_input_patch();
 void disable_nt_user_send_input_patch();

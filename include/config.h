@@ -30,5 +30,7 @@ extern bool cfg_timewarp_enabled;
 
 extern double cfg_timewarp_playback_rate;
 
+extern bool cfg_hidden_remover_enabled;
+
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();
