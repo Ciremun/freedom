@@ -84,6 +84,7 @@ namespace Freedom
             }
             return ret;
         }
+
         public static int prejit_all(String s)
         {
             var assembly = Assembly.GetEntryAssembly();

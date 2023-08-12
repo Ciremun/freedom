@@ -175,7 +175,8 @@ bool all_code_starts_found()
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
-           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start;
+           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
+           && hom_update_vars_code_start;
 }
 
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -773,11 +774,13 @@ void disable_timewarp_hooks()
 
 void enable_hidden_remover_hooks()
 {
+    enable_notify_hooks();
     HiddenHook.Enable();
 }
 
 void disable_hidden_remover_hooks()
 {
+    disable_notify_hooks();
     HiddenHook.Disable();
 }
 
