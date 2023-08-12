@@ -664,12 +664,23 @@ void disable_ar_hooks()
     ApproachRateHook3.Disable();
 }
 
+static inline bool some_feature_requires_notify_hooks()
+{
+    return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled;
+}
+
 void enable_notify_hooks()
 {
     BeatmapOnLoadHook.Enable();
 }
 
 void disable_notify_hooks()
+{
+    if (!some_feature_requires_notify_hooks())
+        BeatmapOnLoadHook.Disable();
+}
+
+static inline void disable_notify_hooks_force()
 {
     BeatmapOnLoadHook.Disable();
 }
@@ -940,6 +951,7 @@ void destroy_hooks()
     disable_ar_hooks();
     disable_cs_hooks();
     disable_od_hooks();
+    disable_notify_hooks_force();
     disable_replay_hooks();
     disable_flashlight_hooks();
     disable_score_multiplier_hooks();
