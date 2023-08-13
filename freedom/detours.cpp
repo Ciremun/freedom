@@ -935,7 +935,10 @@ __declspec(naked) void hk_hom_update_vars_hidden()
         mov ebx, [eax+0x8]
         mov edx, [eax+0xC]
         mov hom_mods_original_value, edx
-        mov [eax+0xC], ebx
+        xor edx, ebx
+        and edx, -0x9
+        xor edx, ebx
+        mov [eax+0xC], edx
         pop edx
         pop ebx
         pop eax
