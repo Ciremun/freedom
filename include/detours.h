@@ -119,6 +119,8 @@ extern uintptr_t dispatch_table_id;
 extern uintptr_t nt_user_send_input_dispatch_table_id_found;
 
 extern int32_t hom_mods_original_value;
+extern uintptr_t hom_update_vars_code_start;
+extern uintptr_t hom_update_vars_hidden_loc;
 
 extern twglSwapBuffers wglSwapBuffersGateway;
 

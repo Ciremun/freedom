@@ -501,6 +501,7 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
+                ImGui::Text("hom_update_vars_code_start: %08X", hom_update_vars_code_start);
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
                 ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
@@ -522,6 +523,7 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
+                ImGui::Text("hom_update_vars_hidden_loc: 0x%X", hom_update_vars_hidden_loc);
                 ImGui::Text("approach_rate_offsets: 0x%X 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1], approach_rate_offsets[2]);
                 ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
                 ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
