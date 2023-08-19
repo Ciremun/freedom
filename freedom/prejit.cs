@@ -38,7 +38,6 @@ namespace Freedom
         public ClassMethodType t { get; set; }
     }
 
-
     public class PreJit
     {
         static ClassMethod[] classmethods = new ClassMethod[]{

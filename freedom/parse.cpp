@@ -177,7 +177,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
         // @@@ fixme refactor
         extern char osu_username[32];
         extern char osu_client_id[64];
-        uint32_t replay_id = *(uint32_t *)(selected_replay_ptr + 0x4);
+        int64_t replay_id = *(int64_t *)(selected_replay_ptr + 0x4);
         if (replay_id && osu_username[0] != '\0' && osu_client_id[0] != '\0')
         {
             static const wchar_t* osu_domain = L"osu.ppy.sh";
@@ -187,7 +187,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
             compressed_data_vec.reserve(8192);
 
             static char replay_url[128];
-            stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%u&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
+            stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%lld&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
             FR_INFO_FMT("replay_url: %s", replay_url);
 
             static wchar_t replay_url_w[256];
@@ -276,6 +276,10 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     }
 
     FR_INFO_FMT("compressed_data_size: %zu", compressed_data_size);
+
+    if (compressed_data_size == 0)
+        return false;
+
     size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
     FR_INFO_FMT("replay_data_size: %zu", replay_data_size);
     static std::vector<uint8_t> replay_data;
