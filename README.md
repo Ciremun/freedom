@@ -2,7 +2,7 @@
 
 freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
-![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
+[![Preview!](https://github-production-user-asset-6210df.s3.amazonaws.com/88152063/262791922-4de9ad96-1700-4a85-8a75-f14880519ac7.png)](https://github-production-user-asset-6210df.s3.amazonaws.com/88152063/262784473-398fc187-9d04-4ca4-935f-595b97aa3ed6.mp4)
 
 ## Download
 
