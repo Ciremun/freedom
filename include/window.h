@@ -1,7 +1,14 @@
 #pragma once
 
+#include <stdint.h>
+
+#include "mem.h"
 #include "vector.h"
 #include "freedom.h"
+
+extern uintptr_t window_manager_code_start;
+extern uintptr_t window_manager_offset;
+extern uintptr_t window_manager_ptr;
 
 extern Vector2<float> window_size;
 extern Vector2<float> playfield_size;
@@ -23,4 +30,4 @@ Vector2<T> playfield_to_screen(Vector2<T> playfield_coords)
 }
 
 void calc_playfield_manual(float window_x, float window_y);
-bool calc_playfield_from_window(uintptr_t window_manager_ptr);
+bool calc_playfield_from_window();

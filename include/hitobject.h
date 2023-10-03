@@ -7,25 +7,23 @@
 #include "mem.h"
 #include "input.h"
 #include "config.h"
+#include "struct_offsets.h"
 
 extern bool beatmap_loaded;
 extern bool start_parse_replay;
 extern BeatmapData current_beatmap;
 extern ReplayData current_replay;
 
-void process_hitobject();
-bool is_replay_mode(uintptr_t osu_manager_ptr);
+extern float od_window_left_offset;
+extern float od_window_right_offset;
 
-template <typename T>
-Vector2<T> prepare_hitcircle_target(uintptr_t osu_manager_ptr, const Vector2<float> &position, Vector2<T> &mouse_position)
-{
-    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
-    float mouse_x = *(float *)(osu_ruleset_ptr + 0x80);
-    float mouse_y = *(float *)(osu_ruleset_ptr + 0x84);
-    mouse_position.x = mouse_x;
-    mouse_position.y = mouse_y;
-    Vector2 circle_position_on_screen = playfield_to_screen(position);
-    Vector2 direction = circle_position_on_screen - mouse_position;
-    return direction;
-}
+extern float od_window;
+extern float jumping_window_offset;
+
+extern int wait_hitobjects_min;
+extern int wait_hitobjects_max;
+
+void process_hitobject();
+bool scene_is_game(Scene *current_scene_ptr);
+bool is_playing(uintptr_t audio_time_ptr);
+bool is_replay_mode(uintptr_t osu_manager_ptr);

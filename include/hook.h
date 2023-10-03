@@ -48,7 +48,7 @@ template <>
 inline void Hook<Trampoline32>::Enable()
 {
     assert(len <= 16);
-    if (!enabled)
+    if (!enabled && len)
     {
         memcpy(originalBytes, src, len);
         *(uintptr_t *)PtrToGatewayFnPtr = (uintptr_t)trampoline_32(src, dst, len);
@@ -60,7 +60,7 @@ template <>
 inline void Hook<Detour32>::Enable()
 {
     assert(len <= 16);
-    if (!enabled)
+    if (!enabled && len)
     {
         memcpy(originalBytes, src, len);
         detour_32(src, dst, len);

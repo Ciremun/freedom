@@ -12,19 +12,16 @@ bool cfg_replay_aim = true;
 bool cfg_replay_keys = true;
 bool cfg_replay_hardrock = false;
 int cfg_relax_style = 'a'; // alternate
-
 bool cfg_score_multiplier_enabled = false;
 float cfg_score_multiplier_value = 1.f;
-
 bool cfg_discord_rich_presence_enabled = false;
-
 bool cfg_flashlight_enabled = false;
-
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
-
 bool cfg_relax_checks_od = true;
-
+bool cfg_jumping_window = true;
+bool cfg_relax_lock = false;
+bool cfg_aimbot_lock = false;
 bool cfg_hidden_remover_enabled = false;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
@@ -46,18 +43,18 @@ const char *get_imgui_ini_filename(HMODULE hMod)
         if (module_path_u8[--backslash_index] == '\\')
             break;
 
-    memcpy(module_path_u8 + backslash_index + 1, "freedom.ini", 12);
+    memcpy(module_path_u8 + backslash_index + 1, "config.ini", sizeof("config.ini"));
 
-    FR_INFO_FMT("freedom.ini path: %s", module_path_u8);
+    FR_INFO_FMT("config.ini path: %s", module_path_u8);
 
     return (const char *)&module_path_u8;
 }
 
-static void FreedomHandler_ClearAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
-static void FreedomHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
-static void *FreedomHandler_ReadOpen(ImGuiContext *, ImGuiSettingsHandler *, const char *name) { return (void *)1; }
+static void ConfigHandler_ClearAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
+static void ConfigHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
+static void *ConfigHandler_ReadOpen(ImGuiContext *, ImGuiSettingsHandler *, const char *name) { return (void *)1; }
 
-static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf)
+static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf)
 {
     buf->reserve(buf->size() + (1 + 4) * 2);
     buf->appendf("[%s][%s]\n", handler->TypeName, "Settings");
@@ -85,14 +82,15 @@ static void FreedomHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *han
     buf->appendf("hd=%d\n", (int)cfg_hidden_remover_enabled);
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
     buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
+    buf->appendf("jump_window=%d\n", (int)cfg_jumping_window);
     buf->append("\n");
 }
 
-static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
+static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
-        flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i, hidden_remover_enabled_i;
+        hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i, jump_window_i;
     int replay_i, replay_aim_i, replay_keys_i, score_multiplier_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
     double timewarp_playback_rate_d;
@@ -121,17 +119,18 @@ static void FreedomHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void
     else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)            cfg_hidden_remover_enabled = hidden_remover_enabled_i;
     else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)             cfg_timewarp_enabled = timewarp_enabled_i;
     else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)     cfg_timewarp_playback_rate = timewarp_playback_rate_d;
+    else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)              cfg_jumping_window = jump_window_i;
 }
 
 void set_imgui_ini_handler()
 {
     ImGuiSettingsHandler ini_handler;
-    ini_handler.TypeName = "Freedom";
-    ini_handler.TypeHash = ImHashStr("Freedom");
-    ini_handler.ClearAllFn = FreedomHandler_ClearAll;
-    ini_handler.ReadOpenFn = FreedomHandler_ReadOpen;
-    ini_handler.ReadLineFn = FreedomHandler_ReadLine;
-    ini_handler.ApplyAllFn = FreedomHandler_ApplyAll;
-    ini_handler.WriteAllFn = FreedomHandler_WriteAll;
+    ini_handler.TypeName = "Config";
+    ini_handler.TypeHash = ImHashStr("Config");
+    ini_handler.ClearAllFn = ConfigHandler_ClearAll;
+    ini_handler.ReadOpenFn = ConfigHandler_ReadOpen;
+    ini_handler.ReadLineFn = ConfigHandler_ReadLine;
+    ini_handler.ApplyAllFn = ConfigHandler_ApplyAll;
+    ini_handler.WriteAllFn = ConfigHandler_WriteAll;
     ImGui::AddSettingsHandler(&ini_handler);
 }

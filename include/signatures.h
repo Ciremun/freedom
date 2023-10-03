@@ -25,7 +25,7 @@ constexpr auto approach_rate_sig            { pattern::build<"8B 85 B0 FE FF FF 
 constexpr auto approach_rate_sig_2          { pattern::build<"8B 85 B0 FE FF FF D9 40 38 D9 58 2C"> };
 constexpr auto circle_size_sig              { pattern::build<"8B 85 B0 FE FF FF D9 58 30"> };
 constexpr auto overall_difficulty_sig       { pattern::build<"8B 85 B0 FE FF FF D9 58 38"> };
-constexpr auto beatmap_onload_sig           { pattern::build<"8B 86 80 00 00 00"> };
+constexpr auto beatmap_onload_sig           { pattern::build<"0F 94 C2"> };
 constexpr auto current_scene_sig            { pattern::build<"A1....A3....A1....A3"> };
 constexpr auto selected_song_sig            { pattern::build<"D9 EE DD 5C 24 10 83 3D"> };
 constexpr auto audio_time_sig               { pattern::build<"F7 DA 3B C2"> };

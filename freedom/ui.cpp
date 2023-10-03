@@ -39,32 +39,8 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
     return CallNextHookEx(oWndProc, code, wparam, lparam);
 }
 
-void init_ui()
+inline void init_imgui_styles()
 {
-    oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-
-    set_imgui_ini_handler();
-    io.IniFilename = get_imgui_ini_filename(g_module);
-
-    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
-
-    ImFontConfig config;
-    config.OversampleH = config.OversampleV = 1;
-    config.PixelSnapH = true;
-    config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
-
-    for (int size = 34; size > 16; size -= 2)
-    {
-        config.SizePixels = size;
-        ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
-        if (size == cfg_font_size)
-            font = f;
-    }
-
     ImGui::StyleColorsDark();
     ImGuiStyle &style = ImGui::GetStyle();
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
@@ -88,6 +64,60 @@ void init_ui()
     style.Colors[ImGuiCol_ResizeGrip] = PURPLE;
     style.Colors[ImGuiCol_ResizeGripHovered] = MAGENTA;
     style.Colors[ImGuiCol_ResizeGripActive] = BLACK_TRANSPARENT;
+}
+
+inline void init_imgui_fonts()
+{
+    ImGuiIO &io = ImGui::GetIO();
+    ImFontConfig config;
+    config.OversampleH = config.OversampleV = 1;
+    config.PixelSnapH = true;
+    config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
+
+    for (int size = 34; size > 16; size -= 2)
+    {
+        config.SizePixels = size;
+        ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
+        if (size == cfg_font_size)
+            font = f;
+    }
+}
+
+void init_ui(IDirect3DDevice9* pDevice)
+{
+    oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+
+    set_imgui_ini_handler();
+    io.IniFilename = get_imgui_ini_filename(g_module);
+
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+
+    init_imgui_styles();
+    init_imgui_fonts();
+
+    ImGui_ImplWin32_Init(g_hwnd);
+    ImGui_ImplDX9_Init(pDevice);
+}
+
+void init_ui()
+{
+    oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+
+    set_imgui_ini_handler();
+    io.IniFilename = get_imgui_ini_filename(g_module);
+
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+
+    init_imgui_styles();
+    init_imgui_fonts();
 
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplOpenGL3_Init();
@@ -238,9 +268,11 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            static double p_min = 1;
-            static double p_max = 1000;
-            ImGui::SliderScalar("##timewarp_scale", ImGuiDataType_Double, &cfg_timewarp_playback_rate, &p_min, &p_max, "Timewarp Scale: %.1lf");
+            static double p_min = 0.1;
+            static double p_max = 2.0;
+            static double timewarp_playback_rate = cfg_timewarp_playback_rate / 100.0;
+            if (ImGui::SliderScalar("##timewarp_scale", ImGuiDataType_Double, &timewarp_playback_rate, &p_min, &p_max, "Timewarp Scale: %.2lf"))
+                cfg_timewarp_playback_rate = timewarp_playback_rate * 100.0;
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
@@ -420,7 +452,7 @@ void update_ui()
                 nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (ImGui::Button("Unload DLL"))
-                unload_freedom();
+                unload_dll();
             bool all_found = all_code_starts_found();
             if (all_found)
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -449,7 +481,7 @@ void update_ui()
             ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
             ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
             ImGui::Begin("Debug Log", NULL);
-            freedom_log.draw();
+            debug_log.draw();
             ImGui::End();
             if (ImGui::CollapsingHeader("Game", ImGuiTreeNodeFlags_None))
             {

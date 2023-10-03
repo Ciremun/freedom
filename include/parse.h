@@ -11,6 +11,7 @@
 #include "mem.h"
 #include "vector.h"
 #include "window.h"
+#include "struct_offsets.h"
 
 #include "stb_sprintf.h"
 
@@ -88,7 +89,8 @@ struct BeatmapData
     std::vector<Circle> hit_objects;
     uint32_t hit_object_idx = 0;
     bool ready = false;
-    float od_window = .0f;
+    float hit_object_radius = .0f;
+    float scaled_hit_object_radius = .0f;
     Mods mods;
 
     void clear();

@@ -3,7 +3,7 @@
 
 #include "log.h"
 
-ImGuiLogger freedom_log;
+ImGuiLogger debug_log;
 
 ImGuiLogger::ImGuiLogger() {}
 
@@ -21,7 +21,7 @@ void ImGuiLogger::clear()
 
 void ImGuiLogger::add(const char *fmt, ...)
 {
-    if (buf.size() >= 1 << 11)
+    if (buf.size() >= 1 << 12)
         buf.clear();
     va_list args;
     va_start(args, fmt);

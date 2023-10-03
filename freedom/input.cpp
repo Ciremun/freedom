@@ -3,6 +3,9 @@
 
 #include "input.h"
 
+uintptr_t binding_manager_code_start = 0;
+uintptr_t binding_manager_ptr = 0;
+
 char left_click[2] = { 'Z', '\0' };
 char right_click[2] = { 'X', '\0' };
 
@@ -27,7 +30,7 @@ void init_input()
     FR_INFO_FMT("left_click: %c", left_click[0]);
     FR_INFO_FMT("right_click: %c", right_click[0]);
 
-    if (!calc_playfield_from_window(window_manager_ptr))
+    if (!calc_playfield_from_window())
         calc_playfield_manual(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 }
 

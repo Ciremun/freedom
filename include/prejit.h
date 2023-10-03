@@ -3,7 +3,6 @@
 #include "stdafx.h"
 
 #include "mem.h"
-#include "freedom.h"
 
 #include <vector>
 
@@ -11,8 +10,8 @@
 
 extern wchar_t clr_module_path[MAX_PATH * 2];
 
-bool prejit_all_f();
 bool prejit_all();
+bool prejit_all_f();
 
 template <typename T>
 BOOL clr_do(T callback)

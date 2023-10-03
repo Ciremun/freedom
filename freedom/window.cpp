@@ -1,8 +1,11 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include "mem.h"
-#include "vector.h"
+#include "window.h"
+
+uintptr_t window_manager_code_start = 0;
+uintptr_t window_manager_offset = 0;
+uintptr_t window_manager_ptr = 0;
 
 Vector2<float> window_size(.0f, .0f);
 Vector2<float> playfield_size(.0f, .0f);
@@ -24,7 +27,7 @@ void calc_playfield_manual(float window_x, float window_y)
     FR_INFO_FMT("calc_playfield_manual: window_x: %f, window_y: %f", window_x, window_y);
 }
 
-bool calc_playfield_from_window(uintptr_t window_manager_ptr)
+bool calc_playfield_from_window()
 {
     if (!window_manager_ptr)
         return false;

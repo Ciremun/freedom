@@ -1,77 +1,15 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include "detours.h"
+#include "scan.h"
 
 #define PATTERN_SCAN(out, signature, start) if (!out) out = pattern::find<signature>({ start, signature.size() })
 
-Parameter ar_parameter = {
-    true,                   // lock
-    10.0f,                  // value
-    0x2C,                   // offset
-    "AR: %.1f",             // slider_fmt
-    "AR Offsets Not Found", // error_message
-    enable_ar_hooks,        // enable
-    disable_ar_hooks,       // disable
-    // bool found = false
-};
-
-Parameter cs_parameter = {
-    false,                  // lock
-    4.0f,                   // value
-    0x30,                   // offset
-    "CS: %.1f",             // slider_fmt
-    "CS Offsets Not Found", // error_message
-    enable_cs_hooks,        // enable
-    disable_cs_hooks,       // disable
-    // bool found = false
-};
-
-Parameter od_parameter = {
-    false,                  // lock
-    8.0f,                   // value
-    0x38,                   // offset
-    "OD: %.1f",             // slider_fmt
-    "OD Offsets Not Found", // error_message
-    enable_od_hooks,        // enable
-    disable_od_hooks,       // disable
-    // bool found = false
-};
-
-bool cfg_relax_lock = false;
-bool cfg_aimbot_lock = false;
-
 twglSwapBuffers wglSwapBuffersGateway;
-
-uintptr_t parse_beatmap_code_start = 0;
-
-uintptr_t approach_rate_offsets[3] = {0};
-uintptr_t ar_hook_jump_back = 0;
-
-uintptr_t circle_size_offsets[3] = {0};
-uintptr_t cs_hook_jump_back = 0;
-
-uintptr_t overall_difficulty_offsets[2] = {0};
-uintptr_t od_hook_jump_back = 0;
 
 uintptr_t beatmap_onload_code_start = 0;
 uintptr_t beatmap_onload_offset = 0;
 uintptr_t beatmap_onload_hook_jump_back = 0;
-
-uintptr_t score_multiplier_code_start = 0;
-uintptr_t score_multiplier_hook_jump_back = 0;
-
-DWORD discord_rich_presence_code_start = 0;
-DWORD discord_rich_presence_jump_back = 0;
-DWORD discord_rich_presence_state_string_ptr = NULL;
-DWORD discord_rich_presence_large_text_string_ptr = NULL;
-DWORD discord_rich_presence_small_text_string_ptr = NULL;
-
-uintptr_t update_flashlight_code_start = 0;
-uint8_t update_flashlight_original_byte = 0xC3;
-
-uintptr_t check_flashlight_code_start = 0;
-uint8_t check_flashlight_original_byte = 0xC3;
 
 uintptr_t current_scene_code_start = 0;
 uintptr_t current_scene_offset = 0;
@@ -85,18 +23,6 @@ uintptr_t audio_time_ptr = 0;
 
 uintptr_t osu_manager_code_start = 0;
 uintptr_t osu_manager_ptr = 0;
-
-uintptr_t binding_manager_code_start = 0;
-uintptr_t binding_manager_ptr = 0;
-
-uintptr_t selected_replay_code_start = 0;
-uintptr_t selected_replay_offset = 0;
-uintptr_t selected_replay_hook_jump_back = 0;
-uintptr_t selected_replay_ptr = 0;
-
-uintptr_t window_manager_code_start = 0;
-uintptr_t window_manager_offset = 0;
-uintptr_t window_manager_ptr = 0;
 
 uintptr_t nt_user_send_input_ptr = 0;
 uintptr_t nt_user_send_input_original_jmp_address = 0;
@@ -112,45 +38,11 @@ char osu_username[32] = {0};
 float memory_scan_progress = .0f;
 
 Hook<Trampoline32> SwapBuffersHook;
-
-Hook<Detour32> ApproachRateHook1;
-Hook<Detour32> ApproachRateHook2;
-Hook<Detour32> ApproachRateHook3;
-
-Hook<Detour32> CircleSizeHook1;
-Hook<Detour32> CircleSizeHook2;
-Hook<Detour32> CircleSizeHook3;
-
-Hook<Detour32> OverallDifficultyHook1;
-Hook<Detour32> OverallDifficultyHook2;
-
 Hook<Detour32> BeatmapOnLoadHook;
 
-Hook<Detour32> SelectedReplayHook;
-
-Hook<Detour32> ScoreMultiplierHook;
-
-Hook<Detour32> DiscordRichPresenceHook;
-
-uintptr_t set_playback_rate_code_start = 0;
-uintptr_t set_playback_rate_jump_back = 0;
-uintptr_t set_playback_rate_original_mov_addr = 0;
-
-uintptr_t check_timewarp_code_start = 0;
-uintptr_t check_timewarp_value_1 = 64;
-uintptr_t check_timewarp_value_2 = 32;
-
-uintptr_t check_timewarp_hook_1 = 0;
-uintptr_t check_timewarp_hook_1_jump_back = 0;
-
-uintptr_t check_timewarp_hook_2 = 0;
-uintptr_t check_timewarp_hook_2_jump_back = 0;
-
-uintptr_t update_timing_code_start = 0;
-uintptr_t update_timing_ptr_1 = 0;
-uintptr_t update_timing_ptr_2 = 0;
-uintptr_t update_timing_ptr_3 = 0;
-uintptr_t update_timing_ptr_4 = 0;
+typedef void(*tSceneHook)();
+tSceneHook o_scene_hook;
+Hook<Trampoline32> SceneHook;
 
 uintptr_t selected_song_offset = 0;
 uintptr_t audio_time_offset = 0;
@@ -160,17 +52,7 @@ uintptr_t client_id_offset = 0;
 uintptr_t username_offset = 0;
 uintptr_t check_timewarp_offset = 0;
 
-Hook<Detour32> SetPlaybackRateHook;
-Hook<Detour32> CheckTimewarpHook1;
-Hook<Detour32> CheckTimewarpHook2;
-
-Hook<Trampoline32> HiddenHook;
-twglSwapBuffers o_hom_update_vars_hidden;
-uintptr_t hom_update_vars_code_start = 0;
-uintptr_t hom_update_vars_hidden_loc = 0;
-int32_t hom_mods_original_value = 0;
-
-bool all_code_starts_found()
+inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
@@ -179,7 +61,7 @@ bool all_code_starts_found()
            && hom_update_vars_code_start;
 }
 
-int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+static int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 {
     if (code == EXCEPTION_ACCESS_VIOLATION)
     {
@@ -200,9 +82,9 @@ static inline bool is_dispatch_table_id(uint8_t *opcodes)
 static inline bool is_set_playback_rate(uint8_t *opcodes)
 {
     // 55 8B EC 56 8B 35 ?? ?? ?? ?? 85 F6
-    const uint8_t set_playback_rate_sig_first_part[] = { 0x55, 0x8B, 0xEC, 0x56, 0x8B, 0x35 };
-    const uint8_t set_playback_rate_sig_second_part[] = { 0x85, 0xF6, 0x75, 0x05, 0x5E, 0x5D, 0xC2, 0x08, 0x00, 0x33, 0xD2, 0x89, 0x15 };
-    return (memcmp(opcodes, set_playback_rate_sig_first_part, sizeof(set_playback_rate_sig_first_part)) == 0) && (memcmp(opcodes + 10, set_playback_rate_sig_second_part, sizeof(set_playback_rate_sig_second_part)) == 0);
+    const uint8_t set_playback_rate_signature_first_part[] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0x35};
+    const uint8_t set_playback_rate_signature_second_part[] = {0x85, 0xF6, 0x75, 0x05, 0x5E, 0x5D, 0xC2, 0x08, 0x00, 0x33, 0xD2, 0x89, 0x15};
+    return (memcmp(opcodes, set_playback_rate_signature_first_part, sizeof(set_playback_rate_signature_first_part)) == 0) && (memcmp(opcodes + 10, set_playback_rate_signature_second_part, sizeof(set_playback_rate_signature_second_part)) == 0);
 }
 
 static void scan_for_code_starts()
@@ -471,6 +353,7 @@ static void try_find_hook_offsets()
     if (hom_update_vars_code_start)
     {
         hom_update_vars_hidden_loc = pattern::find<hom_update_vars_hidden_sig>({ (uint8_t *)hom_update_vars_code_start, 0x2D0});
+        FR_PTR_INFO("hom_update_vars_hidden_loc", hom_update_vars_hidden_loc);
     }
 }
 
@@ -509,44 +392,19 @@ void init_hooks()
         FR_INFO("win32u.dll is null");
 
     scan_for_code_starts();
+    try_find_hook_offsets();
 
-    __try
-    {
-        try_find_hook_offsets();
-    }
-    __except (filter(GetExceptionCode(), GetExceptionInformation()))
-    {
-        FR_INFO("there was an exception\n");
-    }
+    if (scene_is_game(current_scene_ptr))
+        enable_nt_user_send_input_patch();
 
-    enable_nt_user_send_input_patch();
     init_input();
-
-    if (ar_parameter.found)
-    {
-        ApproachRateHook1 = Hook<Detour32>(approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
-        ApproachRateHook2 = Hook<Detour32>(approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
-        ApproachRateHook3 = Hook<Detour32>(approach_rate_offsets[2], (BYTE *)set_approach_rate_2, 12);
-        if (ar_parameter.lock)
-            enable_ar_hooks();
-    }
-
-    if (cs_parameter.found)
-    {
-        CircleSizeHook1 = Hook<Detour32>(circle_size_offsets[0], (BYTE *)set_circle_size, 9);
-        CircleSizeHook2 = Hook<Detour32>(circle_size_offsets[1], (BYTE *)set_circle_size, 9);
-        CircleSizeHook3 = Hook<Detour32>(circle_size_offsets[2], (BYTE *)set_circle_size, 9);
-        if (cs_parameter.lock)
-            enable_cs_hooks();
-    }
-
-    if (od_parameter.found)
-    {
-        OverallDifficultyHook1 = Hook<Detour32>(overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, 9);
-        OverallDifficultyHook2 = Hook<Detour32>(overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, 9);
-        if (od_parameter.lock)
-            enable_od_hooks();
-    }
+    init_difficulty();
+    init_timewarp();
+    init_score_multiplier();
+    init_discord_rpc();
+    init_replay();
+    init_unmod_flashlight();
+    init_unmod_hidden();
 
     if (beatmap_onload_offset)
     {
@@ -555,53 +413,17 @@ void init_hooks()
             BeatmapOnLoadHook.Enable();
     }
 
-    if (selected_replay_offset)
+    if (current_scene_offset)
     {
-        SelectedReplayHook = Hook<Detour32>(selected_replay_offset, (BYTE *)notify_on_select_replay, 7);
-        if (cfg_replay_enabled)
-            SelectedReplayHook.Enable();
-    }
-
-    if (score_multiplier_code_start)
-    {
-        ScoreMultiplierHook = Hook<Detour32>(score_multiplier_code_start, (BYTE *)set_score_multiplier, 5);
-        if (cfg_score_multiplier_enabled)
-            enable_score_multiplier_hooks();
-    }
-
-    if (discord_rich_presence_code_start)
-    {
-        DiscordRichPresenceHook = Hook<Detour32>(discord_rich_presence_code_start, (BYTE *)set_discord_rich_presence, 5);
-        if (cfg_discord_rich_presence_enabled)
-            enable_discord_rich_presence_hooks();
-    }
-
-    if (update_flashlight_code_start && check_flashlight_code_start)
-    {
-        if (cfg_flashlight_enabled)
-            enable_flashlight_hooks();
-    }
-
-    if (set_playback_rate_code_start && check_timewarp_code_start)
-    {
-        SetPlaybackRateHook = Hook<Detour32>(set_playback_rate_code_start, (BYTE *)set_playback_rate, 10);
-        CheckTimewarpHook1 = Hook<Detour32>(check_timewarp_hook_1, (BYTE *)set_check_timewarp_hook_1, 6);
-        CheckTimewarpHook2 = Hook<Detour32>(check_timewarp_hook_2, (BYTE *)set_check_timewarp_hook_2, 6);
-        if (cfg_timewarp_enabled)
-            enable_timewarp_hooks();
-    }
-
-    if (hom_update_vars_hidden_loc)
-    {
-        HiddenHook = Hook<Trampoline32>(hom_update_vars_hidden_loc + 0x7, (BYTE *)hk_hom_update_vars_hidden, (BYTE *)&o_hom_update_vars_hidden, 6);
-        if (cfg_hidden_remover_enabled)
-            HiddenHook.Enable();
+        SceneHook = Hook<Trampoline32>(current_scene_offset + 0xF, (BYTE *)notify_on_scene_change, (BYTE *)&o_scene_hook, 5);
+        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+            SceneHook.Enable();
     }
 }
 
 void enable_nt_user_send_input_patch()
 {
-    if (nt_user_send_input_ptr /* && *(uint8_t *)nt_user_send_input_ptr == (uint8_t)0xE9 */)
+    if (nt_user_send_input_ptr && *(uint8_t *)nt_user_send_input_ptr == (uint8_t)0xE9)
     {
         DWORD oldprotect;
         VirtualProtect((BYTE *)nt_user_send_input_ptr, 5, PAGE_EXECUTE_READWRITE, &oldprotect);
@@ -624,46 +446,6 @@ void disable_nt_user_send_input_patch()
     }
 }
 
-void enable_od_hooks()
-{
-    OverallDifficultyHook1.Enable();
-    OverallDifficultyHook2.Enable();
-}
-
-void disable_od_hooks()
-{
-    OverallDifficultyHook1.Disable();
-    OverallDifficultyHook2.Disable();
-}
-
-void enable_cs_hooks()
-{
-    CircleSizeHook1.Enable();
-    CircleSizeHook2.Enable();
-    CircleSizeHook3.Enable();
-}
-
-void disable_cs_hooks()
-{
-    CircleSizeHook1.Disable();
-    CircleSizeHook2.Disable();
-    CircleSizeHook3.Disable();
-}
-
-void enable_ar_hooks()
-{
-    ApproachRateHook1.Enable();
-    ApproachRateHook2.Enable();
-    ApproachRateHook3.Enable();
-}
-
-void disable_ar_hooks()
-{
-    ApproachRateHook1.Disable();
-    ApproachRateHook2.Disable();
-    ApproachRateHook3.Disable();
-}
-
 static inline bool some_feature_requires_notify_hooks()
 {
     return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled;
@@ -672,285 +454,64 @@ static inline bool some_feature_requires_notify_hooks()
 void enable_notify_hooks()
 {
     BeatmapOnLoadHook.Enable();
+    SceneHook.Enable();
 }
 
 void disable_notify_hooks()
 {
     if (!some_feature_requires_notify_hooks())
+    {
         BeatmapOnLoadHook.Disable();
+        SceneHook.Disable();
+    }
 }
 
 static inline void disable_notify_hooks_force()
 {
     BeatmapOnLoadHook.Disable();
-}
-
-void enable_replay_hooks()
-{
-    enable_notify_hooks();
-    SelectedReplayHook.Enable();
-}
-
-void disable_replay_hooks()
-{
-    disable_notify_hooks();
-    SelectedReplayHook.Disable();
-}
-
-void enable_score_multiplier_hooks()
-{
-    ScoreMultiplierHook.Enable();
-}
-
-void disable_score_multiplier_hooks()
-{
-    ScoreMultiplierHook.Disable();
-}
-
-void enable_discord_rich_presence_hooks()
-{
-    DiscordRichPresenceHook.Enable();
-}
-
-void disable_discord_rich_presence_hooks()
-{
-    DiscordRichPresenceHook.Disable();
-}
-
-void enable_flashlight_hooks()
-{
-    enable_notify_hooks();
-    if (update_flashlight_code_start)
-    {
-        update_flashlight_original_byte = *(uint8_t *)update_flashlight_code_start;
-        *(uint8_t *)update_flashlight_code_start = (uint8_t)0xC3; // ret
-    }
-    if (check_flashlight_code_start)
-    {
-        check_flashlight_original_byte = *(uint8_t *)check_flashlight_code_start;
-        *(uint8_t *)check_flashlight_code_start = (uint8_t)0xC3; // ret
-    }
-    if (osu_manager_ptr)
-    {
-        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-        if (osu_manager)
-        {
-            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
-            if (osu_ruleset_ptr)
-            {
-                uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
-                if (flashlight_sprite_manager)
-                    *(float *)(flashlight_sprite_manager + 0x28) = .0f;
-            }
-        }
-    }
-}
-
-void disable_flashlight_hooks()
-{
-    disable_notify_hooks();
-    if (update_flashlight_code_start)
-        *(uint8_t *)update_flashlight_code_start = update_flashlight_original_byte;
-    if (check_flashlight_code_start)
-        *(uint8_t *)check_flashlight_code_start = check_flashlight_original_byte;
-    if (osu_manager_ptr)
-    {
-        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-        if (osu_manager)
-        {
-            uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + 0x68);
-            if (osu_ruleset_ptr)
-            {
-                uintptr_t flashlight_sprite_manager = *(uintptr_t *)(osu_ruleset_ptr + 0x54);
-                if (flashlight_sprite_manager)
-                    *(float *)(flashlight_sprite_manager + 0x28) = 1.f;
-            }
-        }
-    }
-}
-
-void enable_timewarp_hooks()
-{
-    SetPlaybackRateHook.Enable();
-    CheckTimewarpHook1.Enable();
-    CheckTimewarpHook2.Enable();
-}
-
-void disable_timewarp_hooks()
-{
-    SetPlaybackRateHook.Disable();
-    CheckTimewarpHook1.Disable();
-    CheckTimewarpHook2.Disable();
-}
-
-void enable_hidden_remover_hooks()
-{
-    enable_notify_hooks();
-    HiddenHook.Enable();
-}
-
-void disable_hidden_remover_hooks()
-{
-    disable_notify_hooks();
-    HiddenHook.Disable();
-}
-
-__declspec(naked) void set_approach_rate()
-{
-    __asm {
-        mov eax, dword ptr [ebp-0x00000150]
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_parameter.value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [ar_hook_jump_back]
-    }
-}
-
-__declspec(naked) void set_approach_rate_2()
-{
-    __asm {
-        mov eax,[ebp-0x00000150]
-        fld dword ptr [eax+0x38]
-        fstp dword ptr [eax+0x2C]
-        mov ebx, ar_parameter.value
-        mov dword ptr [eax+0x2C], ebx
-        jmp [ar_hook_jump_back]
-    }
-}
-
-__declspec(naked) void set_circle_size()
-{
-    __asm {
-        mov eax, dword ptr [ebp-0x00000150]
-        fstp dword ptr [eax+0x30]
-        mov ebx, cs_parameter.value
-        mov dword ptr [eax+0x30], ebx
-        jmp [cs_hook_jump_back]
-    }
-}
-
-__declspec(naked) void set_overall_difficulty()
-{
-    __asm {
-        mov eax, dword ptr [ebp-0x00000150]
-        fstp dword ptr [eax+0x38]
-        mov ebx, od_parameter.value
-        mov dword ptr [eax+0x38], ebx
-        jmp [od_hook_jump_back]
-    }
+    SceneHook.Disable();
 }
 
 __declspec(naked) void notify_on_beatmap_load()
 {
     __asm {
         mov beatmap_loaded, 1
-        mov eax, [esi+0x00000080]
+        sete dl
+        mov [eax+0x39], dl
         jmp [beatmap_onload_hook_jump_back]
     }
 }
 
-__declspec(naked) void notify_on_select_replay()
+__declspec(naked) void notify_on_scene_change()
 {
-    __asm {
-        mov eax, [esi+0x38]
-        mov selected_replay_ptr, eax
-        mov start_parse_replay, 1
-        cmp dword ptr [eax+30], 0x00
-        jmp [selected_replay_hook_jump_back]
-    }
-}
+    static Scene new_scene;
 
-__declspec(naked) void set_score_multiplier()
-{
     __asm {
-        fld dword ptr [cfg_score_multiplier_value]
-        cmp edx, 0x04
-        jmp [score_multiplier_hook_jump_back]
-    }
-}
-
-__declspec(naked) void set_discord_rich_presence()
-{
-    __asm {
-        push esi
-        mov eax, discord_rich_presence_state_string_ptr
-        mov dword ptr [edx+0x4], eax
-        mov esi, discord_rich_presence_large_text_string_ptr
-        mov eax, [edx+0x10]
-        mov dword ptr [eax+0x8], esi
-        mov esi, discord_rich_presence_small_text_string_ptr
-        mov dword ptr [eax+0x10], esi
-        pop esi
-        push ebp
-        mov ebp,esp
-        push edi
-        push esi
-        jmp [discord_rich_presence_jump_back]
-    }
-}
-
-__declspec(naked) void set_playback_rate()
-{
-    __asm {
-        push ebp
+        mov new_scene, eax
         push eax
-        mov eax, dword ptr [cfg_timewarp_playback_rate]
-        mov dword ptr [esp+0xC], eax
-        mov eax, dword ptr [cfg_timewarp_playback_rate+0x4]
-        mov dword ptr [esp+0x10], eax
+    }
+
+    if (new_scene == Scene::GAME)
+    {
+        __asm {
+            call enable_nt_user_send_input_patch
+        }
+    }
+    else
+    {
+        __asm {
+            call disable_nt_user_send_input_patch
+        }
+    }
+
+    __asm {
         pop eax
-        mov ebp,esp
-        push esi
-        push ebx
-        mov ebx, dword ptr [set_playback_rate_original_mov_addr]
-        mov esi, dword ptr [ebx]
-        pop ebx
-        jmp [set_playback_rate_jump_back]
+        jmp o_scene_hook
     }
 }
 
-__declspec(naked) void set_check_timewarp_hook_1()
+void destroy_hooks_except_swap()
 {
-    __asm {
-        mov eax, check_timewarp_value_1
-        jmp [check_timewarp_hook_1_jump_back]
-    }
-}
-
-__declspec(naked) void set_check_timewarp_hook_2()
-{
-    __asm {
-        mov eax, check_timewarp_value_2
-        jmp [check_timewarp_hook_2_jump_back]
-    }
-}
-
-__declspec(naked) void hk_hom_update_vars_hidden()
-{
-    __asm {
-        push eax
-        push ebx
-        push edx
-        mov eax, [ecx+0x34]
-        mov ebx, [eax+0x8]
-        mov edx, [eax+0xC]
-        mov hom_mods_original_value, edx
-        xor edx, ebx
-        and edx, -0x9
-        xor edx, ebx
-        mov [eax+0xC], edx
-        pop edx
-        pop ebx
-        pop eax
-        jmp o_hom_update_vars_hidden
-    }
-}
-
-void destroy_ui();
-
-void destroy_hooks()
-{
-    SwapBuffersHook.Disable();
     disable_ar_hooks();
     disable_cs_hooks();
     disable_od_hooks();
@@ -962,4 +523,10 @@ void destroy_hooks()
     disable_timewarp_hooks();
     disable_hidden_remover_hooks();
     disable_nt_user_send_input_patch();
+}
+
+void destroy_hooks()
+{
+    SwapBuffersHook.Disable();
+    destroy_hooks_except_swap();
 }

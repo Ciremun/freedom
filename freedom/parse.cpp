@@ -16,6 +16,7 @@ void ReplayData::clear()
     entries.clear();
     entries_idx = 0;
     replay_ms = 0;
+    ready = false;
 }
 
 void ReplayData::toggle_hardrock()
@@ -61,13 +62,10 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     //     return false;
     // }
 
-    uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + 0xDC);
-    float od = *(float *)(selected_song_ptr + 0x38);
-
-    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + 0x48);
-    uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + 0x48);
+    uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
+    uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
-    int32_t hit_objects_count = *(int32_t *)(hit_manager_ptr + 0x90);
+    int32_t hit_objects_count = *(int32_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_COUNT_OFFSET);
 
     beatmap_data.hit_objects.reserve(hit_objects_count);
 
@@ -75,33 +73,46 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     {
         uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * i);
 
-        HitObjectType circle_type = *(HitObjectType *)(hit_object_ptr + 0x18);
+        HitObjectType circle_type = *(HitObjectType *)(hit_object_ptr + OSU_HIT_OBJECT_CIRCLE_TYPE_OFFSET);
         circle_type &= ~HitObjectType::ComboOffset;
         circle_type &= ~HitObjectType::NewCombo;
 
         Circle circle;
-        circle.start_time = *(int32_t *)(hit_object_ptr + 0x10);
-        circle.end_time = *(int32_t *)(hit_object_ptr + 0x14);
+        circle.start_time = *(int32_t *)(hit_object_ptr + OSU_HIT_OBJECT_START_TIME_OFFSET);
+        circle.end_time = *(int32_t *)(hit_object_ptr + OSU_HIT_OBJECT_END_TIME_OFFSET);
         circle.type = circle_type;
-        circle.position = Vector2(*(float *)(hit_object_ptr + 0x38), *(float *)(hit_object_ptr + 0x3C));
+        circle.position = Vector2(*(float *)(hit_object_ptr + OSU_HIT_OBJECT_POSITION_X_OFFSET), *(float *)(hit_object_ptr + OSU_HIT_OBJECT_POSITION_Y_OFFSET));
         beatmap_data.hit_objects.push_back(circle);
     }
 
-    uintptr_t mods_ptr = *(uintptr_t *)(hit_manager_ptr + 0x34);
+    uintptr_t mods_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_MODS_OFFSET);
     int32_t encrypted_value = *(int32_t *)(mods_ptr + 0x08);
     int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
     beatmap_data.mods = (Mods)(encrypted_value ^ decryption_key);
+    beatmap_data.hit_object_radius = *(float *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECT_RADIUS_OFFSET);
+
+    float screen_ratio = window_size.y / 480.f;
+    float game_height = 384.f * screen_ratio;
+    float game_ratio = game_height / 384.f;
+    beatmap_data.scaled_hit_object_radius = beatmap_data.hit_object_radius * game_ratio;
+
+    FR_INFO_FMT("hit_object_radius: %f", beatmap_data.hit_object_radius);
+    FR_INFO_FMT("scaled_hit_object_radius: %f", beatmap_data.scaled_hit_object_radius);
+
+    // TODO(Ciremun): refactor
+    uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_BEATMAP_OFFSET);
+    float od = *(float *)(selected_song_ptr + OSU_BEATMAP_OD_OFFSET);
 
     if (beatmap_data.mods & Mods::HardRock)  od = fmin(od * 1.4f, 10.f);
     else if (beatmap_data.mods & Mods::Easy) od /= 2.f;
 
-    beatmap_data.od_window = 80.f - 6.f * od;
+    extern float od_window;
 
-    // osu! and osu!taiko
-    beatmap_data.od_window -= .5f;
+    od_window = 80.f - 6.f * od;
+    od_window -= .5f;
 
-    FR_INFO_FMT("od: %f", od);
-    FR_INFO_FMT("od_window: %f", beatmap_data.od_window);
+    if (beatmap_data.mods & Mods::DoubleTime)    od_window *= 0.67f;
+    else if (beatmap_data.mods & Mods::HalfTime) od_window *= 1.33f;
 
     beatmap_data.ready = true;
     return true;
@@ -146,27 +157,27 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     extern char song_name_u8[256];
     memcpy(replay.song_name_u8, song_name_u8, 256);
 
-    uintptr_t author_str_obj = *(uintptr_t *)(selected_replay_ptr + 0x28);
+    uintptr_t author_str_obj = *(uintptr_t *)(selected_replay_ptr + OSU_REPLAY_AUTHOR_OFFSET);
     uint32_t author_str_length = *(uint32_t *)(author_str_obj + 0x4);
     wchar_t *author_str = (wchar_t *)(author_str_obj + 0x8);
     int bytes_written = WideCharToMultiByte(CP_UTF8, 0, author_str, author_str_length, replay.author, 31, 0, 0);
     replay.author[bytes_written] = '\0';
 
-    uint16_t _300 = *(uint16_t *)(selected_replay_ptr + 0x8A);
-    uint16_t _100 = *(uint16_t *)(selected_replay_ptr + 0x88);
-    uint16_t _50 = *(uint16_t *)(selected_replay_ptr + 0x8C);
-    uint16_t misses = *(uint16_t *)(selected_replay_ptr + 0x92);
+    uint16_t _300 = *(uint16_t *)(selected_replay_ptr + OSU_REPLAY_300_COUNT_OFFSET);
+    uint16_t _100 = *(uint16_t *)(selected_replay_ptr + OSU_REPLAY_100_COUNT_OFFSET);
+    uint16_t _50 = *(uint16_t *)(selected_replay_ptr + OSU_REPLAY_50_COUNT_OFFSET);
+    uint16_t misses = *(uint16_t *)(selected_replay_ptr + OSU_REPLAY_MISS_COUNT_OFFSET);
     replay.accuracy = score_percent(_300, _100, _50, misses);
 
-    replay.combo = *(uint32_t *)(selected_replay_ptr + 0x68);
+    replay.combo = *(uint32_t *)(selected_replay_ptr + OSU_REPLAY_COMBO_OFFSET);
 
-    uintptr_t mods_ptr = *(uintptr_t *)(selected_replay_ptr + 0x1C);
+    uintptr_t mods_ptr = *(uintptr_t *)(selected_replay_ptr + OSU_REPLAY_MODS_OFFSET);
     int32_t encrypted_value = *(int32_t *)(mods_ptr + 0x08);
     int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
     Mods mods = (Mods)(encrypted_value ^ decryption_key);
     mods_to_string(mods, replay.mods);
 
-    uintptr_t compressed_data_ptr = *(uintptr_t *)(selected_replay_ptr + 0x30);
+    uintptr_t compressed_data_ptr = *(uintptr_t *)(selected_replay_ptr + OSU_REPLAY_COMPRESSED_DATA_OFFSET);
     FR_PTR_INFO("selected_replay_ptr", selected_replay_ptr);
 
     size_t compressed_data_size;
@@ -188,11 +199,13 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
             static char replay_url[128];
             stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%lld&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
+
             FR_INFO_FMT("replay_url: %s", replay_url);
 
             static wchar_t replay_url_w[256];
             int bytes_written = MultiByteToWideChar(CP_UTF8, 0, replay_url, 127, replay_url_w, 256);
             replay_url_w[bytes_written] = '\0';
+            FR_INFO_FMT("replay_url_w: https://%S%S", osu_domain, replay_url_w);
 
             DWORD dwSize = 0;
             DWORD dwDownloaded = 0;
