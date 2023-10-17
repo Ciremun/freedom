@@ -258,7 +258,6 @@ void update_ui()
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
-            ImGui::Text("Partial support for sliders!");
         }
         if (selected_tab == MenuTab::Timewarp)
         {
