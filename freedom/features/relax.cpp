@@ -46,7 +46,7 @@ void calc_od_timing()
     }
 }
 
-Vector2<float> mouse_position() 
+Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
@@ -66,7 +66,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
     {
         calc_od_timing();
 
-        auto current_time = audio_time + od_check_ms;   
+        auto current_time = audio_time + od_check_ms;
         auto valid_timing = current_time >= circle.start_time;
         auto mouse_pos = mouse_position();
         Vector2 screen_pos = playfield_to_screen(circle.position);
@@ -83,7 +83,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
                 send_keyboard_input(current_click, 0);
                 FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
                 keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
-                
+
                 if (cfg_timewarp_enabled)
                 {
                     double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
