@@ -19,7 +19,6 @@ constexpr auto osu_client_id_func_sig       { pattern::build<"8B F1 8D 7D C4 B9 
 constexpr auto username_func_sig            { pattern::build<"55 8B EC 57 56 53 83 EC 08 33 C0 89 45 EC 89 45 F0 8B F2 8B CE 8B 01 8B 40 30"> };
 constexpr auto update_flashlight_func_sig   { pattern::build<"55 8B EC 56 83 EC 14 8B F1 8B 56 5C"> };
 constexpr auto check_flashlight_func_sig    { pattern::build<"55 8B EC 57 56 53 83 EC 18 8B F9 80"> };
-constexpr auto hom_update_vars_func_sig     { pattern::build<"55 8B EC 57 56 53 83 EC . 8B F1 8B DA 8B 7E . 85 FF"> };
 
 constexpr auto approach_rate_sig            { pattern::build<"8B 85 B0 FE FF FF D9 58 2C"> };
 constexpr auto approach_rate_sig_2          { pattern::build<"8B 85 B0 FE FF FF D9 40 38 D9 58 2C"> };

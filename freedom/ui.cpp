@@ -504,6 +504,7 @@ void update_ui()
                 };
                 ImGui::Text("Current Scene: %s", scene_ptr_to_str(current_scene_ptr));
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
+                ImGui::Text("Pre-Jitting Mode: %s", prepared_all_methods ? "All Methods" : "Fast");
             }
             if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
             {
@@ -532,7 +533,6 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("hom_update_vars_code_start: %08X", hom_update_vars_code_start);
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
                 ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);

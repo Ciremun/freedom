@@ -7,7 +7,6 @@
 
 typedef void(*tHiddenHook)();
 
-extern uintptr_t hom_update_vars_code_start;
 extern uintptr_t hom_update_vars_hidden_loc;
 extern uintptr_t osu_manager_ptr;
 

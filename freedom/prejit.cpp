@@ -4,9 +4,12 @@
 #include "prejit.h"
 
 wchar_t clr_module_path[MAX_PATH * 2] = {0};
+bool prepared_all_methods = false;
 
 bool prejit_all()
 {
+    prepared_all_methods = true;
+
     if (clr_module_path[0] == '\0')
         return false;
 

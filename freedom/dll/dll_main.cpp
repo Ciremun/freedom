@@ -53,7 +53,6 @@ HRESULT __stdcall d3d9_update(IDirect3DDevice9 *pDevice)
         g_d3d9_device = pDevice;
 
         init_ui(pDevice);
-        prejit_all();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));
     }
 
@@ -104,7 +103,6 @@ __declspec(naked) void opengl_update()
         // freopen_s(&f, "CONOUT$", "w", stderr);
 
         init_ui();
-        prejit_all();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));
     }
 

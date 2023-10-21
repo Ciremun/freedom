@@ -41,13 +41,13 @@ namespace Freedom
     public class PreJit
     {
         static ClassMethod[] classmethods = new ClassMethod[]{
-            new ClassMethod {c = "#=zBErgoOPt7z$8HoQfh9d$YluPY24o", m = "#=zO$aoViHFT5xc", t = ClassMethodType.Load},
-            new ClassMethod {c = "#=zDX__LP1d6dcMz2O9HwhFc0F8N_wMUtvNow1JCRk=", m = "#=zNYpnsEY3h0Lm5K1Ukw==", t = ClassMethodType.Replay},
-            new ClassMethod {c = "#=zRzh2O_Rq37d0YwWuj2IxSl3HfAsZyBk4rhbaPxE=", m = "#=ziPTMhF3XSX_Z", t = ClassMethodType.Score},
-            new ClassMethod {c = "#=zBErgoOPt7z$8HoQfh9d$YluPY24o", m = "#=zVDWsORQPfXe4exsYNnV2os8=", t = ClassMethodType.CheckFlashlight},
-            new ClassMethod {c = "#=zXNZug1Hc76GomE0aa08e2l8L5Zz9QvyjCoEI7Kc5RydZ2dZPMQ==", m = "#=zurNbTP16GIZJ5XEfBQ==", t = ClassMethodType.UpdateFlashlight},
-            new ClassMethod {c = "#=zBErgoOPt7z$8HoQfh9d$YluPY24o", m = "#=zzXQqzS4=", t = ClassMethodType.CheckTime},
-            new ClassMethod {c = "#=zC2aULWCeN6BzULAfsTg68G2wy4f2", m = "               ", t = ClassMethodType.UpdateVariables},
+            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zb1jGoyFFrOX0", t = ClassMethodType.Load},
+            new ClassMethod {c = "#=zxAdngeK4jmaF$2DYJq1i9CETT$MQwhE5MSaDWyQ=", m = "#=zZ7ig4tKjfzs99vmAXw==", t = ClassMethodType.Replay},
+            new ClassMethod {c = "#=zpVkvZItSd0$JNJ805MQDn_GSppZbxgi7ceg$6kk=", m = "#=z5ToczxPG8UN9", t = ClassMethodType.Score},
+            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zhK9AFFYGeb1Si9rTLeDsIBg=", t = ClassMethodType.CheckFlashlight},
+            new ClassMethod {c = "#=zGGmgZsNHh$I6KZ5FJe1B9YWAbsD1K2Uy0elN3uao0H8iu8aAZQ==", m = "#=z8xtAaXlWH3V6LMsElg==", t = ClassMethodType.UpdateFlashlight},
+            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zdqGVlv4=", t = ClassMethodType.CheckTime},
+            new ClassMethod {c = "#=zhwn9CnvJGl36$lSN1VJUr9grE30G", m = "              ", t = ClassMethodType.UpdateVariables},
         };
 
         static MethodInfo find_score_method(Type c, String cm_m)

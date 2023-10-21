@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 extern wchar_t clr_module_path[MAX_PATH * 2];
+extern bool prepared_all_methods;
 
 bool prejit_all();
 bool prejit_all_f();
