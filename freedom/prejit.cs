@@ -41,13 +41,13 @@ namespace Freedom
     public class PreJit
     {
         static ClassMethod[] classmethods = new ClassMethod[]{
-            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zb1jGoyFFrOX0", t = ClassMethodType.Load},
-            new ClassMethod {c = "#=zxAdngeK4jmaF$2DYJq1i9CETT$MQwhE5MSaDWyQ=", m = "#=zZ7ig4tKjfzs99vmAXw==", t = ClassMethodType.Replay},
-            new ClassMethod {c = "#=zpVkvZItSd0$JNJ805MQDn_GSppZbxgi7ceg$6kk=", m = "#=z5ToczxPG8UN9", t = ClassMethodType.Score},
-            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zhK9AFFYGeb1Si9rTLeDsIBg=", t = ClassMethodType.CheckFlashlight},
-            new ClassMethod {c = "#=zGGmgZsNHh$I6KZ5FJe1B9YWAbsD1K2Uy0elN3uao0H8iu8aAZQ==", m = "#=z8xtAaXlWH3V6LMsElg==", t = ClassMethodType.UpdateFlashlight},
-            new ClassMethod {c = "#=z37QZypQr4nWO6NMndLUZbwX2sS9c", m = "#=zdqGVlv4=", t = ClassMethodType.CheckTime},
-            new ClassMethod {c = "#=zhwn9CnvJGl36$lSN1VJUr9grE30G", m = "              ", t = ClassMethodType.UpdateVariables},
+            new ClassMethod {c = "#=z6g34NU$lZHttCT4Wk9PmTI_ol1vp", m = "#=zK2XE8H8paD56", t = ClassMethodType.Load},
+            new ClassMethod {c = "#=z9yYI6rMNtVEAgY9WmGnmUHI4XiOWxToOYq71ahE=", m = "#=zYjbB5n9Oy94QxdiEmA==", t = ClassMethodType.Replay},
+            new ClassMethod {c = "#=zWQjPCUezkZ$WXRmRpbq0cfIuJB$fC04kqX7efoY=", m = "#=zeDkItNjSIgxW", t = ClassMethodType.Score},
+            new ClassMethod {c = "#=z6g34NU$lZHttCT4Wk9PmTI_ol1vp", m = "#=zWgSVZTtfEULhbQmHUcaA5Ns=", t = ClassMethodType.CheckFlashlight},
+            new ClassMethod {c = "#=zI3S_DWpLchHOMrAt84FzSdFzUNxQMG1ewCbowvleQRecWqpr7w==", m = "#=zqlp0lxzGzQlzewmT5g==", t = ClassMethodType.UpdateFlashlight},
+            new ClassMethod {c = "#=z6g34NU$lZHttCT4Wk9PmTI_ol1vp", m = "#=z1XNdu0M=", t = ClassMethodType.CheckTime},
+            new ClassMethod {c = "#=zqpD8Uf5slqWVUkm9Buz9k1kQC08f", m = "     ​    ​​           ", t = ClassMethodType.UpdateVariables},
         };
 
         static MethodInfo find_score_method(Type c, String cm_m)
@@ -95,14 +95,17 @@ namespace Freedom
                 {
                     foreach (ClassMethod cm in classmethods)
                     {
-                        if (c.Name.Length == cm.c.Length && m.Name.Length == cm.m.Length)
+                        if (c.Name.Length == cm.c.Length)
                         {
-                            if (cm.t == ClassMethodType.Load && c.IsSealed)
-                                continue;
-                            try
+                            if (m.Name.Length == cm.m.Length || cm.t == ClassMethodType.UpdateVariables)
                             {
-                                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
-                            } catch (Exception) {}
+                                if (cm.t == ClassMethodType.Load && c.IsSealed)
+                                    continue;
+                                try
+                                {
+                                    System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
+                                } catch (Exception) {}
+                            }
                         }
                     }
                 }
