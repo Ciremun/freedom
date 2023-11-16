@@ -12,5 +12,7 @@ extern float jumping_window_offset;
 extern int wait_hitobjects_min;
 extern int wait_hitobjects_max;
 
+extern bool debug_relax;
+
 void relax_on_beatmap_load();
 void update_relax(Circle &circle, const int32_t audio_time);

@@ -241,6 +241,8 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (ImGui::Checkbox("Variable Unstable Rate", &cfg_relax_checks_od))
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+            ImGui::Checkbox("Debug", &debug_relax);
         }
         if (selected_tab == MenuTab::Aimbot)
         {
