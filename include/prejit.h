@@ -8,11 +8,22 @@
 
 #include <stdint.h>
 
+#include "features/relax.h"
+#include "features/aimbot.h"
+#include "features/difficulty.h"
+#include "features/discord_rpc.h"
+#include "features/replay.h"
+#include "features/score_multiplier.h"
+#include "features/unmod_flashlight.h"
+#include "features/timewarp.h"
+#include "features/hidden_remover.h"
+
 extern wchar_t clr_module_path[MAX_PATH * 2];
 extern bool prepared_all_methods;
 
 bool prejit_all();
 bool prejit_all_f();
+void save_classmethods_from_addrs();
 
 template <typename T>
 BOOL clr_do(T callback)

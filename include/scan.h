@@ -61,6 +61,7 @@ extern uintptr_t client_id_offset;
 extern uintptr_t username_offset;
 extern uintptr_t check_timewarp_offset;
 
+extern uintptr_t hom_update_vars_code_start;
 extern uintptr_t hom_update_vars_hidden_loc;
 
 extern twglSwapBuffers wglSwapBuffersGateway;

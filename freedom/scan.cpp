@@ -58,7 +58,7 @@ inline bool all_code_starts_found()
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
            score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
-           && hom_update_vars_hidden_loc;
+           && hom_update_vars_code_start && hom_update_vars_hidden_loc;
 }
 
 static int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
@@ -145,6 +145,7 @@ static void scan_for_code_starts()
             PATTERN_SCAN(check_flashlight_code_start,  check_flashlight_func_sig,   opcodes);
             PATTERN_SCAN(update_timing_code_start,     update_timing_func_sig,      opcodes);
             PATTERN_SCAN(check_timewarp_code_start,    check_timewarp_func_sig,     opcodes);
+            PATTERN_SCAN(hom_update_vars_code_start,   hom_update_vars_func_sig,    opcodes);
             PATTERN_SCAN(hom_update_vars_hidden_loc,   hom_update_vars_hidden_sig,  opcodes);
 
             if (!set_playback_rate_code_start && is_set_playback_rate(opcodes))
@@ -389,6 +390,7 @@ void init_hooks()
 
     scan_for_code_starts();
     try_find_hook_offsets();
+    // save_classmethods_from_addrs();
 
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();

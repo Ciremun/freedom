@@ -126,7 +126,7 @@ static void build_freedom_dll()
         },
         DLL_DIRS);
     CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", MSVC_LINK_RELEASE_FLAGS);
-    CMD("csc", "/nologo", "/optimize", "/target:library", "/out:prejit.dll", "freedom/prejit.cs");
+    CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:prejit.dll", "freedom/prejit.cs");
 }
 
 static void build()

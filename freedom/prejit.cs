@@ -41,14 +41,80 @@ namespace Freedom
     public class PreJit
     {
         static ClassMethod[] classmethods = new ClassMethod[]{
-            new ClassMethod {c = "#=z3Y$ALb7aPTlZFA8CeEZQfumJ0n2G", m = "#=zi2DIlPgiuFQj", t = ClassMethodType.Load},
-            new ClassMethod {c = "#=zr3iNeY9cbrvMxen$7toXRCh0lSAPbelqMmvI4LU=", m = "#=z8PB0bJJOWVFZecqBFw==", t = ClassMethodType.Replay},
-            new ClassMethod {c = "#=zjHqP4DI7lp00jiRigNwbbj_VPJhFRDBNXgOpmWg=", m = "#=zevbeRHnMaHa_", t = ClassMethodType.Score},
-            new ClassMethod {c = "#=z3Y$ALb7aPTlZFA8CeEZQfumJ0n2G", m = "#=zgupkY_foJ1GXszfgaH6ZPtQ=", t = ClassMethodType.CheckFlashlight},
-            new ClassMethod {c = "#=zWfW1pQpb9eH5c7P0ETqMMsptwZVNjtJiWQkJeDGSPPgi7uPGxA==", m = "#=zUwxK7VEgMzzSgpm1sg==", t = ClassMethodType.UpdateFlashlight},
-            new ClassMethod {c = "#=z3Y$ALb7aPTlZFA8CeEZQfumJ0n2G", m = "#=zCc9hudE=", t = ClassMethodType.CheckTime},
-            new ClassMethod {c = "#=zlCdNwFnwVPuuVVN9zWDRLlYYPsa5", m = "   ​   ​    ​     ​   ", t = ClassMethodType.UpdateVariables},
+            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=zX3$LYh7p2wBi", t = ClassMethodType.Load},
+            new ClassMethod {c = "#=zqSEGpfpuEK2_JNoIZ7hBDayXhc6XVXFPmyKdxWI=", m = "#=z0088yvS1oBypje8FDg==", t = ClassMethodType.Replay},
+            new ClassMethod {c = "#=zPVuO6nQc1_jpIN$QW334lwhfp9pdInFnlsLjTQg=", m = "#=zH2PxiKb40ty5", t = ClassMethodType.Score},
+            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=ziGpaTNiRuDUAgJhFFGrfbc0=", t = ClassMethodType.CheckFlashlight},
+            new ClassMethod {c = "#=zGzmw$kU_F2rCipgXne$OmaTDDHc95RPa5I1oykRFf4GGGXmz5g==", m = "#=z24Lft312uJLE40BK$w==", t = ClassMethodType.UpdateFlashlight},
+            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=z0WLz01Q=", t = ClassMethodType.CheckTime},
+            new ClassMethod {c = "#=zAXvkS7OyDXG1e_oeMJfKoR0mxaBo", m = "        ​​    ​  ", t = ClassMethodType.UpdateVariables},
         };
+
+        unsafe delegate void ClassMethodsFromAddrsDelegate(Int32 *cms, Int32 size);
+        static GCHandle delegate_handle;
+
+        unsafe public static int GetClassMethodsFromAddrsPtr(string s)
+        {
+            Delegate d = new ClassMethodsFromAddrsDelegate(ClassMethodsFromAddrs);
+            delegate_handle = GCHandle.Alloc(d);
+            return Marshal.GetFunctionPointerForDelegate(d).ToInt32();
+        }
+
+        unsafe public static void ClassMethodsFromAddrs(Int32 *cms, Int32 size)
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            Type[] classes = assembly.GetTypes();
+            foreach (Type c in classes)
+            {
+                MethodInfo[] methods = c.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                foreach (MethodInfo m in methods)
+                {
+                    for (Int32 i = 0, j = 0; i < size; i += 1, j += 5)
+                    {
+                        // NOTE(Ciremun): method was already found
+                        if (*(IntPtr *)(cms + j + 4) == (IntPtr)1)
+                            continue;
+                        if (cms[j + 2] == (Int32)ClassMethodType.UpdateVariables)
+                        {
+                            try
+                            {
+                                if (c.Name.Length == "#=zlCdNwFnwVPuuVVN9zWDRLlYYPsa5".Length)
+                                {
+                                    if (m.ReturnType == typeof(void))
+                                    {
+                                        ParameterInfo[] parameters = m.GetParameters();
+                                        if (parameters.Length == 3)
+                                        {
+                                            if (parameters[0].ParameterType == typeof(System.Boolean) &&
+                                                parameters[1].ParameterType == typeof(System.Boolean) &&
+                                                parameters[2].ParameterType == typeof(System.Boolean))
+                                            {
+                                                cms[j] = SetPresence.GetCSharpStringPtr(c.Name) + 0x8;
+                                                cms[j + 1] = SetPresence.GetCSharpStringPtr(m.Name) + 0x8;
+                                                *(IntPtr *)(cms + j + 4) = (IntPtr)1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception) { }
+                            continue;
+                        }
+                        IntPtr method_addr = *(IntPtr *)(cms + j + 3);
+                        IntPtr iter_method_addr = IntPtr.Zero;
+                        try { iter_method_addr = m.MethodHandle.GetFunctionPointer(); }
+                        catch (Exception) { break; }
+                        if (method_addr == iter_method_addr)
+                        {
+                            cms[j] = SetPresence.GetCSharpStringPtr(c.Name) + 0x8;
+                            cms[j + 1] = SetPresence.GetCSharpStringPtr(m.Name) + 0x8;
+                            *(IntPtr *)(cms + j + 4) = (IntPtr)1;
+                        }
+                    }
+                }
+            }
+            delegate_handle.Free();
+        }
 
         static MethodInfo find_score_method(Type c, String cm_m)
         {

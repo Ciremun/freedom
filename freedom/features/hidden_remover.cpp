@@ -2,6 +2,7 @@
 
 Hook<Trampoline32> HiddenHook;
 tHiddenHook o_hom_update_vars_hidden;
+uintptr_t hom_update_vars_code_start = 0;
 uintptr_t hom_update_vars_hidden_loc = 0;
 int32_t hom_mods_original_value = 0;
 

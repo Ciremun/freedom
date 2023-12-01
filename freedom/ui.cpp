@@ -535,6 +535,7 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
+                ImGui::Text("hom_update_vars_code_start: %08X", hom_update_vars_code_start);
                 ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
                 ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
                 ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
