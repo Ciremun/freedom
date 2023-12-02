@@ -65,7 +65,13 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 ![installer_preview](https://user-images.githubusercontent.com/38132413/199610177-89f05acc-c1ff-4656-9839-2abf66ffd126.png)  
 
-open command prompt (cmd.exe) and run:  
+### Run ready-to-use binary
 
+    cmd.exe
+    nobuild.exe
+
+### OR Bootstrap the nobuild executable
+
+    cmd.exe
     vcvarsall x86
     cl nobuild.c && nobuild.exe
