@@ -144,6 +144,11 @@ static void run()
 
 static void process_args(int argc, char **argv)
 {
+    GO_REBUILD_URSELF(argc, argv);
+
+    if (PATH_EXISTS(CONCAT(NOEXT(argv[0]), ".obj")))
+        RM(CONCAT(NOEXT(argv[0]), ".obj"));
+
     for (int i = 0; i < argc; ++i)
     {
         if (!standalone_flag && strcmp(argv[i], "standalone") == 0)
@@ -162,16 +167,20 @@ static void process_args(int argc, char **argv)
         run();
 }
 
+static inline void setup_vsdev_env()
+{
+    Find_Result result = find_visual_studio();
+
+    wchar_t *setup_cmd = concat4(L"\"", result.vs_exe_path, L"\" x86 && ", GetCommandLineW());
+    printf("%S\n", setup_cmd);
+    _wsystem(setup_cmd);
+
+    free(setup_cmd);
+    free_resources(&result);
+}
+
 int main(int argc, char **argv)
 {
-    GO_REBUILD_URSELF(argc, argv);
-
-    if (PATH_EXISTS(CONCAT(NOEXT(argv[0]), ".obj")))
-        RM(CONCAT(NOEXT(argv[0]), ".obj"));
-
-    if (argc > 1)
-        process_args(argc, argv);
-    else
-        build();
+    getenv("VCINSTALLDIR") ? process_args(argc, argv) : setup_vsdev_env();
     return 0;
 }
