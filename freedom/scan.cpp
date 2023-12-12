@@ -390,7 +390,7 @@ void init_hooks()
 
     scan_for_code_starts();
     try_find_hook_offsets();
-    // save_classmethods_from_addrs();
+    save_classmethods_from_addrs();
 
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();

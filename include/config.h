@@ -29,5 +29,13 @@ extern bool cfg_timewarp_enabled;
 extern double cfg_timewarp_playback_rate;
 extern bool cfg_hidden_remover_enabled;
 
+extern std::string cm_load_s;
+extern std::string cm_replay_s;
+extern std::string cm_score_s;
+extern std::string cm_checkflashlight_s;
+extern std::string cm_updateflashlight_s;
+extern std::string cm_checktime_s;
+extern std::string cm_updatevariables_s;
+
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

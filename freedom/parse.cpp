@@ -269,7 +269,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
             if (!bResults)
             {
-                printf("Error %d has occurred.\n", GetLastError());
+                FR_INFO_FMT("Error %d has occurred.", GetLastError());
                 return false;
             }
 

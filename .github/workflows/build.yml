@@ -32,3 +32,4 @@ jobs:
             freedom_standalone.exe
             freedom.dll
             prejit.dll
+            config.ini

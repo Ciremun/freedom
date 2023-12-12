@@ -47,11 +47,31 @@ namespace Freedom
             new ClassMethod {c = "#=zI8KegJG$4iW$48IFM8jc7BaeZl5Q", m = "#=z8sU_nCrclRWZEfIsFhlq2S4=", t = ClassMethodType.CheckFlashlight},
             new ClassMethod {c = "#=z3onHVu8ArxqQRwlNg7LafPTccV82AY6DfUBBuhGZ$HyZ0LAnfQ==", m = "#=zn$KM8OPB3VD3EEQhXA==", t = ClassMethodType.UpdateFlashlight},
             new ClassMethod {c = "#=zI8KegJG$4iW$48IFM8jc7BaeZl5Q", m = "#=zr__5T0o=", t = ClassMethodType.CheckTime},
-            new ClassMethod {c = "#=zE0VDZfwJEH3z6D3XGqmTkDRFkwfG", m = "​                        ​ ", t = ClassMethodType.UpdateVariables},
+            new ClassMethod {c = "#=zE0VDZfwJEH3z6D3XGqmTkDRFkwfG", m = "", t = ClassMethodType.UpdateVariables},
         };
 
         unsafe delegate void ClassMethodsFromAddrsDelegate(Int32 *cms, Int32 size);
         static GCHandle delegate_handle;
+
+        public static int SetClassMethod(String classmethod)
+        {
+            String[] class_method_type = classmethod.Split(new string[] {"::"}, StringSplitOptions.None);
+            if (class_method_type.Length < 3)
+                return 0;
+            String class_ = class_method_type[0];
+            String method = class_method_type[1];
+            String type_ = class_method_type[2];
+            for (Int32 i = 0; i < classmethods.Length; i++)
+            {
+                if (classmethods[i].t == (ClassMethodType)Enum.Parse(typeof(ClassMethodType), type_))
+                {
+                    classmethods[i].c = class_;
+                    classmethods[i].m = method;
+                    break;
+                }
+            }
+            return 1;
+        }
 
         unsafe public static int GetClassMethodsFromAddrsPtr(string s)
         {

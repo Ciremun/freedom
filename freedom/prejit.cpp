@@ -16,7 +16,6 @@ enum class ClassMethodType : int32_t
     UpdateVariables = 6,
     COUNT = 7,
 };
-constexpr int32_t classmethod_types_count = (int32_t)ClassMethodType::COUNT;
 
 #pragma pack(push)
 #pragma pack(4)
@@ -32,6 +31,43 @@ struct ClassMethod
 
 wchar_t clr_module_path[MAX_PATH * 2] = {0};
 bool prepared_all_methods = false;
+constexpr int32_t classmethod_types_count = (int32_t)ClassMethodType::COUNT;
+
+std::string cm_load_s;
+std::string cm_replay_s;
+std::string cm_score_s;
+std::string cm_checkflashlight_s;
+std::string cm_updateflashlight_s;
+std::string cm_checktime_s;
+std::string cm_updatevariables_s;
+
+std::string get_utf8(const std::wstring &wstr)
+{
+    if (wstr.empty()) return std::string();
+    int sz = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], -1, 0, 0, 0, 0);
+    std::string res(sz, 0);
+    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], -1, &res[0], sz, 0, 0);
+    return res;
+}
+
+std::wstring get_utf16(const std::string &str)
+{
+    if (str.empty()) return std::wstring();
+    int sz = MultiByteToWideChar(CP_UTF8, 0, &str[0], -1, 0, 0);
+    std::wstring res(sz, 0);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], -1, &res[0], sz);
+    return res;
+}
+
+std::string get_utf8_for_classmethod(wchar_t *class_, wchar_t *method, ClassMethodType type)
+{
+    std::wstring colon_colon(L"::");
+    std::wstring final_string = std::wstring(class_) + colon_colon +
+                                std::wstring(method) + colon_colon +
+                                std::to_wstring((int32_t)type);
+    std::string ret = get_utf8(final_string);
+    return ret;
+}
 
 void save_classmethods_from_addrs()
 {
@@ -54,15 +90,43 @@ void save_classmethods_from_addrs()
             };
             ClassMethodsFromAddrsFuncPtr ClassMethodsFromAddrs = (ClassMethodsFromAddrsFuncPtr)(uintptr_t)ClassMethodsFromAddrsPtr;
             ClassMethodsFromAddrs((int32_t *)classmethods, classmethod_types_count);
-
-            for (int32_t i = 0; i < classmethod_types_count; ++i)
-            {
-                if (classmethods[i].type == ClassMethodType::UpdateVariables)
-                    printf("got classmethod: %S %S %d 0x%X\n", classmethods[i].class_, L"SOME BS METHOD", classmethods[i].type, classmethods[i].address);
-                else
-                    printf("got classmethod: %S %S %d 0x%X\n", classmethods[i].class_, classmethods[i].method, classmethods[i].type, classmethods[i].address);
-            }
+            cm_load_s =             get_utf8_for_classmethod(classmethods[0].class_, classmethods[0].method, classmethods[0].type);
+            cm_replay_s =           get_utf8_for_classmethod(classmethods[1].class_, classmethods[1].method, classmethods[1].type);
+            cm_score_s =            get_utf8_for_classmethod(classmethods[2].class_, classmethods[2].method, classmethods[2].type);
+            cm_checkflashlight_s =  get_utf8_for_classmethod(classmethods[3].class_, classmethods[3].method, classmethods[3].type);
+            cm_updateflashlight_s = get_utf8_for_classmethod(classmethods[4].class_, classmethods[4].method, classmethods[4].type);
+            cm_checktime_s =        get_utf8_for_classmethod(classmethods[5].class_, classmethods[5].method, classmethods[5].type);
+            cm_updatevariables_s =  get_utf8_for_classmethod(classmethods[6].class_, classmethods[6].method, classmethods[6].type);
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
+    });
+}
+
+void load_classmethods_from_addrs()
+{
+    clr_do([](ICLRRuntimeHost *p)
+    {
+        DWORD r;
+        std::wstring cm_load_ws = get_utf16(cm_load_s);
+        std::wstring cm_replay_ws = get_utf16(cm_replay_s);
+        std::wstring cm_score_ws = get_utf16(cm_score_s);
+        std::wstring cm_checkflashlight_ws = get_utf16(cm_checkflashlight_s);
+        std::wstring cm_updateflashlight_ws = get_utf16(cm_updateflashlight_s);
+        std::wstring cm_checktime_ws = get_utf16(cm_checktime_s);
+        std::wstring cm_updatevariables_ws = get_utf16(cm_updatevariables_s);
+        HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_load_ws.c_str(), &r);
+        if (result != S_OK)
+        {
+            FR_ERROR_FMT("p->ExecuteInDefaultAppDomain(SetClassMethod) failed, error code: 0x%X", result);
+            return;
+        }
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_replay_ws.c_str(), &r);
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_score_ws.c_str(), &r);
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checkflashlight_ws.c_str(), &r);
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updateflashlight_ws.c_str(), &r);
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checktime_ws.c_str(), &r);
+        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updatevariables_ws.c_str(), &r);
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     });
 }
 
@@ -110,6 +174,8 @@ bool prejit_all()
 
 bool prejit_all_f()
 {
+    load_classmethods_from_addrs();
+
     if (clr_module_path[0] == '\0')
         return false;
 
