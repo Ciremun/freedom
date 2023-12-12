@@ -41,13 +41,13 @@ namespace Freedom
     public class PreJit
     {
         static ClassMethod[] classmethods = new ClassMethod[]{
-            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=zX3$LYh7p2wBi", t = ClassMethodType.Load},
-            new ClassMethod {c = "#=zqSEGpfpuEK2_JNoIZ7hBDayXhc6XVXFPmyKdxWI=", m = "#=z0088yvS1oBypje8FDg==", t = ClassMethodType.Replay},
-            new ClassMethod {c = "#=zPVuO6nQc1_jpIN$QW334lwhfp9pdInFnlsLjTQg=", m = "#=zH2PxiKb40ty5", t = ClassMethodType.Score},
-            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=ziGpaTNiRuDUAgJhFFGrfbc0=", t = ClassMethodType.CheckFlashlight},
-            new ClassMethod {c = "#=zGzmw$kU_F2rCipgXne$OmaTDDHc95RPa5I1oykRFf4GGGXmz5g==", m = "#=z24Lft312uJLE40BK$w==", t = ClassMethodType.UpdateFlashlight},
-            new ClassMethod {c = "#=zgFquRpkKejIF7bi8KRbFkUcebkWM", m = "#=z0WLz01Q=", t = ClassMethodType.CheckTime},
-            new ClassMethod {c = "#=zAXvkS7OyDXG1e_oeMJfKoR0mxaBo", m = "        ​​    ​  ", t = ClassMethodType.UpdateVariables},
+            new ClassMethod {c = "#=zI8KegJG$4iW$48IFM8jc7BaeZl5Q", m = "#=zanE7Qv3XmjW5", t = ClassMethodType.Load},
+            new ClassMethod {c = "#=zdKJOjAyV$ER12ZW5$R$q$GYWyVHooHal7eJTMqI=", m = "#=zz6ecxM6_4e4c6Im$hA==", t = ClassMethodType.Replay},
+            new ClassMethod {c = "#=zZxV46FKXz8HxVteOcXctYSVtWa6VKIH_YNsHAm8=", m = "#=zNFUNmEy9GMdn", t = ClassMethodType.Score},
+            new ClassMethod {c = "#=zI8KegJG$4iW$48IFM8jc7BaeZl5Q", m = "#=z8sU_nCrclRWZEfIsFhlq2S4=", t = ClassMethodType.CheckFlashlight},
+            new ClassMethod {c = "#=z3onHVu8ArxqQRwlNg7LafPTccV82AY6DfUBBuhGZ$HyZ0LAnfQ==", m = "#=zn$KM8OPB3VD3EEQhXA==", t = ClassMethodType.UpdateFlashlight},
+            new ClassMethod {c = "#=zI8KegJG$4iW$48IFM8jc7BaeZl5Q", m = "#=zr__5T0o=", t = ClassMethodType.CheckTime},
+            new ClassMethod {c = "#=zE0VDZfwJEH3z6D3XGqmTkDRFkwfG", m = "​                        ​ ", t = ClassMethodType.UpdateVariables},
         };
 
         unsafe delegate void ClassMethodsFromAddrsDelegate(Int32 *cms, Int32 size);
