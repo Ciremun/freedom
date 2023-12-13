@@ -88,8 +88,10 @@ void init_ui(IDirect3DDevice9* pDevice)
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
 
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    ImGuiContext* ctx = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+
+    ctx->SettingsHandlers.clear();
 
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
@@ -108,8 +110,10 @@ void init_ui()
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
 
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    ImGuiContext* ctx = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+
+    ctx->SettingsHandlers.clear();
 
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
