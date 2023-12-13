@@ -5,6 +5,7 @@
 #include "mem.h"
 
 #include <vector>
+#include <string>
 
 #include <stdint.h>
 
