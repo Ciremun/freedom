@@ -370,7 +370,7 @@ void init_hooks()
                {
             HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
             if (result != S_OK)
-                FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result); });
+                FR_ERROR_FMT("GetSetPresencePtr call failed, error code: 0x%X", result); });
 
         FR_PTR_INFO("discord_rich_presence_code_start", discord_rich_presence_code_start);
 

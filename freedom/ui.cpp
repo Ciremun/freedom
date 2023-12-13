@@ -384,7 +384,7 @@ void update_ui()
                 {
                     HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_state_wchar, &discord_rich_presence_state_string_ptr);
                     if (result != S_OK)
-                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
                 });
             }
 
@@ -400,7 +400,7 @@ void update_ui()
                 {
                     HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar, &discord_rich_presence_large_text_string_ptr);
                     if (result != S_OK)
-                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
                 });
             }
 
@@ -416,7 +416,7 @@ void update_ui()
                 {
                     HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar, &discord_rich_presence_small_text_string_ptr);
                     if (result != S_OK)
-                        FR_ERROR_FMT("pClrRuntimeHost->ExecuteInDefaultAppDomain failed, error code: 0x%X", result);
+                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
                 });
             }
 
