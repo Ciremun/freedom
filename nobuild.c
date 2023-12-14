@@ -7,10 +7,10 @@
 #define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_DEFINE_MATH_OPERATORS", "/DIMGUI_USE_STB_SPRINTF", "/std:c++latest"
 #define MSVC_INCLUDE_FLAGS "/Iinclude", "/Iimgui", "/Iimgui/backends", "/Iimgui/backends/standalone", "/Ivendor/GLFW/include"
 
-#define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", MSVC_INCLUDE_FLAGS, "/O2", "/MT"
-#define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, MSVC_INCLUDE_FLAGS, "/Od", "/Z7", "/MTd", "/FS"
+#define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", MSVC_INCLUDE_FLAGS, "/O2", "/MT", "/GL"
+#define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, MSVC_INCLUDE_FLAGS, "/Od", "/Z7", "/MTd", "/FS", "/GS"
 
-#define MSVC_LINK_RELEASE_FLAGS "/MACHINE:x86"
+#define MSVC_LINK_RELEASE_FLAGS "/LTCG", "/MACHINE:x86"
 #define MSVC_LINK_DEBUG_FLAGS "/DEBUG", "/MACHINE:x86"
 
 #define PROCESSES_CAPACITY 256
@@ -46,6 +46,7 @@ int debug_flag = 0;
 int rebuild_flag = 0;
 int run_flag = 0;
 int standalone_flag = 0;
+int all_flag = 0;
 
 static void remove_object_files()
 {
@@ -125,12 +126,18 @@ static void build_freedom_dll()
             }
         },
         DLL_DIRS);
-    CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", MSVC_LINK_RELEASE_FLAGS);
+    CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
     CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:prejit.dll", "freedom/prejit.cs");
 }
 
 static void build()
 {
+    if (all_flag)
+    {
+        build_freedom_dll();
+        build_standalone();
+        return;
+    }
     if (standalone_flag)
         build_standalone();
     else
@@ -159,6 +166,8 @@ static void process_args(int argc, char **argv)
             rebuild_flag = 1;
         if (!run_flag && strcmp(argv[i], "run") == 0)
             run_flag = 1;
+        if (!all_flag && strcmp(argv[i], "all") == 0)
+            all_flag = 1;
     }
     if (rebuild_flag)
         remove_object_files();

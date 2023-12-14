@@ -22,7 +22,7 @@ jobs:
       - name: build
         shell: cmd
         run: |
-          cl nobuild.c && nobuild.exe
+          cl nobuild.c && nobuild.exe all
       - name: freedom
         uses: actions/upload-artifact@v3
         with:
