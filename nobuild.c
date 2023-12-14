@@ -8,7 +8,7 @@
 #define MSVC_INCLUDE_FLAGS "/Iinclude", "/Iimgui", "/Iimgui/backends", "/Iimgui/backends/standalone", "/Ivendor/GLFW/include"
 
 #define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", MSVC_INCLUDE_FLAGS, "/O2", "/MT", "/GL"
-#define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, MSVC_INCLUDE_FLAGS, "/Od", "/Z7", "/MTd", "/FS", "/GS"
+#define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, MSVC_INCLUDE_FLAGS, "/Od", "/Z7", "/MTd", "/FS"
 
 #define MSVC_LINK_RELEASE_FLAGS "/LTCG", "/MACHINE:x86"
 #define MSVC_LINK_DEBUG_FLAGS "/DEBUG", "/MACHINE:x86"
