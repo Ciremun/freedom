@@ -27,8 +27,8 @@ void init_input()
             }
         }
     }
-    FR_INFO_FMT("left_click: %c", left_click[0]);
-    FR_INFO_FMT("right_click: %c", right_click[0]);
+    FR_INFO_FMT("Left Click: %c", left_click[0]);
+    FR_INFO_FMT("Right Click: %c", right_click[0]);
 
     if (!calc_playfield_from_window())
         calc_playfield_manual(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));

@@ -24,7 +24,6 @@ void calc_playfield_manual(float window_x, float window_y)
     playfield_position.x = (window_size.x - playfield_size.x) / 2.0f;
     playfield_position.y =  (window_size.y - playfield_size.y) / 4.0f * 3.0f + (-16.0f * window_ratio);
     playfield_ratio = playfield_size.y / 384.0f;
-    FR_INFO_FMT("calc_playfield_manual: window_x: %f, window_y: %f", window_x, window_y);
 }
 
 bool calc_playfield_from_window()
@@ -44,6 +43,5 @@ bool calc_playfield_from_window()
     playfield_position.x = *(float *)(window_manager + 0x18);
     playfield_position.y = *(float *)(window_manager + 0x1C);
     playfield_ratio = playfield_size.y / 384.0f;
-    FR_INFO_FMT("calc_playfield_from_window: window_x: %f, window_y: %f", window_size.x, window_size.y);
     return true;
 }

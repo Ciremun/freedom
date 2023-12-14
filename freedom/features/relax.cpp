@@ -91,7 +91,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
                     current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
 
                 send_keyboard_input(current_click, 0);
-                FR_INFO_FMT("hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
                 keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
 
                 if (cfg_timewarp_enabled)

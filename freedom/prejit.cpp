@@ -69,15 +69,30 @@ static inline std::string get_utf8_for_classmethod(wchar_t *class_, wchar_t *met
     return ret;
 }
 
+HRESULT ExecuteInDefaultAppDomain(ICLRRuntimeHost *p, LPCWSTR pwzAssemblyPath, LPCWSTR pwzTypeName,
+                                  LPCWSTR pwzMethodName, LPCWSTR pwzArgument, DWORD *pReturnValue)
+{
+    HRESULT r = p->ExecuteInDefaultAppDomain(pwzAssemblyPath, pwzTypeName, pwzMethodName, pwzArgument, pReturnValue);
+    if (r != S_OK)
+    {
+        std::string type_name = get_utf8(pwzTypeName);
+        std::string method_name = get_utf8(pwzMethodName);
+        std::string argument = get_utf8(pwzArgument);
+        if (argument.length())
+            FR_ERROR_FMT("%s.%s call with arg '%s' failed, error code: 0x%X", type_name.c_str(), method_name.c_str(), argument.c_str(), r);
+        else
+            FR_ERROR_FMT("%s.%s call failed, error code: 0x%X", type_name.c_str(), method_name.c_str(), r);
+    }
+    return r;
+}
+
 void save_classmethods_from_addrs()
 {
     clr_do([](ICLRRuntimeHost *p)
     {
         DWORD ClassMethodsFromAddrsPtr;
-        HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"GetClassMethodsFromAddrsPtr", L"", &ClassMethodsFromAddrsPtr);
-        if (result != S_OK)
-            FR_ERROR_FMT("GetClassMethodsFromAddrsPtr call failed, error code: 0x%X", result);
-        else
+        HRESULT result = ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"GetClassMethodsFromAddrsPtr", L"", &ClassMethodsFromAddrsPtr);
+        if (result == S_OK)
         {
             ClassMethod classmethods[classmethod_types_count] = {
                 {.type = ClassMethodType::Load,             .address = beatmap_onload_code_start},
@@ -114,13 +129,13 @@ void load_classmethods_from_addrs()
         std::wstring cm_updateflashlight_ws = get_utf16(cm_updateflashlight_s);
         std::wstring cm_checktime_ws = get_utf16(cm_checktime_s);
         std::wstring cm_updatevariables_ws = get_utf16(cm_updatevariables_s);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_load_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_replay_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_score_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checkflashlight_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updateflashlight_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checktime_ws.c_str(), &r);
-        p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updatevariables_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_load_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_replay_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_score_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checkflashlight_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updateflashlight_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_checktime_ws.c_str(), &r);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"SetClassMethod", cm_updatevariables_ws.c_str(), &r);
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     });
 }
@@ -135,9 +150,7 @@ bool prejit_all()
     clr_do([](ICLRRuntimeHost *p)
     {
         DWORD dwRet = 0;
-        HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"prejit_all", L"", &dwRet);
-        if (result != S_OK)
-            FR_ERROR_FMT("prejit_all call failed, error code: 0x%X", result);
+        ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"prejit_all", L"", &dwRet);
     });
 
     return true;
@@ -171,10 +184,7 @@ bool prejit_all_f()
             if (pRuntimeInfo->GetInterface(CLSID_CLRRuntimeHost, IID_ICLRRuntimeHost, (void **)&pClrRuntimeHost) == S_OK)
             {
                 pClrRuntimeHost->Start();
-
-                HRESULT result = pClrRuntimeHost->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.PreJit", L"prejit_all_f", L"", &dwRet);
-                if (result != S_OK)
-                    FR_ERROR_FMT("prejit_all_f call failed, error code: 0x%X", result);
+                ExecuteInDefaultAppDomain(pClrRuntimeHost, clr_module_path, L"Freedom.PreJit", L"prejit_all_f", L"", &dwRet);
                 pClrRuntimeHost->Stop();
                 pClrRuntimeHost->Release();
             }

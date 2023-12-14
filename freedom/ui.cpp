@@ -382,9 +382,7 @@ void update_ui()
                 discord_rich_presence_state_wchar[bytes_written] = '\0';
                 clr_do([](ICLRRuntimeHost *p)
                 {
-                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_state_wchar, &discord_rich_presence_state_string_ptr);
-                    if (result != S_OK)
-                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
+                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_state_wchar, &discord_rich_presence_state_string_ptr);
                 });
             }
 
@@ -398,9 +396,7 @@ void update_ui()
                 discord_rich_presence_large_text_wchar[bytes_written] = '\0';
                 clr_do([](ICLRRuntimeHost *p)
                 {
-                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar, &discord_rich_presence_large_text_string_ptr);
-                    if (result != S_OK)
-                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
+                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar, &discord_rich_presence_large_text_string_ptr);
                 });
             }
 
@@ -414,9 +410,7 @@ void update_ui()
                 discord_rich_presence_small_text_wchar[bytes_written] = '\0';
                 clr_do([](ICLRRuntimeHost *p)
                 {
-                    HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar, &discord_rich_presence_small_text_string_ptr);
-                    if (result != S_OK)
-                        FR_ERROR_FMT("GetCSharpStringPtr call failed, error code: 0x%X", result);
+                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar, &discord_rich_presence_small_text_string_ptr);
                 });
             }
 

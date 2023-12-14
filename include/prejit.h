@@ -25,6 +25,8 @@ extern bool prepared_all_methods;
 bool prejit_all();
 bool prejit_all_f();
 void save_classmethods_from_addrs();
+HRESULT ExecuteInDefaultAppDomain(ICLRRuntimeHost *p, LPCWSTR pwzAssemblyPath, LPCWSTR pwzTypeName,
+                                  LPCWSTR pwzMethodName, LPCWSTR pwzArgument, DWORD *pReturnValue);
 
 template <typename T>
 BOOL clr_do(T callback)

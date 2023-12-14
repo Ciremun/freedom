@@ -112,7 +112,6 @@ static void scan_for_code_starts()
                     {
                         dispatch_table_id = *(uintptr_t *)(opcodes + 0x1);
                         nt_user_send_input_dispatch_table_id_found = true;
-                        FR_INFO_FMT("found dispatch_table_id: %X", dispatch_table_id);
                         if (all_code_starts_found())
                         {
                             memory_scan_progress = 1.f;
@@ -152,25 +151,22 @@ static void scan_for_code_starts()
             {
                 set_playback_rate_code_start = (uintptr_t)opcodes;
                 set_playback_rate_original_mov_addr = *(uintptr_t *)(opcodes + 0x6);
-                FR_PTR_INFO("set_playback_rate_code_start", set_playback_rate_code_start);
-                FR_PTR_INFO("set_playback_rate_original_mov_addr", set_playback_rate_original_mov_addr);
             }
 
             if (all_code_starts_found())
             {
-                FR_INFO_FMT("memory scan took: %lfs", ImGui::GetTime() - s);
+                FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
                 memory_scan_progress = 1.f;
                 return;
             }
         }
     }
-    FR_INFO_FMT("memory scan took: %lfs", ImGui::GetTime() - s);
+    FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
     memory_scan_progress = 1.f;
 }
 
 static void try_find_hook_offsets()
 {
-    FR_PTR_INFO("parse_beatmap_code_start", parse_beatmap_code_start);
     if (parse_beatmap_code_start)
     {
         uint8_t *start = (uint8_t *)parse_beatmap_code_start;
@@ -188,50 +184,36 @@ static void try_find_hook_offsets()
         ar_parameter.found = approach_rate_offsets[1] > 0 && approach_rate_offsets[2] > 0;
         cs_parameter.found = circle_size_offsets[2] > 0;
         od_parameter.found = overall_difficulty_offsets[1] > 0;
-        FR_INFO_FMT("ar_parameter.found: %d", ar_parameter.found);
-        FR_INFO_FMT("cs_parameter.found: %d", cs_parameter.found);
-        FR_INFO_FMT("od_parameter.found: %d", od_parameter.found);
     }
-    FR_PTR_INFO("current_scene_code_start", current_scene_code_start);
     if (current_scene_code_start)
     {
         current_scene_offset = pattern::find<current_scene_sig>({ (uint8_t *)current_scene_code_start, 0x800 + 0x18});
         current_scene_ptr = *(Scene **)(current_scene_offset + 0xF + 0x1);
-        FR_PTR_INFO("current_scene_offset", current_scene_offset);
     }
-    FR_PTR_INFO("beatmap_onload_code_start", beatmap_onload_code_start);
     if (beatmap_onload_code_start)
     {
         beatmap_onload_offset = pattern::find<beatmap_onload_sig>({ (uint8_t *)beatmap_onload_code_start, 0x300 + 0x50});
         if (beatmap_onload_offset)
             beatmap_onload_hook_jump_back = beatmap_onload_offset + 0x6;
-        FR_PTR_INFO("beatmap_onload_offset", beatmap_onload_offset);
     }
-    FR_PTR_INFO("selected_song_code_start", selected_song_code_start);
     if (selected_song_code_start)
     {
         selected_song_offset = pattern::find<selected_song_sig>({ (uint8_t *)selected_song_code_start, 0x5A6 + 0x100});
         if (selected_song_offset)
             selected_song_ptr = *(uintptr_t *)(selected_song_offset + 0x8);
-        FR_PTR_INFO("selected_song_ptr", selected_song_ptr);
     }
-    FR_PTR_INFO("audio_time_code_start", audio_time_code_start);
     if (audio_time_code_start)
     {
         audio_time_offset = pattern::find<audio_time_sig>({ (uint8_t *)audio_time_code_start, 0x5A6});
         if (audio_time_offset)
             audio_time_ptr = *(uintptr_t *)(audio_time_offset - 0xA);
-        FR_PTR_INFO("audio_time_ptr", audio_time_ptr);
     }
-    FR_PTR_INFO("osu_manager_code_start", osu_manager_code_start);
     if (osu_manager_code_start)
     {
         osu_manager_offset = pattern::find<osu_manager_sig>({ (uint8_t *)osu_manager_code_start, 0x150});
         if (osu_manager_offset)
             osu_manager_ptr = *(uintptr_t *)(osu_manager_offset - 0x4);
-        FR_PTR_INFO("osu_manager_ptr", osu_manager_ptr);
     }
-    FR_PTR_INFO("binding_manager_code_start", binding_manager_code_start);
     if (binding_manager_code_start)
     {
         binding_manager_offset = pattern::find<binding_manager_sig>({ (uint8_t *)binding_manager_code_start, 0x100});
@@ -243,15 +225,12 @@ static void try_find_hook_offsets()
                     if (internal_memory_read(g_process, unknown_ptr + 0x8, &unknown_ptr))
                         binding_manager_ptr = unknown_ptr + 0x14;
         }
-        FR_PTR_INFO("binding_manager_ptr", binding_manager_ptr);
     }
-    FR_PTR_INFO("selected_replay_code_start", selected_replay_code_start);
     if (selected_replay_code_start)
     {
         selected_replay_offset = pattern::find<selected_replay_sig>({ (uint8_t *)selected_replay_code_start, 0x718 + 0x200});
         if (selected_replay_offset)
             selected_replay_hook_jump_back = selected_replay_offset + 0x7;
-        FR_PTR_INFO("selected_replay_offset", selected_replay_offset);
     }
     if (osu_client_id_code_start)
     {
@@ -259,9 +238,7 @@ static void try_find_hook_offsets()
         {
             client_id_offset = pattern::find<osu_client_id_func_sig>({ (uint8_t *)osu_client_id_code_start, 0xBF});
             uintptr_t client_id_list = **(uintptr_t **)(client_id_offset + osu_client_id_func_sig.size());
-            FR_PTR_INFO("client_id_list", client_id_list);
             uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
-            FR_PTR_INFO("client_id_array", client_id_array);
             uint32_t strings_count = *(uint32_t *)(client_id_array + 0x4);
             for (uint32_t i = 0; i < strings_count; ++i)
             {
@@ -281,7 +258,7 @@ static void try_find_hook_offsets()
         }
         __except (filter(GetExceptionCode(), GetExceptionInformation()))
         {
-            FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
+            FR_ERROR_FMT("Exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
         }
     }
     if (osu_username_code_start)
@@ -300,11 +277,9 @@ static void try_find_hook_offsets()
         }
         __except (filter(GetExceptionCode(), GetExceptionInformation()))
         {
-            FR_INFO_FMT("exception in try_find_hook_offsets: %s", "osu_username_code_start");
+            FR_INFO_FMT("Exception in try_find_hook_offsets: %s", "osu_username_code_start");
         }
     }
-    FR_INFO_FMT("username: %s", osu_username);
-    // FR_PTR_INFO("window_manager_code_start", window_manager_code_start);
     // if (window_manager_code_start)
     // {
     //     window_manager_offset = pattern::find<window_manager_sig>({ (uint8_t *)window_manager_code_start, 0xC0A + 0x50});
@@ -312,17 +287,12 @@ static void try_find_hook_offsets()
     //         window_manager_ptr = *(uintptr_t *)(window_manager_offset + window_manager_sig.size());
     // }
 
-    FR_PTR_INFO("score_multiplier_code_start", score_multiplier_code_start);
     if (score_multiplier_code_start)
     {
         score_multiplier_code_start += 0x2;
         score_multiplier_hook_jump_back = score_multiplier_code_start + 0x5;
     }
 
-    FR_PTR_INFO("update_flashlight_code_start", update_flashlight_code_start);
-    FR_PTR_INFO("check_flashlight_code_start", check_flashlight_code_start);
-
-    FR_PTR_INFO("check_timewarp_code_start", check_timewarp_code_start);
     if (check_timewarp_code_start)
     {
         // D9 E8 DE F1 DE C9
@@ -333,25 +303,20 @@ static void try_find_hook_offsets()
         check_timewarp_hook_2_jump_back = check_timewarp_hook_2 + 0x6;
     }
 
-    // FR_PTR_INFO("update_timing_code_start", update_timing_code_start);
     // if (update_timing_code_start)
     // {
     //     uintptr_t update_timing_ptr_1_offset = pattern::find<update_timing_sig>({ (uint8_t *)update_timing_code_start, 0x1F4 + 0x100});
     //     update_timing_ptr_1 = *(uintptr_t *)(update_timing_code_start + update_timing_ptr_1_offset + update_timing_sig.size());
-    //     FR_PTR_INFO("update_timing_ptr_1", update_timing_ptr_1);
     //     uintptr_t offset_of_something_in_between = pattern::find<update_timing_sig_2>({ (uint8_t *)update_timing_code_start, 0x280 + 0x1F4});
     //     update_timing_ptr_2 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between - 0x24);
     //     update_timing_ptr_3 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between - 0x4);
     //     update_timing_ptr_4 = *(uintptr_t *)(update_timing_code_start + offset_of_something_in_between + 0x39);
     // }
 
-    FR_PTR_INFO("set_playback_rate_code_start", set_playback_rate_code_start);
     if (set_playback_rate_code_start)
     {
         set_playback_rate_jump_back = set_playback_rate_code_start + 0xA;
     }
-
-    FR_PTR_INFO("hom_update_vars_hidden_loc", hom_update_vars_hidden_loc);
 }
 
 void init_hooks()
@@ -367,12 +332,9 @@ void init_hooks()
         memcpy(clr_module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
 
         clr_do([](ICLRRuntimeHost *p)
-               {
-            HRESULT result = p->ExecuteInDefaultAppDomain(clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
-            if (result != S_OK)
-                FR_ERROR_FMT("GetSetPresencePtr call failed, error code: 0x%X", result); });
-
-        FR_PTR_INFO("discord_rich_presence_code_start", discord_rich_presence_code_start);
+        {
+            ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
+        });
 
         if (discord_rich_presence_code_start)
             discord_rich_presence_jump_back = discord_rich_presence_code_start + 0x5;
@@ -383,10 +345,10 @@ void init_hooks()
     {
         nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
         if (nt_user_send_input_ptr == NULL)
-            FR_INFO("NtUserSendInput is null");
+            FR_ERROR("NtUserSendInput is null");
     }
     else
-        FR_INFO("win32u.dll is null");
+        FR_ERROR("win32u.dll is null");
 
     scan_for_code_starts();
     try_find_hook_offsets();
