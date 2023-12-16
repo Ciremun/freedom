@@ -180,7 +180,7 @@ static inline void setup_vsdev_env()
 {
     Find_Result result = find_visual_studio();
 
-    wchar_t *setup_cmd = concat4(L"\"", result.vs_exe_path, L"\" x86 && ", GetCommandLineW());
+    wchar_t *setup_cmd = concat5(L"cmd /k \"\"", result.vs_exe_path, L"\" x86 && ", GetCommandLineW(), L"\"");
     printf("%S\n", setup_cmd);
     _wsystem(setup_cmd);
 

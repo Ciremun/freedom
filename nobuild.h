@@ -1374,10 +1374,11 @@ bool os_file_exists(wchar_t *name) {
     return true;
 }
 
-#define concat2(a, b) concat(a, b, NULL, NULL)
-#define concat3(a, b, c) concat(a, b, c, NULL)
-#define concat4(a, b, c, d) concat(a, b, c, d)
-wchar_t *concat(wchar_t *a, wchar_t *b, wchar_t *c, wchar_t *d) {
+#define concat2(a, b) concat(a, b, NULL, NULL, NULL)
+#define concat3(a, b, c) concat(a, b, c, NULL, NULL)
+#define concat4(a, b, c, d) concat(a, b, c, d, NULL)
+#define concat5(a, b, c, d, e) concat(a, b, c, d, e)
+wchar_t *concat(wchar_t *a, wchar_t *b, wchar_t *c, wchar_t *d, wchar_t *e) {
     // Concatenate up to 4 wide strings together. Allocated with malloc.
     // If you don't like that, use a programming language that actually
     // helps you with using custom allocators. Or just edit the code.
@@ -1391,14 +1392,18 @@ wchar_t *concat(wchar_t *a, wchar_t *b, wchar_t *c, wchar_t *d) {
     auto len_d = 0;
     if (d) len_d = wcslen(d);
 
-    wchar_t *result = (wchar_t *)malloc((len_a + len_b + len_c + len_d + 1) * 2);
+    auto len_e = 0;
+    if (e) len_e = wcslen(e);
+
+    wchar_t *result = (wchar_t *)malloc((len_a + len_b + len_c + len_d + len_e + 1) * 2);
     memcpy(result, a, len_a*2);
     memcpy(result + len_a, b, len_b*2);
 
     if (c) memcpy(result + len_a + len_b, c, len_c * 2);
     if (d) memcpy(result + len_a + len_b + len_c, d, len_d * 2);
+    if (e) memcpy(result + len_a + len_b + len_c + len_d, e, len_e * 2);
 
-    result[len_a + len_b + len_c + len_d] = 0;
+    result[len_a + len_b + len_c + len_d + len_e] = 0;
 
     return result;
 }
