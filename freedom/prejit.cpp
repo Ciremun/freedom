@@ -90,9 +90,9 @@ void save_classmethods_from_addrs()
 {
     clr_do([](ICLRRuntimeHost *p)
     {
-        DWORD ClassMethodsFromAddrsPtr;
+        DWORD ClassMethodsFromAddrsPtr = 0;
         HRESULT result = ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.PreJit", L"GetClassMethodsFromAddrsPtr", L"", &ClassMethodsFromAddrsPtr);
-        if (result == S_OK)
+        if (result == S_OK && ClassMethodsFromAddrsPtr != 0)
         {
             ClassMethod classmethods[classmethod_types_count] = {
                 {.type = ClassMethodType::Load,             .address = beatmap_onload_code_start},
