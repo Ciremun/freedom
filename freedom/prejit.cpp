@@ -158,7 +158,7 @@ bool prejit_all()
 
 bool prejit_all_f()
 {
-    load_classmethods_from_addrs();
+    // load_classmethods_from_addrs();
 
     if (clr_module_path[0] == '\0')
         return false;
