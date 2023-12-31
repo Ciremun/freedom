@@ -6,7 +6,7 @@
 
 #include <thread>
 
-#define FR_VERSION "v0.93.3"
+#define FR_VERSION "v0.93.4"
 
 extern HWND g_hwnd;
 extern HMODULE g_module;
