@@ -1,6 +1,3 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
-
 #include "ui.h"
 
 ImFont *font = 0;
@@ -165,7 +162,7 @@ void update_ui()
     if (memory_scan_progress < .99f)
     {
         static char overlay_buf[32] = {0};
-        ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), "Memory Scan: %.0f%%", memory_scan_progress * 100 + 0.01f);
+        ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), prepared_methods ? "Memory Scan: %.0f%%" : "Preparing Methods: %.0f%%", memory_scan_progress * 100 + 0.01f);
         ImGui::ProgressBar(memory_scan_progress, ImVec2(.0f, .0f), overlay_buf);
     }
 
@@ -380,10 +377,9 @@ void update_ui()
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, discord_rich_presence_state_wchar, wchars_count);
                 discord_rich_presence_state_wchar[bytes_written] = '\0';
-                clr_do([](ICLRRuntimeHost *p)
-                {
-                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_state_wchar, &discord_rich_presence_state_string_ptr);
-                });
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_state_wchar);
+                if (variant_ok(&v))
+                    discord_rich_presence_state_string_ptr = v.intVal;
             }
 
             static char discord_rich_presence_large_text[512] = {0};
@@ -394,10 +390,9 @@ void update_ui()
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, discord_rich_presence_large_text_wchar, wchars_count);
                 discord_rich_presence_large_text_wchar[bytes_written] = '\0';
-                clr_do([](ICLRRuntimeHost *p)
-                {
-                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar, &discord_rich_presence_large_text_string_ptr);
-                });
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar);
+                if (variant_ok(&v))
+                    discord_rich_presence_large_text_string_ptr = v.intVal;
             }
 
             static char discord_rich_presence_small_text[512] = {0};
@@ -408,10 +403,9 @@ void update_ui()
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, discord_rich_presence_small_text_wchar, wchars_count);
                 discord_rich_presence_small_text_wchar[bytes_written] = '\0';
-                clr_do([](ICLRRuntimeHost *p)
-                {
-                    ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar, &discord_rich_presence_small_text_string_ptr);
-                });
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar);
+                if (variant_ok(&v))
+                    discord_rich_presence_small_text_string_ptr = v.intVal;
             }
 
             if (!cfg_discord_rich_presence_enabled)

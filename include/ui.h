@@ -11,7 +11,7 @@
 #include "input.h"
 #include "hitobject.h"
 #include "log.h"
-#include "prejit.h"
+#include "clrhost.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"

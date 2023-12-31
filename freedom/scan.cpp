@@ -1,6 +1,3 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
-
 #include "scan.h"
 
 #define PATTERN_SCAN(out, signature, start) if (!out) out = pattern::find<signature>({ start, signature.size() })
@@ -61,7 +58,7 @@ inline bool all_code_starts_found()
            && hom_update_vars_code_start && hom_update_vars_hidden_loc;
 }
 
-static int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+static int filter(unsigned int code)
 {
     if (code == EXCEPTION_ACCESS_VIOLATION)
     {
@@ -71,6 +68,15 @@ static int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
     {
         return EXCEPTION_CONTINUE_SEARCH;
     };
+}
+
+template <typename T>
+static void try_(const char *name, T func)
+{
+    __try { func(); }
+    __except (filter(GetExceptionCode())) {
+        FR_INFO_FMT("there was an exception in '%s'", name);
+    }
 }
 
 static inline bool is_dispatch_table_id(uint8_t *opcodes)
@@ -89,8 +95,8 @@ static inline bool is_set_playback_rate(uint8_t *opcodes)
 
 static void scan_for_code_starts()
 {
-    if (!prejit_all_f())
-        prejit_all();
+    if (!prepare_all_methods_fast())
+        prepare_all_methods_slow();
 
     double s = ImGui::GetTime();
 
@@ -256,15 +262,14 @@ static void try_find_hook_offsets()
                 }
             }
         }
-        __except (filter(GetExceptionCode(), GetExceptionInformation()))
+        __except (filter(GetExceptionCode()))
         {
             FR_ERROR_FMT("Exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
         }
     }
     if (osu_username_code_start)
     {
-        __try
-        {
+        try_("osu_username_code_start", [](){
             username_offset = pattern::find<osu_username_sig>({ (uint8_t *)osu_username_code_start, 0x14D + 0x20});
             if (username_offset)
             {
@@ -274,11 +279,7 @@ static void try_find_hook_offsets()
                 int username_bytes_written = WideCharToMultiByte(CP_UTF8, 0, username_data, username_length, osu_username, 31, 0, 0);
                 osu_username[username_bytes_written] = '\0';
             }
-        }
-        __except (filter(GetExceptionCode(), GetExceptionInformation()))
-        {
-            FR_INFO_FMT("Exception in try_find_hook_offsets: %s", "osu_username_code_start");
-        }
+        });
     }
     // if (window_manager_code_start)
     // {
@@ -319,40 +320,27 @@ static void try_find_hook_offsets()
     }
 }
 
-void init_hooks()
+static inline void init_nt_user_send_input_patch()
 {
-    DWORD module_path_length = GetModuleFileNameW(g_module, clr_module_path, MAX_PATH * 2);
-    if (module_path_length != 0)
-    {
-        DWORD backslash_index = module_path_length - 1;
-        while (backslash_index)
-            if (clr_module_path[--backslash_index] == '\\')
-                break;
-
-        memcpy(clr_module_path + backslash_index + 1, L"prejit.dll", 10 * sizeof(WCHAR) + 1);
-
-        clr_do([](ICLRRuntimeHost *p)
-        {
-            ExecuteInDefaultAppDomain(p, clr_module_path, L"Freedom.SetPresence", L"GetSetPresencePtr", L"", &discord_rich_presence_code_start);
-        });
-
-        if (discord_rich_presence_code_start)
-            discord_rich_presence_jump_back = discord_rich_presence_code_start + 0x5;
-    }
-
     HMODULE win32u = GetModuleHandle(L"win32u.dll");
     if (win32u != NULL)
     {
         nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
         if (nt_user_send_input_ptr == NULL)
-            FR_ERROR("NtUserSendInput is null");
+            FR_INFO("[!] NtUserSendInput is null");
     }
     else
-        FR_ERROR("win32u.dll is null");
+        FR_INFO("[!] win32u.dll is null");
+}
 
+void init_hooks()
+{
+    load_csharp_assembly() ? FR_INFO("[+] load_csharp_assembly") : FR_INFO("[!] load_csharp_assembly");
+    init_nt_user_send_input_patch();
     scan_for_code_starts();
     try_find_hook_offsets();
-    // save_classmethods_from_addrs();
+
+    try_("get_classmethods_from_addrs", [](){ get_classmethods_from_addrs(); });
 
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();

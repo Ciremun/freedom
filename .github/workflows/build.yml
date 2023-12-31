@@ -22,14 +22,12 @@ jobs:
       - name: build
         shell: cmd
         run: |
-          cl nobuild.c && nobuild.exe all
+          cl nobuild.c && nobuild.exe
       - name: freedom
         uses: actions/upload-artifact@v3
         with:
           name: freedom
           path: |
             freedom_injector.exe
-            freedom_standalone.exe
             freedom.dll
-            prejit.dll
             config.ini

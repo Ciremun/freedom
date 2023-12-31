@@ -11,7 +11,7 @@
 #include "signatures.h"
 #include "hitobject.h"
 #include "mem.h"
-#include "prejit.h"
+#include "clrhost.h"
 
 #include "features/relax.h"
 #include "features/aimbot.h"

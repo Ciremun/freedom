@@ -111,8 +111,18 @@ static void build_standalone()
         STANDALONE_DIRS);
 }
 
+static inline void bake_utils_dll()
+{
+    bool use_base85_encoding = false;
+    bool use_compression = false;
+    bool use_static = true;
+    binary_to_compressed_c("utils.dll", PATH("freedom", "baked_utils_dll.c"), "utils_dll", use_base85_encoding, use_compression, use_static);
+}
+
 static void build_freedom_dll()
 {
+    CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "freedom/utils.cs");
+    bake_utils_dll();
     async_obj_foreach_file_in_dirs(DLL_DIRS, NULL);
     OBJS_FOR_DIRS(
         objs, {
@@ -127,7 +137,6 @@ static void build_freedom_dll()
         },
         DLL_DIRS);
     CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
-    CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:prejit.dll", "freedom/prejit.cs");
 }
 
 static void build()

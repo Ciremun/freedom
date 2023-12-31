@@ -10,6 +10,12 @@ Hook<Detour32> DiscordRichPresenceHook;
 
 void init_discord_rpc()
 {
+    VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetSetPresencePtr");
+    if (variant_ok(&v))
+    {
+        discord_rich_presence_code_start = v.intVal;
+        discord_rich_presence_jump_back = discord_rich_presence_code_start + 0x5;
+    }
     if (discord_rich_presence_code_start)
     {
         DiscordRichPresenceHook = Hook<Detour32>(discord_rich_presence_code_start, (BYTE *)set_discord_rich_presence, 5);
