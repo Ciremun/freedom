@@ -1,5 +1,5 @@
 #include "clrhost.h"
-#include "baked_utils_dll.c"
+#include "baked_utils_dll.h"
 
 #import "mscorlib.tlb" auto_rename
 using namespace mscorlib;

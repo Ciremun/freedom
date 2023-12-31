@@ -374,6 +374,7 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_state_wchar[512] = {0};
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_state_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, discord_rich_presence_state_wchar, wchars_count);
                 discord_rich_presence_state_wchar[bytes_written] = '\0';
@@ -387,6 +388,7 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_large_text_wchar[512] = {0};
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_large_text_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, discord_rich_presence_large_text_wchar, wchars_count);
                 discord_rich_presence_large_text_wchar[bytes_written] = '\0';
@@ -400,6 +402,7 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_small_text_wchar[512] = {0};
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_small_text_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, discord_rich_presence_small_text_wchar, wchars_count);
                 discord_rich_presence_small_text_wchar[bytes_written] = '\0';

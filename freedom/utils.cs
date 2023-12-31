@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Freedom
 {
@@ -34,6 +35,8 @@ namespace Freedom
             new ClassMethod {c = "#=zE0VDZfwJEH3z6D3XGqmTkDRFkwfG", m = "", t = ClassMethodType.UpdateVariables},
         };
 
+        static Dictionary<String, GCHandle> CSharpStringHandles = new Dictionary<String, GCHandle>();
+
         public static int GetSetPresencePtr()
         {
             return (int)Assembly.GetEntryAssembly().GetType("DiscordRPC.DiscordRpcClient").GetMethod("SetPresence").MethodHandle.GetFunctionPointer();
@@ -41,8 +44,22 @@ namespace Freedom
 
         public static int GetCSharpStringPtr(String s)
         {
+            if (CSharpStringHandles.ContainsKey(s))
+                return (int)(CSharpStringHandles[s].AddrOfPinnedObject() - 0x8);
             GCHandle handle = GCHandle.Alloc(s, GCHandleType.Pinned);
+            CSharpStringHandles.Add(s, handle);
             return (int)(handle.AddrOfPinnedObject() - 0x8);
+        }
+
+        public static int FreeCSharpString(String s)
+        {
+            if (CSharpStringHandles.ContainsKey(s))
+            {
+                CSharpStringHandles[s].Free();
+                CSharpStringHandles.Remove(s);
+                return 1;
+            }
+            return 0;
         }
 
         public static int SetClassMethod(String classmethod)
@@ -68,7 +85,6 @@ namespace Freedom
                 }
             }
             catch (Exception e) {
-                Console.WriteLine(e);
                 return 0;
             }
             return 1;
@@ -133,7 +149,7 @@ namespace Freedom
                     }
                 }
             }
-            catch (Exception e) { Console.WriteLine(e); }
+            catch (Exception e) {}
             return 1;
         }
 
@@ -166,7 +182,7 @@ namespace Freedom
                     if (m == null)
                         m = c.GetMethod(cm.m, BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                     System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
-                } catch (Exception e) { Console.WriteLine(e); ret = 0; }
+                } catch (Exception e) { ret = 0; }
             }
             return ret;
         }

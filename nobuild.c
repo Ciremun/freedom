@@ -116,7 +116,7 @@ static inline void bake_utils_dll()
     bool use_base85_encoding = false;
     bool use_compression = false;
     bool use_static = true;
-    binary_to_compressed_c("utils.dll", PATH("freedom", "baked_utils_dll.c"), "utils_dll", use_base85_encoding, use_compression, use_static);
+    binary_to_compressed_c("utils.dll", PATH("include", "baked_utils_dll.h"), "utils_dll", use_base85_encoding, use_compression, use_static);
 }
 
 static void build_freedom_dll()
