@@ -43,7 +43,7 @@ void BeatmapData::clear()
 
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 {
-    FR_INFO("New Beatmap Detected");
+    FR_INFO("[+] New Beatmap Detected");
 
     beatmap_data.clear();
 
@@ -149,6 +149,7 @@ static void mods_to_string(Mods &mods, char *buffer)
 
 bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 {
+    FR_INFO("[+] New Replay Detected");
     replay.clear();
 
     extern char song_name_u8[256];
@@ -274,7 +275,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
         }
         else
         {
-            FR_INFO("Replay No Compressed Data Found");
+            FR_INFO("[!] Replay No Compressed Data Found");
             return false;
         }
     }

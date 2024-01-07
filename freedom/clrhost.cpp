@@ -263,8 +263,16 @@ bool load_csharp_assembly()
 	FR_INFO(" --- Execute .NET Module ---");
 	_MethodInfoPtr pMethodInfo = NULL;
 	if (auto pDefaultAppDomain = getDefaultDomain(pRuntimeHost))
+    {
 		if (assembly_ptr = getAssembly_fromBinary(pDefaultAppDomain, LPBYTE(utils_dll_data), utils_dll_size))
+        {
+            FR_INFO("--- Done! ---");
             return true;
+        }
+        FR_INFO("[!] --- Get Assembly From Binary Failed ---");
+        return false;
+    }
+    FR_INFO("[!] --- Get Default Domain Failed ---");
     return false;
 }
 
@@ -312,14 +320,14 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
 
     std::string type_name_s = get_utf8(type_name);
     std::string method_name_s = get_utf8(method_name);
-    FR_INFO_FMT(" --- Invoke %s::%s ---", type_name_s.c_str(), method_name_s.c_str());
 
     _TypePtr type_ptr;
     BSTR type_name_b = SysAllocString(type_name);
     if (type_ptr = assembly_ptr->GetType_2(type_name_b))
-        FR_INFO("[+] GetType");
+    { /* FR_INFO("[+] GetType"); */ }
 	else
     {
+        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
         FR_INFO("[!] GetType");
         SysFreeString(type_name_b);
 		return variant;
@@ -328,9 +336,10 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
     _MethodInfoPtr method_ptr;
     BSTR method_name_b = SysAllocString(method_name);
     if (method_ptr = type_ptr->GetMethod_2(method_name_b, (BindingFlags)(BindingFlags_Public | BindingFlags_Static)))
-        FR_INFO("[+] GetMethod");
+    { /* FR_INFO("[+] GetMethod"); */ }
 	else
     {
+        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
         FR_INFO("[!] GetMethod");
         SysFreeString(type_name_b);
         SysFreeString(method_name_b);
@@ -339,12 +348,15 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
 
     HRESULT hr = method_ptr->raw_Invoke_3(variant, params, &variant);
     if (FAILED(hr))
+    {
+        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
         FR_INFO_FMT("[!] Invoke (0x%X)", hr);
-    else
-	    FR_INFO("[+] Invoke");
+    }
 
     SysFreeString(type_name_b);
     SysFreeString(method_name_b);
+
+    FR_INFO_FMT("[+] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
 
     return variant;
 }

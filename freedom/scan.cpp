@@ -331,7 +331,7 @@ static inline void init_nt_user_send_input_patch()
 static inline void init_hooks_wrapper()
 {
     init_nt_user_send_input_patch();
-    try_("load_csharp_assembly", [](){ load_csharp_assembly() ? FR_INFO("[+] load_csharp_assembly") : FR_INFO("[!] load_csharp_assembly"); });
+    try_("load_csharp_assembly", [](){ load_csharp_assembly(); });
     try_("scan_for_code_starts", [](){ scan_for_code_starts(); });
     try_("try_find_hook_offsets", [](){ try_find_hook_offsets(); });
 
