@@ -454,7 +454,10 @@ void update_ui()
             if (all_found)
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
             if (ImGui::Button("Rescan Memory"))
+            {
+                destroy_hooks_except_swap();
                 CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
+            }
             if (all_found)
                 ImGui::PopItemFlag();
         }
