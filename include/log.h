@@ -1,6 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "imgui.h"
+
+#include "colors.h"
 
 #ifdef FR_LOG_TO_CONSOLE
 #define FR_ERROR(message) fprintf(stderr, "ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
@@ -16,7 +20,7 @@
 
 struct ImGuiLogger
 {
-    ImGuiTextBuffer buf;
+    std::vector<ImGuiTextBuffer *> lines;
     bool ScrollToBottom = true;
     ImVec2 size = ImVec2(.0f, .0f);
 

@@ -62,11 +62,13 @@ static inline std::wstring get_utf16(const std::string &str)
 static inline std::string get_utf8_for_classmethod(wchar_t *class_, wchar_t *method, ClassMethodType type)
 {
     std::wstring colon_colon(L"::");
-    std::wstring final_string = std::wstring(class_) + colon_colon +
+    if (!class_ || !method)
+        return get_utf8(colon_colon);
+
+    std::wstring class_method_type = std::wstring(class_) + colon_colon +
                                 std::wstring(method) + colon_colon +
                                 std::to_wstring((int32_t)type);
-    std::string ret = get_utf8(final_string);
-    return ret;
+    return get_utf8(class_method_type);
 }
 
 void get_classmethods_from_addrs()
@@ -103,8 +105,6 @@ void get_classmethods_from_addrs()
         cm_updatevariables_s =  get_utf8_for_classmethod(classmethods[6].class_, classmethods[6].method, classmethods[6].type);
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
-    else
-        FR_INFO("[!] get_classmethods_from_addrs");
     SafeArrayDestroy(params);
 }
 
@@ -237,10 +237,10 @@ static inline _AssemblyPtr getAssembly_fromBinary(_AppDomainPtr pDefaultAppDomai
 	else FR_INFO("[+] SafeArrayUnaccessData");
 
 	if (pAssembly = pDefaultAppDomain->Load_3(pSafeArray))
-        FR_INFO("[+] Load_3");
+        FR_INFO("[+] Load");
 	else
     {
-		FR_INFO("[!] Load_3");
+		FR_INFO("[!] Load");
         return NULL;
     }
     if (FAILED(SafeArrayDestroy(pSafeArray))) {
@@ -317,10 +317,10 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
     _TypePtr type_ptr;
     BSTR type_name_b = SysAllocString(type_name);
     if (type_ptr = assembly_ptr->GetType_2(type_name_b))
-        FR_INFO("[+] GetType_2");
+        FR_INFO("[+] GetType");
 	else
     {
-        FR_INFO("[!] GetType_2");
+        FR_INFO("[!] GetType");
         SysFreeString(type_name_b);
 		return variant;
     }
@@ -328,10 +328,10 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
     _MethodInfoPtr method_ptr;
     BSTR method_name_b = SysAllocString(method_name);
     if (method_ptr = type_ptr->GetMethod_2(method_name_b, (BindingFlags)(BindingFlags_Public | BindingFlags_Static)))
-        FR_INFO("[+] GetMethod_2");
+        FR_INFO("[+] GetMethod");
 	else
     {
-        FR_INFO("[!] GetMethod_2");
+        FR_INFO("[!] GetMethod");
         SysFreeString(type_name_b);
         SysFreeString(method_name_b);
 		return variant;
@@ -339,9 +339,9 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
 
     HRESULT hr = method_ptr->raw_Invoke_3(variant, params, &variant);
     if (FAILED(hr))
-        FR_INFO_FMT("[!] raw_Invoke_3 (0x%X)", hr);
+        FR_INFO_FMT("[!] Invoke (0x%X)", hr);
     else
-	    FR_INFO("[+] raw_Invoke_3");
+	    FR_INFO("[+] Invoke");
 
     SysFreeString(type_name_b);
     SysFreeString(method_name_b);

@@ -328,12 +328,12 @@ static inline void init_nt_user_send_input_patch()
         FR_INFO("[!] win32u.dll is null");
 }
 
-void init_hooks()
+static inline void init_hooks_wrapper()
 {
-    load_csharp_assembly() ? FR_INFO("[+] load_csharp_assembly") : FR_INFO("[!] load_csharp_assembly");
     init_nt_user_send_input_patch();
-    scan_for_code_starts();
-    try_find_hook_offsets();
+    try_("load_csharp_assembly", [](){ load_csharp_assembly() ? FR_INFO("[+] load_csharp_assembly") : FR_INFO("[!] load_csharp_assembly"); });
+    try_("scan_for_code_starts", [](){ scan_for_code_starts(); });
+    try_("try_find_hook_offsets", [](){ try_find_hook_offsets(); });
 
     try_("get_classmethods_from_addrs", [](){ get_classmethods_from_addrs(); });
 
@@ -362,6 +362,11 @@ void init_hooks()
         if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
             SceneHook.Enable();
     }
+}
+
+void init_hooks()
+{
+    try_("init_hooks_wrapper", [](){ init_hooks_wrapper(); });
 }
 
 void enable_nt_user_send_input_patch()
