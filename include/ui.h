@@ -44,6 +44,7 @@ enum class MenuTab
 
 extern char song_name_u8[256];
 extern ImGuiLogger debug_log;
+extern bool show_debug_log_window;
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void init_ui();
@@ -53,3 +54,4 @@ void init_imgui_fonts();
 void update_ui();
 void destroy_ui();
 void parameter_slider(uintptr_t selected_song_ptr, Parameter *p);
+void draw_debug_log();

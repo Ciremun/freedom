@@ -84,7 +84,7 @@ namespace Freedom
                     }
                 }
             }
-            catch (Exception e) {
+            catch (Exception) {
                 return 0;
             }
             return 1;
@@ -149,7 +149,7 @@ namespace Freedom
                     }
                 }
             }
-            catch (Exception e) {}
+            catch (Exception) {}
             return 1;
         }
 
@@ -182,7 +182,7 @@ namespace Freedom
                     if (m == null)
                         m = c.GetMethod(cm.m, BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                     System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
-                } catch (Exception e) { ret = 0; }
+                } catch (Exception) { ret = 0; }
             }
             return ret;
         }

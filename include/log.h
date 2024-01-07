@@ -4,12 +4,10 @@
 
 #ifdef FR_LOG_TO_CONSOLE
 #define FR_ERROR(message) fprintf(stderr, "ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
-#define FR_ERROR_FMT(fmt, ...) fprintf(stderr, "ERROR: %s:%d: " fmt "\n", __FUNCSIG__, __LINE__, __VA_ARGS__)
 #define FR_INFO(message) fprintf(stdout, "%s\n", message)
 #define FR_INFO_FMT(fmt, ...) fprintf(stdout, fmt "\n", __VA_ARGS__)
 #else
 #define FR_ERROR(message) debug_log.add("ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
-#define FR_ERROR_FMT(fmt, ...) debug_log.add("ERROR: %s:%d: " fmt "\n", __FUNCSIG__, __LINE__, __VA_ARGS__)
 #define FR_INFO(message) debug_log.add("%s\n", message)
 #define FR_INFO_FMT(fmt, ...) debug_log.add(fmt "\n", __VA_ARGS__)
 #endif // NDEBUG

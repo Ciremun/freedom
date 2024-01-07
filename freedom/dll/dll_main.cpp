@@ -40,6 +40,37 @@ void unload_dll()
     std::thread(unload_module).detach();
 }
 
+static inline void imgui_new_frame()
+{
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    process_hitobject();
+
+    if (GetAsyncKeyState(VK_F11) & 1)
+    {
+        cfg_mod_menu_visible = !cfg_mod_menu_visible;
+        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    }
+
+    draw_debug_log();
+    ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
+
+    if (!cfg_mod_menu_visible)
+    {
+        if (!show_debug_log_window)
+            ImGui::GetIO().MouseDrawCursor = false;
+        goto frame_end;
+    }
+
+    update_ui();
+
+frame_end:
+
+    ImGui::EndFrame();
+    ImGui::Render();
+}
+
 HRESULT __stdcall d3d9_update(IDirect3DDevice9 *pDevice)
 {
     if (!init)
@@ -54,30 +85,7 @@ HRESULT __stdcall d3d9_update(IDirect3DDevice9 *pDevice)
     }
 
     ImGui_ImplDX9_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
-    process_hitobject();
-
-    if (GetAsyncKeyState(VK_F11) & 1)
-    {
-        cfg_mod_menu_visible = !cfg_mod_menu_visible;
-        if (!cfg_mod_menu_visible)
-            ImGui::GetIO().MouseDrawCursor = false;
-        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-    }
-
-    if (!cfg_mod_menu_visible)
-        goto frame_end;
-
-    update_ui();
-
-    ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
-
-frame_end:
-
-    ImGui::EndFrame();
-    ImGui::Render();
+    imgui_new_frame();
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
     return wglSwapBuffersGateway(pDevice);
@@ -94,40 +102,19 @@ __declspec(naked) void opengl_update()
         hDc = wglGetCurrentDC();
         g_hwnd = WindowFromDC(hDc);
 
-        // AllocConsole();
-        // FILE *f;
-        // freopen_s(&f, "CONOUT$", "w", stdout);
-        // freopen_s(&f, "CONOUT$", "w", stderr);
+#ifdef FR_LOG_TO_CONSOLE
+        AllocConsole();
+        FILE *f;
+        freopen_s(&f, "CONOUT$", "w", stdout);
+        freopen_s(&f, "CONOUT$", "w", stderr);
+#endif // FR_LOG_TO_CONSOLE
 
         init_ui();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));
     }
 
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
-    process_hitobject();
-
-    if (GetAsyncKeyState(VK_F11) & 1)
-    {
-        cfg_mod_menu_visible = !cfg_mod_menu_visible;
-        if (!cfg_mod_menu_visible)
-            ImGui::GetIO().MouseDrawCursor = false;
-        ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-    }
-
-    if (!cfg_mod_menu_visible)
-        goto frame_end;
-
-    update_ui();
-
-    ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
-
-frame_end:
-
-    ImGui::EndFrame();
-    ImGui::Render();
+    imgui_new_frame();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     __asm {

@@ -240,8 +240,7 @@ static void try_find_hook_offsets()
     }
     if (osu_client_id_code_start)
     {
-        __try
-        {
+        try_("osu_client_id_code_start", [](){
             client_id_offset = pattern::find<osu_client_id_func_sig>({ (uint8_t *)osu_client_id_code_start, 0xBF});
             uintptr_t client_id_list = **(uintptr_t **)(client_id_offset + osu_client_id_func_sig.size());
             uintptr_t client_id_array = *(uintptr_t *)(client_id_list + 0x4);
@@ -261,11 +260,7 @@ static void try_find_hook_offsets()
                     }
                 }
             }
-        }
-        __except (filter(GetExceptionCode()))
-        {
-            FR_ERROR_FMT("Exception in try_find_hook_offsets: %s", "osu_client_id_code_start");
-        }
+        });
     }
     if (osu_username_code_start)
     {

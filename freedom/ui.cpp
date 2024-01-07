@@ -2,6 +2,7 @@
 
 ImFont *font = 0;
 char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
+bool show_debug_log_window = false;
 
 HHOOK oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -71,7 +72,7 @@ inline void init_imgui_fonts()
     config.PixelSnapH = true;
     config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
 
-    for (int size = 34; size > 16; size -= 2)
+    for (int size = 40; size >= 10; size -= 2)
     {
         config.SizePixels = size;
         ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
@@ -474,11 +475,7 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Debug)
         {
-            ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
-            ImGui::Begin("Debug Log", NULL);
-            debug_log.draw();
-            ImGui::End();
+            ImGui::Checkbox("Show Debug Log", &show_debug_log_window);
             if (ImGui::CollapsingHeader("Game", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("Audio Time: %d", audio_time_ptr ? *(int32_t *)audio_time_ptr : 0);
@@ -582,11 +579,11 @@ void update_ui()
                 ImGui::Text("set_playback_rate_jump_back: %08X", set_playback_rate_jump_back);
             }
         }
-        ImGui::End();
+        ImGui::End(); // tab_content
         ImGui::EndPopup();
     }
 
-    ImGui::End();
+    ImGui::End(); // freedom
     ImGui::PopFont();
 }
 
@@ -652,4 +649,18 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
         ImGui::PopItemFlag();
     }
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
+}
+
+void draw_debug_log()
+{
+    if (show_debug_log_window)
+    {
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
+        ImGui::PushFont(font);
+        ImGui::Begin("Debug Log", NULL);
+        debug_log.draw();
+        ImGui::End();
+        ImGui::PopFont();
+    }
 }
