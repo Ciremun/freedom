@@ -145,6 +145,7 @@ int main(int, char**)
                 memory_scan_progress = 1.f;
         }
 
+        draw_debug_log();
         update_ui();
 
         ImGui::ShowStyleEditor();
