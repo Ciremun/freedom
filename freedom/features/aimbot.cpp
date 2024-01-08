@@ -1,7 +1,5 @@
 #include "features/aimbot.h"
 
-static bool target_first_circle = true;
-
 static inline Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos(.0f, .0f);
@@ -70,9 +68,4 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         }
         angle > 2 * PI ? angle = 0 : angle += cfg_spins_per_minute / three_pi * ImGui::GetIO().DeltaTime;
     }
-}
-
-void aimbot_on_beatmap_load()
-{
-    target_first_circle = true;
 }

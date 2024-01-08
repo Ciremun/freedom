@@ -32,7 +32,6 @@ void process_hitobject()
     {
         parse_beatmap(osu_manager_ptr, current_beatmap);
 
-        aimbot_on_beatmap_load();
         relax_on_beatmap_load();
         replay_on_beatmap_load();
         unmod_flashlight_on_beatmap_load();
