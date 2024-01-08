@@ -1,6 +1,6 @@
 # Freedom
 
-freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
+Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
 ![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
 
@@ -77,3 +77,21 @@ Alternatively, bootstrap nobuild
     cmd.exe
     vcvarsall x86
     cl nobuild.c && nobuild.exe
+
+### Optional nobuild flags
+
+Build and run standalone Freedom with debug symbols:
+
+    nobuild.exe debug standalone run
+
+Standalone Freedom is currently used for ui debugging as an alternative to unloading the dll.  
+It doesn't function as an external, [features](#features) will not work.
+
+|    Flag     |          Description          |
+|:-----------:|:-----------------------------:|
+| all         | Build All                     |
+| No Flags    | Freedom Only                  |
+| standalone  | Standalone Only               |
+| run         | Run standalone after build    |
+| rebuild     | Update headers / Rebuild all  |
+| debug       | Symbols, Disable Optimizations|
