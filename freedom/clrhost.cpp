@@ -128,13 +128,17 @@ static inline bool set_classmethods_from_strings()
     v = invoke_csharp_method(L"Freedom.Utils", L"SetClassMethod", cm_updatevariables_ws.c_str());  RETURN_IF_FALSE();
 #undef RETURN_IF_FALSE
     ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+    FR_INFO("[+] All classmethods are set");
     return true;
 }
 
 bool prepare_all_methods_fast()
 {
     if (!set_classmethods_from_strings())
+    {
+        FR_INFO("[!] Failed to set some classmethods, fallback to slow method");
         return false;
+    }
     VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"prepare_all_methods_fast");
     if (variant_ok(&v) && v.intVal == 1)
     {

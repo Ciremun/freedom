@@ -83,14 +83,11 @@ void process_hitobject()
             update_relax(circle, audio_time);
 
             // NOTE(Ciremun): Advance HitObject Index
-            // Aimbot: Aim at the next circle
             if (audio_time + od_check_ms >= circle.end_time)
             {
                 current_beatmap.hit_object_idx++;
                 if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
                     current_beatmap.ready = false;
-                else
-                    advance_aimbot();
             }
         }
     }

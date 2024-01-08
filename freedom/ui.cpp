@@ -254,11 +254,11 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 0.001f, 0.5f, "Cursor Speed: %.3f");
+            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 50.f, 500.f, "Cursor Speed: %.0f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));
-            ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 477, "Spins Per Minute: %d");
+            ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 600, "Spins Per Minute: %d");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
