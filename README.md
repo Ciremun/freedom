@@ -11,7 +11,7 @@ Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works 
 
 ## Usage
 
-run osu!, then run your favorite injector, you may use the supplied one (freedom.exe).  
+run osu!, then run your favorite injector, you may use the supplied one (freedom_injector.exe).  
 mod ui should appear in top left corner of the osu! window, see [controls](#controls).  
 
 ### Controls
@@ -37,7 +37,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Replay Aim Only
     * Leaderboard Replay Download
 
-- Aimbot (*a bit buggy!*):
+- Aimbot:
     * Cursor Speed
     * Spins Per Minute
 
