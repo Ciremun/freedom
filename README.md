@@ -57,7 +57,9 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 ## Build
 
-### Required Visual Studio Components For Building
+It shouldn't be necessary to build the project unless you're debugging or modifying the source code  
+
+### Requirements
 
 * MSVC x64/x86 build tools
 * Windows SDK
@@ -65,12 +67,12 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 ![installer_preview](https://user-images.githubusercontent.com/38132413/199610177-89f05acc-c1ff-4656-9839-2abf66ffd126.png)  
 
-### Run ready-to-use binary
+### Execute nobuild
 
     cmd.exe
     nobuild.exe
 
-### OR Bootstrap the nobuild executable
+Alternatively, bootstrap nobuild
 
     cmd.exe
     vcvarsall x86
