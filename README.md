@@ -53,7 +53,8 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 - Misc:
     * Set Font Size
-    * Automatically Detects Beatmap, Saves Mod Settings
+    * Set Discord RPC Status Text
+    * Unload DLL
 
 ## Build
 
