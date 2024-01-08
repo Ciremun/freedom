@@ -3,13 +3,13 @@ on:
   push:
     paths:
     - 'freedom/**'
-    - 'imgui/**'
     - 'include/**'
+    - 'vendor/**'
   workflow_dispatch:
     paths:
       - 'freedom/**'
-      - 'imgui/**'
       - 'include/**'
+      - 'vendor/**'
 
 jobs:
   windows-msvc:
