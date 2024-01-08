@@ -1,6 +1,9 @@
 #define NOBUILD_IMPLEMENTATION
 #include "nobuild.h"
 
+#define STB_SPRINTF_IMPLEMENTATION
+#include "vendor/imgui/stb_sprintf.h"
+
 #define DLL_DIRS "freedom/", "freedom/dll/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/"
 #define STANDALONE_DIRS "freedom/", "freedom/standalone/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/", "vendor/imgui/backends/standalone/"
 
@@ -47,6 +50,7 @@ int rebuild_flag = 0;
 int run_flag = 0;
 int standalone_flag = 0;
 int all_flag = 0;
+char define_commit_hash[32] = {0};
 
 static void remove_object_files()
 {
@@ -67,7 +71,11 @@ static void async_obj_foreach_file_in_dir(Pid *proc, size_t *proc_count, Cstr di
             if (!PATH_EXISTS(obj) ||
                 (rebuild_flag || is_path1_modified_after_path2(src, obj)))
             {
-                Cstr_Array line = debug_flag ? cstr_array_make("cl", MSVC_DEBUG_FLAGS, src, "/c", NULL) : cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
+                Cstr_Array line;
+                if (define_commit_hash[0] != '\0')
+                    line = debug_flag ? cstr_array_make("cl", define_commit_hash, MSVC_DEBUG_FLAGS, src, "/c", NULL) : cstr_array_make("cl", define_commit_hash, MSVC_RELEASE_FLAGS, src, "/c", NULL);
+                else
+                    line = debug_flag ? cstr_array_make("cl", MSVC_DEBUG_FLAGS, src, "/c", NULL) : cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
                 Cmd cmd = {.line = line};
                 INFO("CMD: %s", cmd_show(cmd));
                 proc[(*proc_count)++] = cmd_run_async(cmd, NULL, NULL);
@@ -119,6 +127,53 @@ static inline void bake_utils_dll()
     binary_to_compressed_c("utils.dll", PATH("include", "baked_utils_dll.h"), "utils_dll", use_base85_encoding, use_compression, use_static);
 }
 
+static inline void set_git_commit_hash()
+{
+    HANDLE hChildStd_OUT_Rd = NULL;
+    HANDLE hChildStd_OUT_Wr = NULL;
+
+    SECURITY_ATTRIBUTES saAttr;
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    CreatePipe(&hChildStd_OUT_Rd, &hChildStd_OUT_Wr, &saAttr, 0);
+    SetHandleInformation(hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0);
+
+    TCHAR szCmdline[] = TEXT("git rev-parse --short HEAD");
+    PROCESS_INFORMATION piProcInfo;
+    STARTUPINFO siStartInfo;
+
+    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+
+    siStartInfo.cb = sizeof(STARTUPINFO);
+    siStartInfo.hStdError = hChildStd_OUT_Wr;
+    siStartInfo.hStdOutput = hChildStd_OUT_Wr;
+    siStartInfo.hStdInput = NULL;
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+    CreateProcess(NULL, szCmdline, NULL, NULL, TRUE, 0, NULL, NULL, &siStartInfo, &piProcInfo);
+
+    WaitForSingleObject(piProcInfo.hProcess, INFINITE);
+
+    DWORD exit_status;
+    GetExitCodeProcess(piProcInfo.hProcess, &exit_status);
+
+    CloseHandle(piProcInfo.hProcess);
+    CloseHandle(piProcInfo.hThread);
+    CloseHandle(hChildStd_OUT_Wr);
+
+    if (exit_status == 0)
+    {
+        DWORD dwRead;
+        char git_commit_hash[16] = {0};
+        ReadFile(hChildStd_OUT_Rd, git_commit_hash, 7, &dwRead, NULL);
+        if (dwRead > 0)
+            stbsp_snprintf(define_commit_hash, sizeof(define_commit_hash), "/DGIT_COMMIT_HASH=%s", git_commit_hash);
+    }
+}
+
 static void build_freedom_dll()
 {
     if (!PATH_EXISTS("utils.dll") || rebuild_flag || is_path1_modified_after_path2("freedom/utils.cs", "utils.dll"))
@@ -147,6 +202,7 @@ static void build_freedom_dll()
 
 static void build()
 {
+    set_git_commit_hash();
     if (all_flag)
     {
         build_freedom_dll();
