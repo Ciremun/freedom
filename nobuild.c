@@ -1,11 +1,11 @@
 #define NOBUILD_IMPLEMENTATION
 #include "nobuild.h"
 
-#define DLL_DIRS "freedom/", "freedom/dll/", "freedom/features/", "imgui/", "imgui/backends/"
-#define STANDALONE_DIRS "freedom/", "freedom/standalone/", "freedom/features/", "imgui/", "imgui/backends/", "imgui/backends/standalone/"
+#define DLL_DIRS "freedom/", "freedom/dll/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/"
+#define STANDALONE_DIRS "freedom/", "freedom/standalone/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/", "vendor/imgui/backends/standalone/"
 
 #define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_DEFINE_MATH_OPERATORS", "/DIMGUI_USE_STB_SPRINTF", "/std:c++latest"
-#define MSVC_INCLUDE_FLAGS "/Iinclude", "/Iimgui", "/Iimgui/backends", "/Iimgui/backends/standalone", "/Ivendor/GLFW/include"
+#define MSVC_INCLUDE_FLAGS "/Iinclude", "/Ivendor/imgui", "/Ivendor/imgui/backends", "/Ivendor/imgui/backends/standalone", "/Ivendor/GLFW/include"
 
 #define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", MSVC_INCLUDE_FLAGS, "/O2", "/MT", "/GL"
 #define MSVC_DEBUG_FLAGS MSVC_COMMON_FLAGS, MSVC_INCLUDE_FLAGS, "/Od", "/Z7", "/MTd", "/FS"
@@ -59,21 +59,21 @@ static void remove_object_files()
 static void async_obj_foreach_file_in_dir(Pid *proc, size_t *proc_count, Cstr directory)
 {
     FOREACH_FILE_IN_DIR(file, directory,
-                        {
-                            if (ENDS_WITH(file, ".cpp"))
-                            {
-                                Cstr src = CONCAT(directory, strdup(file));
-                                Cstr obj = CONCAT(NOEXT(file), ".obj");
-                                if (!PATH_EXISTS(obj) ||
-                                    (rebuild_flag || is_path1_modified_after_path2(src, obj)))
-                                {
-                                    Cstr_Array line = debug_flag ? cstr_array_make("cl", MSVC_DEBUG_FLAGS, src, "/c", NULL) : cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
-                                    Cmd cmd = {.line = line};
-                                    INFO("CMD: %s", cmd_show(cmd));
-                                    proc[(*proc_count)++] = cmd_run_async(cmd, NULL, NULL);
-                                }
-                            }
-                        });
+    {
+        if (ENDS_WITH(file, ".cpp"))
+        {
+            Cstr src = CONCAT(directory, strdup(file));
+            Cstr obj = CONCAT(NOEXT(file), ".obj");
+            if (!PATH_EXISTS(obj) ||
+                (rebuild_flag || is_path1_modified_after_path2(src, obj)))
+            {
+                Cstr_Array line = debug_flag ? cstr_array_make("cl", MSVC_DEBUG_FLAGS, src, "/c", NULL) : cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
+                Cmd cmd = {.line = line};
+                INFO("CMD: %s", cmd_show(cmd));
+                proc[(*proc_count)++] = cmd_run_async(cmd, NULL, NULL);
+            }
+        }
+    });
 }
 
 static void async_obj_foreach_file_in_dirs(Cstr first, ...)
