@@ -495,6 +495,7 @@ void update_ui()
             if (ImGui::Button("Debug Log"))
             {
                 cfg_show_debug_log = true;
+                cfg_write_debug_log = true;
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(.0f, 2.f));
@@ -629,8 +630,7 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     const char *slider_fmt;
     if (!p->found)
     {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        ImGui::BeginDisabled();
         slider_fmt = p->error_message;
     }
     else
@@ -648,11 +648,11 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
                 internal_memory_read(g_process, param_ptr, &p->value);
             }
         }
-        ImGui::BeginDisabled();
         ImGui::PushID(slider_fmt);
+        ImGui::BeginDisabled();
         ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
-        ImGui::PopID();
         ImGui::EndDisabled();
+        ImGui::PopID();
     }
     else
     {
@@ -671,10 +671,7 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     }
     ImGui::PopID();
     if (!p->found)
-    {
-        ImGui::PopStyleColor();
-        ImGui::PopItemFlag();
-    }
+        ImGui::EndDisabled();
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
 
@@ -692,5 +689,10 @@ void draw_debug_log()
         debug_log.draw();
         ImGui::End();
         ImGui::PopFont();
+        if (!cfg_show_debug_log)
+        {
+            cfg_write_debug_log = false;
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        }
     }
 }
