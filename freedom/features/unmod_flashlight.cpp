@@ -8,7 +8,7 @@ uint8_t check_flashlight_original_byte = 0xC3;
 
 void init_unmod_flashlight()
 {
-    if (update_flashlight_code_start && check_flashlight_code_start)
+    if (update_flashlight_code_start)
     {
         if (cfg_flashlight_enabled)
             enable_flashlight_hooks();

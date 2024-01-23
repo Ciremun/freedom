@@ -22,6 +22,9 @@ void ImGuiLogger::clear()
 
 void ImGuiLogger::add(const char *fmt, ...)
 {
+    extern bool cfg_write_debug_log;
+    if (!cfg_write_debug_log)
+        return;
     if (lines.size() >= 1024)
         clear();
     va_list args;

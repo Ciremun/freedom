@@ -20,6 +20,8 @@ bool cfg_jumping_window = true;
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 bool cfg_hidden_remover_enabled = false;
+bool cfg_write_debug_log = false;
+bool cfg_show_debug_log = false;
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
@@ -80,14 +82,8 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
     buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
     buf->appendf("jump_window=%d\n", (int)cfg_jumping_window);
-    buf->append("; PREJIT STUFF\n");
-    buf->appendf("CSLoad=%s\n", cm_load_s.c_str());
-    buf->appendf("CSReplay=%s\n", cm_replay_s.c_str());
-    buf->appendf("CSScore=%s\n", cm_score_s.c_str());
-    buf->appendf("CSCheckFlashlight=%s\n", cm_checkflashlight_s.c_str());
-    buf->appendf("CSUpdateFlashlight=%s\n", cm_updateflashlight_s.c_str());
-    buf->appendf("CSCheckTime=%s\n", cm_checktime_s.c_str());
-    buf->appendf("CSUpdateVariables=%s\n", cm_updatevariables_s.c_str());
+    buf->appendf("write_debug=%d\n", (int)cfg_write_debug_log);
+    buf->appendf("show_debug=%d\n", (int)cfg_show_debug_log);
     buf->append("\n");
 }
 
@@ -95,50 +91,39 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
-        hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i, jump_window_i;
-    int replay_i, replay_aim_i, replay_keys_i, score_multiplier_i;
+        hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
+        jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
+        write_debug_i, show_debug_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
     double timewarp_playback_rate_d;
     char relax_style_c;
-    char cm_load_cstr[128];
-    char cm_replay_cstr[128];
-    char cm_score_cstr[128];
-    char cm_checkflashlight_cstr[128];
-    char cm_updateflashlight_cstr[128];
-    char cm_checktime_cstr[128];
-    char cm_updatevariables_cstr[128];
-    if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)                               ar_parameter.lock = ar_lock_i;
-    else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)                        ar_parameter.value = ar_value_f;
-    else if (sscanf(line, "cs_lock=%d", &cs_lock_i) == 1)                          cs_parameter.lock = cs_lock_i;
-    else if (sscanf(line, "cs_value=%f", &cs_value_f) == 1)                        cs_parameter.value = cs_value_f;
-    else if (sscanf(line, "od_lock=%d", &od_lock_i) == 1)                          od_parameter.lock = od_lock_i;
-    else if (sscanf(line, "od_value=%f", &od_value_f) == 1)                        od_parameter.value = od_value_f;
-    else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)                 cfg_mod_menu_visible = mod_menu_visible_i;
-    else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                      cfg_font_size = font_size_i;
-    else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                         cfg_relax_lock = relax_lock_i;
-    else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)                  cfg_relax_style = (int)relax_style_c;
-    else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)          cfg_relax_checks_od = relax_checks_od_i;
-    else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                       cfg_aimbot_lock = aimbot_lock_i;
-    else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)        cfg_spins_per_minute = spins_per_minute_i;
-    else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1)      cfg_fraction_modifier = fraction_modifier_f;
-    else if (sscanf(line, "replay=%d", &replay_i) == 1)                            cfg_replay_enabled = replay_i;
-    else if (sscanf(line, "replay_aim=%d", &replay_aim_i) == 1)                    cfg_replay_aim = replay_aim_i;
-    else if (sscanf(line, "replay_keys=%d", &replay_keys_i) == 1)                  cfg_replay_keys = replay_keys_i;
-    else if (sscanf(line, "sm_lock=%d", &score_multiplier_i) == 1)                 cfg_score_multiplier_enabled = score_multiplier_i;
-    else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)          cfg_score_multiplier_value = score_multiplier_value_f;
-    else if (sscanf(line, "drpc=%d", &discord_rich_presence_enabled_i) == 1)       cfg_discord_rich_presence_enabled = discord_rich_presence_enabled_i;
-    else if (sscanf(line, "fl=%d", &flashlight_enabled_i) == 1)                    cfg_flashlight_enabled = flashlight_enabled_i;
-    else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)                cfg_hidden_remover_enabled = hidden_remover_enabled_i;
-    else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)                 cfg_timewarp_enabled = timewarp_enabled_i;
-    else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)         cfg_timewarp_playback_rate = timewarp_playback_rate_d;
-    else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)                  cfg_jumping_window = jump_window_i;
-    else if (sscanf(line, "CSLoad=%s", cm_load_cstr) == 1)                         cm_load_s = std::string(cm_load_cstr);
-    else if (sscanf(line, "CSReplay=%s", cm_replay_cstr) == 1)                     cm_replay_s = std::string(cm_replay_cstr);
-    else if (sscanf(line, "CSScore=%s", cm_score_cstr) == 1)                       cm_score_s = std::string(cm_score_cstr);
-    else if (sscanf(line, "CSCheckFlashlight=%s", cm_checkflashlight_cstr) == 1)   cm_checkflashlight_s = std::string(cm_checkflashlight_cstr);
-    else if (sscanf(line, "CSUpdateFlashlight=%s", cm_updateflashlight_cstr) == 1) cm_updateflashlight_s = std::string(cm_updateflashlight_cstr);
-    else if (sscanf(line, "CSCheckTime=%s", cm_checktime_cstr) == 1)               cm_checktime_s = std::string(cm_checktime_cstr);
-    else if (sscanf(line, "CSUpdateVariables=%s", cm_updatevariables_cstr) == 1)   cm_updatevariables_s = std::string(cm_updatevariables_cstr);
+    if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)                          ar_parameter.lock = ar_lock_i;
+    else if (sscanf(line, "ar_value=%f", &ar_value_f) == 1)                   ar_parameter.value = ar_value_f;
+    else if (sscanf(line, "cs_lock=%d", &cs_lock_i) == 1)                     cs_parameter.lock = cs_lock_i;
+    else if (sscanf(line, "cs_value=%f", &cs_value_f) == 1)                   cs_parameter.value = cs_value_f;
+    else if (sscanf(line, "od_lock=%d", &od_lock_i) == 1)                     od_parameter.lock = od_lock_i;
+    else if (sscanf(line, "od_value=%f", &od_value_f) == 1)                   od_parameter.value = od_value_f;
+    else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)            cfg_mod_menu_visible = mod_menu_visible_i;
+    else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                 cfg_font_size = font_size_i;
+    else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                    cfg_relax_lock = relax_lock_i;
+    else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)             cfg_relax_style = (int)relax_style_c;
+    else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)     cfg_relax_checks_od = relax_checks_od_i;
+    else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                  cfg_aimbot_lock = aimbot_lock_i;
+    else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)   cfg_spins_per_minute = spins_per_minute_i;
+    else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1) cfg_fraction_modifier = fraction_modifier_f;
+    else if (sscanf(line, "replay=%d", &replay_i) == 1)                       cfg_replay_enabled = replay_i;
+    else if (sscanf(line, "replay_aim=%d", &replay_aim_i) == 1)               cfg_replay_aim = replay_aim_i;
+    else if (sscanf(line, "replay_keys=%d", &replay_keys_i) == 1)             cfg_replay_keys = replay_keys_i;
+    else if (sscanf(line, "sm_lock=%d", &score_multiplier_i) == 1)            cfg_score_multiplier_enabled = score_multiplier_i;
+    else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)     cfg_score_multiplier_value = score_multiplier_value_f;
+    else if (sscanf(line, "drpc=%d", &discord_rich_presence_enabled_i) == 1)  cfg_discord_rich_presence_enabled = discord_rich_presence_enabled_i;
+    else if (sscanf(line, "fl=%d", &flashlight_enabled_i) == 1)               cfg_flashlight_enabled = flashlight_enabled_i;
+    else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)           cfg_hidden_remover_enabled = hidden_remover_enabled_i;
+    else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)            cfg_timewarp_enabled = timewarp_enabled_i;
+    else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)    cfg_timewarp_playback_rate = timewarp_playback_rate_d;
+    else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)             cfg_jumping_window = jump_window_i;
+    else if (sscanf(line, "write_debug=%d", &write_debug_i) == 1)             cfg_write_debug_log = write_debug_i;
+    else if (sscanf(line, "show_debug=%d", &show_debug_i) == 1)               cfg_show_debug_log = show_debug_i;
 }
 
 void set_imgui_ini_handler()

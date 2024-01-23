@@ -55,7 +55,7 @@ inline bool all_code_starts_found()
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
            score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
-           && hom_update_vars_code_start && hom_update_vars_hidden_loc;
+           && hom_update_vars_hidden_loc;
 }
 
 static int filter(unsigned int code)
@@ -95,11 +95,8 @@ static inline bool is_set_playback_rate(uint8_t *opcodes)
 
 static void scan_for_code_starts()
 {
-    if (!prepare_all_methods_fast())
-        prepare_all_methods_slow();
-
+    prepare_methods();
     double s = ImGui::GetTime();
-
     int alignment = 8;
     _MEMORY_BASIC_INFORMATION mbi;
     for (uint8_t *p = (uint8_t *)GetModuleBaseAddress(L"osu!.exe"); VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
@@ -150,7 +147,6 @@ static void scan_for_code_starts()
             PATTERN_SCAN(check_flashlight_code_start,  check_flashlight_func_sig,   opcodes);
             PATTERN_SCAN(update_timing_code_start,     update_timing_func_sig,      opcodes);
             PATTERN_SCAN(check_timewarp_code_start,    check_timewarp_func_sig,     opcodes);
-            PATTERN_SCAN(hom_update_vars_code_start,   hom_update_vars_func_sig,    opcodes);
             PATTERN_SCAN(hom_update_vars_hidden_loc,   hom_update_vars_hidden_sig,  opcodes);
 
             if (!set_playback_rate_code_start && is_set_playback_rate(opcodes))
@@ -334,8 +330,6 @@ static inline void init_hooks_wrapper()
     try_("load_csharp_assembly", [](){ load_csharp_assembly(); });
     try_("scan_for_code_starts", [](){ scan_for_code_starts(); });
     try_("try_find_hook_offsets", [](){ try_find_hook_offsets(); });
-
-    try_("get_classmethods_from_addrs", [](){ get_classmethods_from_addrs(); });
 
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();

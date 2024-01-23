@@ -19,12 +19,9 @@
 #include "features/timewarp.h"
 #include "features/hidden_remover.h"
 
-extern bool prepared_all_methods;
-extern bool prepared_methods;
+extern int prepared_methods_count;
 
-bool prepare_all_methods_slow();
-bool prepare_all_methods_fast();
-void get_classmethods_from_addrs();
+bool prepare_methods();
 bool load_csharp_assembly();
 
 bool variant_ok(void *variant_ptr);

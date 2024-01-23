@@ -28,6 +28,8 @@ extern bool cfg_flashlight_enabled;
 extern bool cfg_timewarp_enabled;
 extern double cfg_timewarp_playback_rate;
 extern bool cfg_hidden_remover_enabled;
+extern bool cfg_write_debug_log;
+extern bool cfg_show_debug_log;
 
 extern std::string cm_load_s;
 extern std::string cm_replay_s;

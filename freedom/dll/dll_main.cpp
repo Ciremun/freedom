@@ -17,7 +17,6 @@ typedef IDirect3D9* (WINAPI *Direct3DCreate9T)(UINT SDKVersion);
 
 static bool init = false;
 
-HDC hDc = NULL;
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
@@ -58,7 +57,7 @@ static inline void imgui_new_frame()
 
     if (!cfg_mod_menu_visible)
     {
-        if (!show_debug_log_window)
+        if (!cfg_show_debug_log)
             ImGui::GetIO().MouseDrawCursor = false;
         goto frame_end;
     }
@@ -98,9 +97,7 @@ __declspec(naked) void opengl_update()
         init = true;
 
         g_process = GetCurrentProcess();
-
-        hDc = wglGetCurrentDC();
-        g_hwnd = WindowFromDC(hDc);
+        g_hwnd = WindowFromDC(wglGetCurrentDC());
 
 #ifdef FR_LOG_TO_CONSOLE
         AllocConsole();

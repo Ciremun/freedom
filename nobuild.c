@@ -178,7 +178,7 @@ static void build_freedom_dll()
 {
     if (!PATH_EXISTS("utils.dll") || rebuild_flag || is_path1_modified_after_path2("freedom/utils.cs", "utils.dll"))
     {
-        CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "freedom/utils.cs");
+        CMD("csc", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "freedom/utils.cs");
         bake_utils_dll();
     }
     async_obj_foreach_file_in_dirs(DLL_DIRS, NULL);
