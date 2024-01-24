@@ -45,6 +45,7 @@ static inline void TextColored(const char *line_begin, ImVec4 color)
 
 void ImGuiLogger::draw()
 {
+    ImGui::BeginChild("##debug_log");
     for (const auto &line : lines)
     {
         if (line->size() >= 3 && line->c_str()[0] == '[' && line->Buf.Data[2] == ']')
@@ -60,4 +61,5 @@ void ImGuiLogger::draw()
         ImGui::SetScrollHereY(1.0f);
         ScrollToBottom = false;
     }
+    ImGui::EndChild();
 }
