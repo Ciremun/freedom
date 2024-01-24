@@ -2,6 +2,12 @@
 
 #include <utility>
 
+template < typename T>
+T interpolate( const T& T1, const T& T2, float flProgress )
+{
+	return T1 + ( ( T2 - T1 ) * flProgress );
+}
+
 template <typename T>
 struct Vector2
 {
@@ -24,6 +30,30 @@ struct Vector2
     {
         this->x = std::move(rhs.x);
         this->y = std::move(rhs.y);
+    }
+
+    template<typename T> 
+    constexpr float dist_to(const Vector2<T> &rhs) noexcept 
+    {
+        Vector2<T> delta;
+        delta.x = this->x - rhs.x;
+        delta.y = this->y - rhs.y;
+
+        return delta.length();
+    }
+
+    constexpr float length() noexcept 
+    {
+        return sqrt(this->x * this->x + this->y * this->y);
+    }
+
+    template<typename T> 
+    constexpr Vector2<T> interpolate_to(const Vector2<T> &transform, float time)
+    {
+        this->x = interpolate(this->x, transform.x, time);
+        this->y = interpolate(this->y, transform.y, time);
+
+        return *this;
     }
 };
 

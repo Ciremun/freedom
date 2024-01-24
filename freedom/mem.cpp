@@ -1,6 +1,3 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
-
 #include "mem.h"
 
 uintptr_t GetModuleBaseAddress(const wchar_t* modName)
@@ -32,13 +29,5 @@ void internal_memory_patch(BYTE* dst, BYTE* src, unsigned int size)
     DWORD oldprotect;
     VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
     memcpy(dst, src, size);
-    VirtualProtect(dst, size, oldprotect, &oldprotect);
-}
-
-void internal_memory_set(void* dst, int val, unsigned int size)
-{
-    DWORD oldprotect;
-    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
-    memset(dst, val, size);
     VirtualProtect(dst, size, oldprotect, &oldprotect);
 }

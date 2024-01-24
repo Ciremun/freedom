@@ -3,13 +3,13 @@ on:
   push:
     paths:
     - 'freedom/**'
-    - 'imgui/**'
     - 'include/**'
+    - 'vendor/**'
   workflow_dispatch:
     paths:
       - 'freedom/**'
-      - 'imgui/**'
       - 'include/**'
+      - 'vendor/**'
 
 jobs:
   windows-msvc:
@@ -28,6 +28,6 @@ jobs:
         with:
           name: freedom
           path: |
-            freedom.exe
+            freedom_injector.exe
             freedom.dll
-            prejit.dll
+            config.ini

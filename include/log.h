@@ -1,24 +1,26 @@
 #pragma once
 
+#include <vector>
+
 #include "imgui.h"
+
+#include "colors.h"
 
 #ifdef FR_LOG_TO_CONSOLE
 #define FR_ERROR(message) fprintf(stderr, "ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
-#define FR_ERROR_FMT(fmt, ...) fprintf(stderr, "ERROR: %s:%d: " fmt "\n", __FUNCSIG__, __LINE__, __VA_ARGS__)
 #define FR_INFO(message) fprintf(stdout, "%s\n", message)
 #define FR_INFO_FMT(fmt, ...) fprintf(stdout, fmt "\n", __VA_ARGS__)
 #else
-#define FR_ERROR(message) freedom_log.add("ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
-#define FR_ERROR_FMT(fmt, ...) freedom_log.add("ERROR: %s:%d: " fmt "\n", __FUNCSIG__, __LINE__, __VA_ARGS__)
-#define FR_INFO(message) freedom_log.add("%s\n", message)
-#define FR_INFO_FMT(fmt, ...) freedom_log.add(fmt "\n", __VA_ARGS__)
+#define FR_ERROR(message) debug_log.add("ERROR: %s:%d: %s\n", __FUNCSIG__, __LINE__, message)
+#define FR_INFO(message) debug_log.add("%s\n", message)
+#define FR_INFO_FMT(fmt, ...) debug_log.add(fmt "\n", __VA_ARGS__)
 #endif // NDEBUG
 
 #define FR_PTR_INFO(...) FR_INFO_FMT("%-35.35s 0x%X", __VA_ARGS__)
 
 struct ImGuiLogger
 {
-    ImGuiTextBuffer buf;
+    std::vector<ImGuiTextBuffer *> lines;
     bool ScrollToBottom = true;
     ImVec2 size = ImVec2(.0f, .0f);
 
@@ -31,4 +33,4 @@ struct ImGuiLogger
     void draw();
 };
 
-extern ImGuiLogger freedom_log;
+extern ImGuiLogger debug_log;

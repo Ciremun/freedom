@@ -1,8 +1,8 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+#include "window.h"
 
-#include "mem.h"
-#include "vector.h"
+uintptr_t window_manager_code_start = 0;
+uintptr_t window_manager_offset = 0;
+uintptr_t window_manager_ptr = 0;
 
 Vector2<float> window_size(.0f, .0f);
 Vector2<float> playfield_size(.0f, .0f);
@@ -21,10 +21,9 @@ void calc_playfield_manual(float window_x, float window_y)
     playfield_position.x = (window_size.x - playfield_size.x) / 2.0f;
     playfield_position.y =  (window_size.y - playfield_size.y) / 4.0f * 3.0f + (-16.0f * window_ratio);
     playfield_ratio = playfield_size.y / 384.0f;
-    FR_INFO_FMT("calc_playfield_manual: window_x: %f, window_y: %f", window_x, window_y);
 }
 
-bool calc_playfield_from_window(uintptr_t window_manager_ptr)
+bool calc_playfield_from_window()
 {
     if (!window_manager_ptr)
         return false;
@@ -41,6 +40,5 @@ bool calc_playfield_from_window(uintptr_t window_manager_ptr)
     playfield_position.x = *(float *)(window_manager + 0x18);
     playfield_position.y = *(float *)(window_manager + 0x1C);
     playfield_ratio = playfield_size.y / 384.0f;
-    FR_INFO_FMT("calc_playfield_from_window: window_x: %f, window_y: %f", window_size.x, window_size.y);
     return true;
 }

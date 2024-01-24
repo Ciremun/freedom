@@ -162,19 +162,6 @@ typedef struct {
     Cstr_Array args;
 } Chain_Token;
 
-// TODO(#17): IN and OUT are already taken by WinAPI
-#define IN(path) \
-    (Chain_Token) { \
-        .type = CHAIN_TOKEN_IN, \
-        .args = cstr_array_make(path, NULL) \
-    }
-
-#define OUT(path) \
-    (Chain_Token) { \
-        .type = CHAIN_TOKEN_OUT, \
-        .args = cstr_array_make(path, NULL) \
-    }
-
 #define CHAIN_CMD(...) \
     (Chain_Token) { \
         .type = CHAIN_TOKEN_CMD, \
@@ -720,7 +707,7 @@ Pid cmd_run_async(Cmd cmd, Fd *fdin, Fd *fdout)
             NULL,
             // TODO(#33): cmd_run_async on Windows does not render command line properly
             // It may require wrapping some arguments with double-quotes if they contains spaces, etc.
-            cstr_array_join(" ", cmd.line),
+            (char *)cstr_array_join(" ", cmd.line),
             NULL,
             NULL,
             TRUE,
@@ -1146,6 +1133,885 @@ char *shift_args(int *argc, char ***argv)
     *argc -= 1;
     *argv += 1;
     return result;
+}
+
+//
+// Author:   Jonathan Blow
+// Version:  1
+// Date:     31 August, 2018
+//
+// This code is released under the MIT license, which you can find at
+//
+//          https://opensource.org/licenses/MIT
+//
+//
+//
+// See the comments for how to use this library just below the includes.
+//
+
+
+//
+// NOTE(Kalinovcic): I have translated the original implementation to C,
+// and made a preprocessor define that enables people to include it without
+// the implementation, just as a header.
+//
+// I also fixed two bugs:
+//   - If COM initialization for VS2017 fails, we actually properly continue
+//     searching for earlier versions in the registry.
+//   - For earlier versions, the code now returns the "bin\amd64" VS directory.
+//     Previously it was returning the "bin" directory, which is for x86 stuff.
+//
+// To include the implementation, before including microsoft_craziness.h, define:
+//
+//
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#ifndef MICROSOFT_CRAZINESS_HEADER_GUARD
+#define MICROSOFT_CRAZINESS_HEADER_GUARD
+
+#include <string.h>
+
+#pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "Ole32.lib")
+#pragma comment(lib, "OleAut32.lib")
+
+typedef struct
+{
+    wchar_t *vs_exe_path;
+    wchar_t *vs_library_path;
+} Find_Result;
+
+Find_Result find_visual_studio();
+void free_resources(Find_Result *result);
+
+#endif  // MICROSOFT_CRAZINESS_HEADER_GUARD
+
+
+//
+// HOW TO USE THIS CODE
+//
+// The purpose of this file is to find the folders that contain libraries
+// you may need to link against, on Windows, if you are linking with any
+// compiled C or C++ code. This will be necessary for many non-C++ programming
+// language environments that want to provide compatibility.
+//
+// We find the place where the Visual Studio libraries live (for example,
+// libvcruntime.lib), where the linker and compiler executables live
+// (for example, link.exe), and where the Windows SDK libraries reside
+// (kernel32.lib, libucrt.lib).
+//
+// We all wish you didn't have to worry about so many weird dependencies,
+// but we don't really have a choice about this, sadly.
+//
+// I don't claim that this is the absolute best way to solve this problem,
+// and so far we punt on things (if you have multiple versions of Visual Studio
+// installed, we return the first one, rather than the newest). But it
+// will solve the basic problem for you as simply as I know how to do it,
+// and because there isn't too much code here, it's easy to modify and expand.
+//
+//
+// Here is the API you need to know about:
+//
+
+
+//
+// Call find_visual_studio_and_windows_sdk, look at the resulting
+// paths, then call free_resources on the result.
+//
+// Everything else in this file is implementation details that you
+// don't need to care about.
+//
+
+//
+// This file was about 400 lines before we started adding these comments.
+// You might think that's way too much code to do something as simple
+// as finding a few library and executable paths. I agree. However,
+// Microsoft's own solution to this problem, called "vswhere", is a
+// mere EIGHT THOUSAND LINE PROGRAM, spread across 70 files,
+// that they posted to github *unironically*.
+//
+// I am not making this up: https://github.com/Microsoft/vswhere
+//
+// Several people have therefore found the need to solve this problem
+// themselves. We referred to some of these other solutions when
+// figuring out what to do, most prominently ziglang's version,
+// by Ryan Saunderson.
+//
+// I hate this kind of code. The fact that we have to do this at all
+// is stupid, and the actual maneuvers we need to go through
+// are just painful. If programming were like this all the time,
+// I would quit.
+//
+// Because this is such an absurd waste of time, I felt it would be
+// useful to package the code in an easily-reusable way, in the
+// style of the stb libraries. We haven't gone as all-out as some
+// of the stb libraries do (which compile in C with no includes, often).
+// For this version you need C++ and the headers at the top of the file.
+//
+// We return the strings as Windows wide character strings. Aesthetically
+// I don't like that (I think most sane programs are UTF-8 internally),
+// but apparently, not all valid Windows file paths can even be converted
+// correctly to UTF-8. So have fun with that. It felt safest and simplest
+// to stay with wchar_t since all of this code is fully ensconced in
+// Windows crazy-land.
+//
+// One other shortcut I took is that this is hardcoded to return the
+// folders for x64 libraries. If you want x86 or arm, you can make
+// slight edits to the code below, or, if enough people want this,
+// I can work it in here.
+//
+
+
+#ifndef MICROSOFT_CRAZINESS_IMPLEMENTATION_GUARD
+#define MICROSOFT_CRAZINESS_IMPLEMENTATION_GUARD
+
+
+#include <windows.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <io.h>         // For _get_osfhandle
+
+
+void free_resources(Find_Result *result) {
+    free(result->vs_exe_path);
+    free(result->vs_library_path);
+}
+
+
+// COM objects for the ridiculous Microsoft craziness.
+
+#undef  INTERFACE
+#define INTERFACE ISetupInstance
+DECLARE_INTERFACE_ (ISetupInstance, IUnknown)
+{
+    BEGIN_INTERFACE
+
+    // IUnknown methods
+    STDMETHOD (QueryInterface)   (THIS_  REFIID, void **) PURE;
+    STDMETHOD_(ULONG, AddRef)    (THIS) PURE;
+    STDMETHOD_(ULONG, Release)   (THIS) PURE;
+
+    // ISetupInstance methods
+    STDMETHOD(GetInstanceId)(THIS_ _Out_ BSTR* pbstrInstanceId) PURE;
+    STDMETHOD(GetInstallDate)(THIS_ _Out_ LPFILETIME pInstallDate) PURE;
+    STDMETHOD(GetInstallationName)(THIS_ _Out_ BSTR* pbstrInstallationName) PURE;
+    STDMETHOD(GetInstallationPath)(THIS_ _Out_ BSTR* pbstrInstallationPath) PURE;
+    STDMETHOD(GetInstallationVersion)(THIS_ _Out_ BSTR* pbstrInstallationVersion) PURE;
+    STDMETHOD(GetDisplayName)(THIS_ _In_ LCID lcid, _Out_ BSTR* pbstrDisplayName) PURE;
+    STDMETHOD(GetDescription)(THIS_ _In_ LCID lcid, _Out_ BSTR* pbstrDescription) PURE;
+    STDMETHOD(ResolvePath)(THIS_ _In_opt_z_ LPCOLESTR pwszRelativePath, _Out_ BSTR* pbstrAbsolutePath) PURE;
+
+    END_INTERFACE
+};
+
+#undef  INTERFACE
+#define INTERFACE IEnumSetupInstances
+DECLARE_INTERFACE_ (IEnumSetupInstances, IUnknown)
+{
+    BEGIN_INTERFACE
+
+    // IUnknown methods
+    STDMETHOD (QueryInterface)   (THIS_  REFIID, void **) PURE;
+    STDMETHOD_(ULONG, AddRef)    (THIS) PURE;
+    STDMETHOD_(ULONG, Release)   (THIS) PURE;
+
+    // IEnumSetupInstances methods
+    STDMETHOD(Next)(THIS_ _In_ ULONG celt, _Out_writes_to_(celt, *pceltFetched) ISetupInstance** rgelt, _Out_opt_ _Deref_out_range_(0, celt) ULONG* pceltFetched) PURE;
+    STDMETHOD(Skip)(THIS_ _In_ ULONG celt) PURE;
+    STDMETHOD(Reset)(THIS) PURE;
+    STDMETHOD(Clone)(THIS_ _Deref_out_opt_ IEnumSetupInstances** ppenum) PURE;
+
+    END_INTERFACE
+};
+
+#undef  INTERFACE
+#define INTERFACE ISetupConfiguration
+DECLARE_INTERFACE_ (ISetupConfiguration, IUnknown)
+{
+    BEGIN_INTERFACE
+
+    // IUnknown methods
+    STDMETHOD (QueryInterface)   (THIS_  REFIID, void **) PURE;
+    STDMETHOD_(ULONG, AddRef)    (THIS) PURE;
+    STDMETHOD_(ULONG, Release)   (THIS) PURE;
+
+    // ISetupConfiguration methods
+    STDMETHOD(EnumInstances)(THIS_ _Out_ IEnumSetupInstances** ppEnumInstances) PURE;
+    STDMETHOD(GetInstanceForCurrentProcess)(THIS_ _Out_ ISetupInstance** ppInstance) PURE;
+    STDMETHOD(GetInstanceForPath)(THIS_ _In_z_ LPCWSTR wzPath, _Out_ ISetupInstance** ppInstance) PURE;
+
+    END_INTERFACE
+};
+
+#ifdef __cplusplus
+#define CALL_STDMETHOD(object, method, ...) object->method(__VA_ARGS__)
+#define CALL_STDMETHOD_(object, method) object->method()
+#else
+#define CALL_STDMETHOD(object, method, ...) object->lpVtbl->method(object, __VA_ARGS__)
+#define CALL_STDMETHOD_(object, method) object->lpVtbl->method(object)
+#endif
+
+
+// The beginning of the actual code that does things.
+
+typedef struct {
+    int32_t best_version[4];  // For Windows 8 versions, only two of these numbers are used.
+    wchar_t *best_name;
+} Version_Data;
+
+bool os_file_exists(wchar_t *name) {
+    // @Robustness: What flags do we really want to check here?
+
+    auto attrib = GetFileAttributesW(name);
+    if (attrib == INVALID_FILE_ATTRIBUTES) return false;
+    if (attrib & FILE_ATTRIBUTE_DIRECTORY) return false;
+
+    return true;
+}
+
+#define concat2(a, b) concat(a, b, NULL, NULL, NULL)
+#define concat3(a, b, c) concat(a, b, c, NULL, NULL)
+#define concat4(a, b, c, d) concat(a, b, c, d, NULL)
+#define concat5(a, b, c, d, e) concat(a, b, c, d, e)
+wchar_t *concat(wchar_t *a, wchar_t *b, wchar_t *c, wchar_t *d, wchar_t *e) {
+    // Concatenate up to 4 wide strings together. Allocated with malloc.
+    // If you don't like that, use a programming language that actually
+    // helps you with using custom allocators. Or just edit the code.
+
+    auto len_a = wcslen(a);
+    auto len_b = wcslen(b);
+
+    auto len_c = 0;
+    if (c) len_c = wcslen(c);
+
+    auto len_d = 0;
+    if (d) len_d = wcslen(d);
+
+    auto len_e = 0;
+    if (e) len_e = wcslen(e);
+
+    wchar_t *result = (wchar_t *)malloc((len_a + len_b + len_c + len_d + len_e + 1) * 2);
+    memcpy(result, a, len_a*2);
+    memcpy(result + len_a, b, len_b*2);
+
+    if (c) memcpy(result + len_a + len_b, c, len_c * 2);
+    if (d) memcpy(result + len_a + len_b + len_c, d, len_d * 2);
+    if (e) memcpy(result + len_a + len_b + len_c + len_d, e, len_e * 2);
+
+    result[len_a + len_b + len_c + len_d + len_e] = 0;
+
+    return result;
+}
+
+typedef void (*Visit_Proc_W)(wchar_t *short_name, wchar_t *full_name, Version_Data *data);
+bool visit_files_w(wchar_t *dir_name, Version_Data *data, Visit_Proc_W proc) {
+
+    // Visit everything in one folder (non-recursively). If it's a directory
+    // that doesn't start with ".", call the visit proc on it. The visit proc
+    // will see if the filename conforms to the expected versioning pattern.
+
+    WIN32_FIND_DATAW find_data;
+
+    wchar_t *wildcard_name = concat2(dir_name, L"\\*");
+    HANDLE handle = FindFirstFileW(wildcard_name, &find_data);
+    free(wildcard_name);
+
+    if (handle == INVALID_HANDLE_VALUE) return false;
+
+    while (true) {
+        if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && (find_data.cFileName[0] != '.')) {
+            wchar_t *full_name = concat3(dir_name, L"\\", find_data.cFileName);
+            proc(find_data.cFileName, full_name, data);
+            free(full_name);
+        }
+
+        BOOL success = FindNextFileW(handle, &find_data);
+        if (!success) break;
+    }
+
+    FindClose(handle);
+
+    return true;
+}
+
+
+void win10_best(wchar_t *short_name, wchar_t *full_name, Version_Data *data) {
+    // Find the Windows 10 subdirectory with the highest version number.
+
+    int i0, i1, i2, i3;
+    auto success = swscanf_s(short_name, L"%d.%d.%d.%d", &i0, &i1, &i2, &i3);
+    if (success < 4) return;
+
+    if (i0 < data->best_version[0]) return;
+    else if (i0 == data->best_version[0]) {
+        if (i1 < data->best_version[1]) return;
+        else if (i1 == data->best_version[1]) {
+            if (i2 < data->best_version[2]) return;
+            else if (i2 == data->best_version[2]) {
+                if (i3 < data->best_version[3]) return;
+            }
+        }
+    }
+
+    // we have to copy_string and free here because visit_files free's the full_name string
+    // after we execute this function, so Win*_Data would contain an invalid pointer.
+    if (data->best_name) free(data->best_name);
+    data->best_name = _wcsdup(full_name);
+
+    if (data->best_name) {
+        data->best_version[0] = i0;
+        data->best_version[1] = i1;
+        data->best_version[2] = i2;
+        data->best_version[3] = i3;
+    }
+}
+
+void win8_best(wchar_t *short_name, wchar_t *full_name, Version_Data *data) {
+    // Find the Windows 8 subdirectory with the highest version number.
+
+    int i0, i1;
+    auto success = swscanf_s(short_name, L"winv%d.%d", &i0, &i1);
+    if (success < 2) return;
+
+    if (i0 < data->best_version[0]) return;
+    else if (i0 == data->best_version[0]) {
+        if (i1 < data->best_version[1]) return;
+    }
+
+    // we have to copy_string and free here because visit_files free's the full_name string
+    // after we execute this function, so Win*_Data would contain an invalid pointer.
+    if (data->best_name) free(data->best_name);
+    data->best_name = _wcsdup(full_name);
+
+    if (data->best_name) {
+        data->best_version[0] = i0;
+        data->best_version[1] = i1;
+    }
+}
+
+bool find_visual_studio_2017_by_fighting_through_microsoft_craziness(Find_Result *result) {
+    HRESULT rc = CoInitialize(NULL);
+    // "Subsequent valid calls return false." So ignore false.
+    // if rc != S_OK  return false;
+
+    GUID my_uid                   = {0x42843719, 0xDB4C, 0x46C2, {0x8E, 0x7C, 0x64, 0xF1, 0x81, 0x6E, 0xFD, 0x5B}};
+    GUID CLSID_SetupConfiguration = {0x177F0C4A, 0x1CD3, 0x4DE7, {0xA3, 0x2C, 0x71, 0xDB, 0xBB, 0x9F, 0xA3, 0x6D}};
+
+    ISetupConfiguration *config = NULL;
+
+    // NOTE(Kalinovcic): This is so stupid... These functions take references, so the code is different for C and C++......
+#ifdef __cplusplus
+    HRESULT hr = CoCreateInstance(CLSID_SetupConfiguration, NULL, CLSCTX_INPROC_SERVER, my_uid, (void **)&config);
+#else
+    HRESULT hr = CoCreateInstance(&CLSID_SetupConfiguration, NULL, CLSCTX_INPROC_SERVER, &my_uid, (void **)&config);
+#endif
+
+    if (hr != 0)  return false;
+
+    IEnumSetupInstances *instances = NULL;
+    hr = CALL_STDMETHOD(config, EnumInstances, &instances);
+    CALL_STDMETHOD_(config, Release);
+    if (hr != 0)     return false;
+    if (!instances)  return false;
+
+    bool found_visual_studio_2017 = false;
+    while (1) {
+        ULONG found = 0;
+        ISetupInstance *instance = NULL;
+        HRESULT hr = CALL_STDMETHOD(instances, Next, 1, &instance, &found);
+        if (hr != S_OK) break;
+
+        BSTR bstr_inst_path;
+        hr = CALL_STDMETHOD(instance, GetInstallationPath, &bstr_inst_path);
+        CALL_STDMETHOD_(instance, Release);
+        if (hr != S_OK)  continue;
+
+        wchar_t *tools_filename = concat2(bstr_inst_path, L"\\VC\\Auxiliary\\Build\\Microsoft.VCToolsVersion.default.txt");
+        SysFreeString(bstr_inst_path);
+
+        FILE *f;
+        errno_t open_result = _wfopen_s(&f, tools_filename, L"rt");
+        free(tools_filename);
+        if (open_result != 0) continue;
+        if (!f) continue;
+
+        LARGE_INTEGER tools_file_size;
+        HANDLE file_handle = (HANDLE)_get_osfhandle(_fileno(f));
+        BOOL success = GetFileSizeEx(file_handle, &tools_file_size);
+        if (!success) {
+            fclose(f);
+            continue;
+        }
+
+        uint64_t version_bytes = (tools_file_size.QuadPart + 1) * 2;  // Warning: This multiplication by 2 presumes there is no variable-length encoding in the wchars (wacky characters in the file could betray this expectation).
+        wchar_t *version = (wchar_t *)malloc(version_bytes);
+
+        wchar_t *read_result = fgetws(version, version_bytes, f);
+        fclose(f);
+        if (!read_result) continue;
+
+        wchar_t *version_tail = wcschr(version, '\n');
+        if (version_tail)  *version_tail = 0;  // Stomp the data, because nobody cares about it.
+
+        wchar_t *library_path = concat4(bstr_inst_path, L"\\VC\\Tools\\MSVC\\", version, L"\\lib\\x64");
+        wchar_t *library_file = concat2(library_path, L"\\vcruntime.lib");  // @Speed: Could have library_path point to this string, with a smaller count, to save on memory flailing!
+
+        if (os_file_exists(library_file)) {
+            free(version);
+            wchar_t *vcvarsall = concat2(bstr_inst_path, L"\\VC\\Auxiliary\\Build\\vcvarsall.bat");
+            result->vs_exe_path     = vcvarsall;
+            result->vs_library_path = library_path;
+            found_visual_studio_2017 = true;
+            break;
+        }
+
+        free(version);
+
+        /*
+           Ryan Saunderson said:
+           "Clang uses the 'SetupInstance->GetInstallationVersion' / ISetupHelper->ParseVersion to find the newest version
+           and then reads the tools file to define the tools path - which is definitely better than what i did."
+
+           So... @Incomplete: Should probably pick the newest version...
+        */
+    }
+
+    CALL_STDMETHOD_(instances, Release);
+    return found_visual_studio_2017;
+}
+
+void find_visual_studio_by_fighting_through_microsoft_craziness(Find_Result *result) {
+    // The name of this procedure is kind of cryptic. Its purpose is
+    // to fight through Microsoft craziness. The things that the fine
+    // Visual Studio team want you to do, JUST TO FIND A SINGLE FOLDER
+    // THAT EVERYONE NEEDS TO FIND, are ridiculous garbage.
+
+    // For earlier versions of Visual Studio, you'd find this information in the registry,
+    // similarly to the Windows Kits above. But no, now it's the future, so to ask the
+    // question "Where is the Visual Studio folder?" you have to do a bunch of COM object
+    // instantiation, enumeration, and querying. (For extra bonus points, try doing this in
+    // a new, underdeveloped programming language where you don't have COM routines up
+    // and running yet. So fun.)
+    //
+    // If all this COM object instantiation, enumeration, and querying doesn't give us
+    // a useful result, we drop back to the registry-checking method.
+
+    bool found_visual_studio_2017 = find_visual_studio_2017_by_fighting_through_microsoft_craziness(result);
+    if (found_visual_studio_2017)  return;
+
+
+    // If we get here, we didn't find Visual Studio 2017. Try earlier versions.
+
+    HKEY vs7_key;
+    HRESULT rc = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7", 0, KEY_QUERY_VALUE | KEY_WOW64_32KEY, &vs7_key);
+    if (rc != S_OK)  return;
+
+    // Hardcoded search for 4 prior Visual Studio versions. Is there something better to do here?
+    wchar_t *versions[] = { L"14.0", L"12.0", L"11.0", L"10.0" };
+    const int NUM_VERSIONS = sizeof(versions) / sizeof(versions[0]);
+
+    for (int i = 0; i < NUM_VERSIONS; i++) {
+        wchar_t *v = versions[i];
+
+        DWORD dw_type;
+        DWORD cb_data;
+
+        LSTATUS rc = RegQueryValueExW(vs7_key, v, NULL, &dw_type, NULL, &cb_data);
+        if ((rc == ERROR_FILE_NOT_FOUND) || (dw_type != REG_SZ)) {
+            continue;
+        }
+
+        wchar_t *buffer = (wchar_t *)malloc(cb_data);
+        if (!buffer)  return;
+
+        rc = RegQueryValueExW(vs7_key, v, NULL, NULL, (LPBYTE)buffer, &cb_data);
+        if (rc != 0)  continue;
+
+        // @Robustness: Do the zero-termination thing suggested in the RegQueryValue docs?
+
+        wchar_t *lib_path = concat2(buffer, L"VC\\Lib\\amd64");
+
+        // Check to see whether a vcruntime.lib actually exists here.
+        wchar_t *vcruntime_filename = concat2(lib_path, L"\\vcruntime.lib");
+        bool vcruntime_exists = os_file_exists(vcruntime_filename);
+        free(vcruntime_filename);
+
+        if (vcruntime_exists) {
+            result->vs_exe_path     = concat2(buffer, L"VC\\bin\\amd64");
+            result->vs_library_path = lib_path;
+
+            free(buffer);
+            RegCloseKey(vs7_key);
+            return;
+        }
+
+        free(lib_path);
+        free(buffer);
+    }
+
+    RegCloseKey(vs7_key);
+
+    // If we get here, we failed to find anything.
+}
+
+
+Find_Result find_visual_studio() {
+    Find_Result result;
+    find_visual_studio_by_fighting_through_microsoft_craziness(&result);
+    return result;
+}
+
+
+#endif  // MICROSOFT_CRAZINESS_IMPLEMENTATION_GUARD
+
+#ifdef __cplusplus
+}
+#endif
+
+// dear imgui
+// (binary_to_compressed_c.cpp)
+// Helper tool to turn a file into a C array, if you want to embed font data in your source code.
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+
+// stb_compress* from stb.h - declaration
+typedef unsigned int stb_uint;
+typedef unsigned char stb_uchar;
+stb_uint stb_compress(stb_uchar* out, stb_uchar* in, stb_uint len);
+
+static bool binary_to_compressed_c(const char* filename, const char* out_filename, const char* symbol, bool use_base85_encoding, bool use_compression, bool use_static);
+
+char Encode85Byte(unsigned int x)
+{
+    x = (x % 85) + 35;
+    return (char)((x >= '\\') ? x + 1 : x);
+}
+
+bool binary_to_compressed_c(const char* filename, const char* out_filename, const char* symbol, bool use_base85_encoding, bool use_compression, bool use_static)
+{
+    // Read file
+    FILE* f = fopen(filename, "rb");
+    if (!f) return false;
+    int data_sz;
+    if (fseek(f, 0, SEEK_END) || (data_sz = (int)ftell(f)) == -1 || fseek(f, 0, SEEK_SET)) { fclose(f); return false; }
+    char* data = calloc(1, data_sz + 4);
+    if (fread(data, 1, data_sz, f) != (size_t)data_sz) { fclose(f); free(data); return false; }
+    memset((void*)(((char*)data) + data_sz), 0, 4);
+    fclose(f);
+
+    // Compress
+    int maxlen = data_sz + 512 + (data_sz >> 2) + sizeof(int); // total guess
+    char* compressed = use_compression ? calloc(1, maxlen) : data;
+    int compressed_sz = use_compression ? stb_compress((stb_uchar*)compressed, (stb_uchar*)data, data_sz) : data_sz;
+    if (use_compression)
+        memset(compressed + compressed_sz, 0, maxlen - compressed_sz);
+
+    // Output as Base85 encoded
+    FILE* out = fopen(out_filename, "wb");
+    fprintf(out, "// File: '%s' (%d bytes)\n", filename, (int)data_sz);
+    fprintf(out, "// Exported using binary_to_compressed_c.cpp\n");
+    const char* static_str = use_static ? "static " : "";
+    const char* compressed_str = use_compression ? "compressed_" : "";
+    if (use_base85_encoding)
+    {
+        fprintf(out, "%sconst char %s_%sdata_base85[%d+1] =\n    \"", static_str, symbol, compressed_str, (int)((compressed_sz + 3) / 4)*5);
+        char prev_c = 0;
+        for (int src_i = 0; src_i < compressed_sz; src_i += 4)
+        {
+            // This is made a little more complicated by the fact that ??X sequences are interpreted as trigraphs by old C/C++ compilers. So we need to escape pairs of ??.
+            unsigned int d = *(unsigned int*)(compressed + src_i);
+            for (unsigned int n5 = 0; n5 < 5; n5++, d /= 85)
+            {
+                char c = Encode85Byte(d);
+                fprintf(out, (c == '?' && prev_c == '?') ? "\\%c" : "%c", c);
+                prev_c = c;
+            }
+            if ((src_i % 112) == 112 - 4)
+                fprintf(out, "\"\n    \"");
+        }
+        fprintf(out, "\";\n\n");
+    }
+    else
+    {
+        fprintf(out, "%sconst unsigned int %s_%ssize = %d;\n", static_str, symbol, compressed_str, (int)compressed_sz);
+        fprintf(out, "%sconst unsigned int %s_%sdata[%d/4] =\n{", static_str, symbol, compressed_str, (int)((compressed_sz + 3) / 4)*4);
+        int column = 0;
+        for (int i = 0; i < compressed_sz; i += 4)
+        {
+            unsigned int d = *(unsigned int*)(compressed + i);
+            if ((column++ % 12) == 0)
+                fprintf(out, "\n    0x%08x, ", d);
+            else
+                fprintf(out, "0x%08x, ", d);
+        }
+        fprintf(out, "\n};\n\n");
+    }
+
+    // Cleanup
+    fclose(out);
+    free(data);
+    if (use_compression)
+        free(compressed);
+    return true;
+}
+
+// stb_compress* from stb.h - definition
+
+////////////////////           compressor         ///////////////////////
+
+static stb_uint stb_adler32(stb_uint adler32, stb_uchar *buffer, stb_uint buflen)
+{
+    const unsigned long ADLER_MOD = 65521;
+    unsigned long s1 = adler32 & 0xffff, s2 = adler32 >> 16;
+    unsigned long blocklen, i;
+
+    blocklen = buflen % 5552;
+    while (buflen) {
+        for (i=0; i + 7 < blocklen; i += 8) {
+            s1 += buffer[0], s2 += s1;
+            s1 += buffer[1], s2 += s1;
+            s1 += buffer[2], s2 += s1;
+            s1 += buffer[3], s2 += s1;
+            s1 += buffer[4], s2 += s1;
+            s1 += buffer[5], s2 += s1;
+            s1 += buffer[6], s2 += s1;
+            s1 += buffer[7], s2 += s1;
+
+            buffer += 8;
+        }
+
+        for (; i < blocklen; ++i)
+            s1 += *buffer++, s2 += s1;
+
+        s1 %= ADLER_MOD, s2 %= ADLER_MOD;
+        buflen -= blocklen;
+        blocklen = 5552;
+    }
+    return (s2 << 16) + s1;
+}
+
+static unsigned int stb_matchlen(stb_uchar *m1, stb_uchar *m2, stb_uint maxlen)
+{
+    stb_uint i;
+    for (i=0; i < maxlen; ++i)
+        if (m1[i] != m2[i]) return i;
+    return i;
+}
+
+// simple implementation that just takes the source data in a big block
+
+static stb_uchar *stb__out;
+static FILE      *stb__outfile;
+static stb_uint   stb__outbytes;
+
+static void stb__write(unsigned char v)
+{
+    fputc(v, stb__outfile);
+    ++stb__outbytes;
+}
+
+//#define stb_out(v)    (stb__out ? *stb__out++ = (stb_uchar) (v) : stb__write((stb_uchar) (v)))
+#define stb_out(v)    do { if (stb__out) *stb__out++ = (stb_uchar) (v); else stb__write((stb_uchar) (v)); } while (0)
+
+static void stb_out2(stb_uint v) { stb_out(v >> 8); stb_out(v); }
+static void stb_out3(stb_uint v) { stb_out(v >> 16); stb_out(v >> 8); stb_out(v); }
+static void stb_out4(stb_uint v) { stb_out(v >> 24); stb_out(v >> 16); stb_out(v >> 8 ); stb_out(v); }
+
+static void outliterals(stb_uchar *in, int numlit)
+{
+    while (numlit > 65536) {
+        outliterals(in,65536);
+        in     += 65536;
+        numlit -= 65536;
+    }
+
+    if      (numlit ==     0)    ;
+    else if (numlit <=    32)    stb_out (0x000020 + numlit-1);
+    else if (numlit <=  2048)    stb_out2(0x000800 + numlit-1);
+    else /*  numlit <= 65536) */ stb_out3(0x070000 + numlit-1);
+
+    if (stb__out) {
+        memcpy(stb__out,in,numlit);
+        stb__out += numlit;
+    } else
+        fwrite(in, 1, numlit, stb__outfile);
+}
+
+static int stb__window = 0x40000; // 256K
+
+static int stb_not_crap(int best, int dist)
+{
+    return   ((best > 2  &&  dist <= 0x00100)
+        || (best > 5  &&  dist <= 0x04000)
+        || (best > 7  &&  dist <= 0x80000));
+}
+
+static  stb_uint stb__hashsize = 32768;
+
+// note that you can play with the hashing functions all you
+// want without needing to change the decompressor
+#define stb__hc(q,h,c)      (((h) << 7) + ((h) >> 25) + q[c])
+#define stb__hc2(q,h,c,d)   (((h) << 14) + ((h) >> 18) + (q[c] << 7) + q[d])
+#define stb__hc3(q,c,d,e)   ((q[c] << 14) + (q[d] << 7) + q[e])
+
+static unsigned int stb__running_adler;
+
+static int stb_compress_chunk(stb_uchar *history,
+    stb_uchar *start,
+    stb_uchar *end,
+    int length,
+    int *pending_literals,
+    stb_uchar **chash,
+    stb_uint mask)
+{
+    (void)history;
+    int window = stb__window;
+    stb_uint match_max;
+    stb_uchar *lit_start = start - *pending_literals;
+    stb_uchar *q = start;
+
+#define STB__SCRAMBLE(h)   (((h) + ((h) >> 16)) & mask)
+
+    // stop short of the end so we don't scan off the end doing
+    // the hashing; this means we won't compress the last few bytes
+    // unless they were part of something longer
+    while (q < start+length && q+12 < end) {
+        int m;
+        stb_uint h1,h2,h3,h4, h;
+        stb_uchar *t;
+        int best = 2, dist=0;
+
+        if (q+65536 > end)
+            match_max = (stb_uint)(end-q);
+        else
+            match_max = 65536;
+
+#define stb__nc(b,d)  ((d) <= window && ((b) > 9 || stb_not_crap((int)(b),(int)(d))))
+
+#define STB__TRY(t,p)  /* avoid retrying a match we already tried */ \
+    if (p ? dist != (int)(q-t) : 1)                             \
+    if ((m = stb_matchlen(t, q, match_max)) > best)     \
+    if (stb__nc(m,q-(t)))                                \
+    best = m, dist = (int)(q - (t))
+
+        // rather than search for all matches, only try 4 candidate locations,
+        // chosen based on 4 different hash functions of different lengths.
+        // this strategy is inspired by LZO; hashing is unrolled here using the
+        // 'hc' macro
+        h = stb__hc3(q,0, 1, 2); h1 = STB__SCRAMBLE(h);
+        t = chash[h1]; if (t) STB__TRY(t,0);
+        h = stb__hc2(q,h, 3, 4); h2 = STB__SCRAMBLE(h);
+        h = stb__hc2(q,h, 5, 6);        t = chash[h2]; if (t) STB__TRY(t,1);
+        h = stb__hc2(q,h, 7, 8); h3 = STB__SCRAMBLE(h);
+        h = stb__hc2(q,h, 9,10);        t = chash[h3]; if (t) STB__TRY(t,1);
+        h = stb__hc2(q,h,11,12); h4 = STB__SCRAMBLE(h);
+        t = chash[h4]; if (t) STB__TRY(t,1);
+
+        // because we use a shared hash table, can only update it
+        // _after_ we've probed all of them
+        chash[h1] = chash[h2] = chash[h3] = chash[h4] = q;
+
+        if (best > 2)
+            assert(dist > 0);
+
+        // see if our best match qualifies
+        if (best < 3) { // fast path literals
+            ++q;
+        } else if (best > 2  &&  best <= 0x80    &&  dist <= 0x100) {
+            outliterals(lit_start, (int)(q-lit_start)); lit_start = (q += best);
+            stb_out(0x80 + best-1);
+            stb_out(dist-1);
+        } else if (best > 5  &&  best <= 0x100   &&  dist <= 0x4000) {
+            outliterals(lit_start, (int)(q-lit_start)); lit_start = (q += best);
+            stb_out2(0x4000 + dist-1);
+            stb_out(best-1);
+        } else if (best > 7  &&  best <= 0x100   &&  dist <= 0x80000) {
+            outliterals(lit_start, (int)(q-lit_start)); lit_start = (q += best);
+            stb_out3(0x180000 + dist-1);
+            stb_out(best-1);
+        } else if (best > 8  &&  best <= 0x10000 &&  dist <= 0x80000) {
+            outliterals(lit_start, (int)(q-lit_start)); lit_start = (q += best);
+            stb_out3(0x100000 + dist-1);
+            stb_out2(best-1);
+        } else if (best > 9                      &&  dist <= 0x1000000) {
+            if (best > 65536) best = 65536;
+            outliterals(lit_start, (int)(q-lit_start)); lit_start = (q += best);
+            if (best <= 0x100) {
+                stb_out(0x06);
+                stb_out3(dist-1);
+                stb_out(best-1);
+            } else {
+                stb_out(0x04);
+                stb_out3(dist-1);
+                stb_out2(best-1);
+            }
+        } else {  // fallback literals if no match was a balanced tradeoff
+            ++q;
+        }
+    }
+
+    // if we didn't get all the way, add the rest to literals
+    if (q-start < length)
+        q = start+length;
+
+    // the literals are everything from lit_start to q
+    *pending_literals = (int)(q - lit_start);
+
+    stb__running_adler = stb_adler32(stb__running_adler, start, (stb_uint)(q - start));
+    return (int)(q - start);
+}
+
+static int stb_compress_inner(stb_uchar *input, stb_uint length)
+{
+    int literals = 0;
+    stb_uint len,i;
+
+    stb_uchar **chash;
+    chash = (stb_uchar**) malloc(stb__hashsize * sizeof(stb_uchar*));
+    if (chash == 0) return 0; // failure
+    for (i=0; i < stb__hashsize; ++i)
+        chash[i] = 0;
+
+    // stream signature
+    stb_out(0x57); stb_out(0xbc);
+    stb_out2(0);
+
+    stb_out4(0);       // 64-bit length requires 32-bit leading 0
+    stb_out4(length);
+    stb_out4(stb__window);
+
+    stb__running_adler = 1;
+
+    len = stb_compress_chunk(input, input, input+length, length, &literals, chash, stb__hashsize-1);
+    assert(len == length);
+
+    outliterals(input+length - literals, literals);
+
+    free(chash);
+
+    stb_out2(0x05fa); // end opcode
+
+    stb_out4(stb__running_adler);
+
+    return 1; // success
+}
+
+stb_uint stb_compress(stb_uchar *out, stb_uchar *input, stb_uint length)
+{
+    stb__out = out;
+    stb__outfile = 0;
+
+    stb_compress_inner(input, length);
+
+    return (stb_uint)(stb__out - out);
 }
 
 #endif // NOBUILD_IMPLEMENTATION
