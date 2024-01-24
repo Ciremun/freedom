@@ -90,9 +90,11 @@ It doesn't function as an external, [features](#features) will not work.
 
 |    Flag     |          Description          |
 |:-----------:|:-----------------------------:|
-| all         | Build All                     |
-| No Flags    | Freedom Only                  |
-| standalone  | Standalone Only               |
-| run         | Run standalone after build    |
-| rebuild     | Update headers / Rebuild all  |
-| debug       | Symbols, Disable Optimizations|
+|             | Freedom only                  |
+| rebuild     | update headers / rebuild all  |
+| debug       | symbols, disable optimizations|
+| console     | print logs to console         |
+| inject      | run injector after build      |
+| all         | build standalone and internal |
+| standalone  | build standlone only          |
+| run         | run standalone after build    |

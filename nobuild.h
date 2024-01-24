@@ -2014,4 +2014,59 @@ stb_uint stb_compress(stb_uchar *out, stb_uchar *input, stb_uint length)
     return (stb_uint)(stb__out - out);
 }
 
+// NOTE(Ciremun): flag.h
+#define FLAGS_CAP 256
+
+typedef struct
+{
+    char *name;
+    int exists;
+} Flag;
+
+typedef struct
+{
+    Flag flags[FLAGS_CAP];
+    size_t flags_count;
+} Flag_Context;
+
+Flag_Context flags_ctx = {0};
+
+static int *flag_int(const char *name)
+{
+    Flag_Context *c = &flags_ctx;
+    Flag *flag = &c->flags[c->flags_count++];
+    memset(flag, 0, sizeof(*flag));
+    flag->name = (char*)name;
+    return &flag->exists;
+}
+
+static char *flag_shift_args(int *argc, char ***argv)
+{
+    assert(*argc > 0);
+    char *result = **argv;
+    *argv += 1;
+    *argc -= 1;
+    return result;
+}
+
+static void parse_flags(int argc, char **argv)
+{
+    Flag_Context *c = &flags_ctx;
+
+    flag_shift_args(&argc, &argv);
+
+    while (argc > 0) {
+        char *flag = flag_shift_args(&argc, &argv);
+        int found = 0;
+        for (size_t i = 0; i < c->flags_count; ++i) {
+            if (strcmp(c->flags[i].name, flag) == 0) {
+                c->flags[i].exists = 1;
+                found = 1;
+            }
+        }
+        if (!found)
+            WARN("unknown flag '%s'", flag);
+    }
+}
+
 #endif // NOBUILD_IMPLEMENTATION

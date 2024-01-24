@@ -456,14 +456,12 @@ void update_ui()
                 ImGui::EndCombo();
             }
 
-            ImGui::Dummy(ImVec2(.0f, 5.f));
+            ImGui::Dummy(ImVec2(.0f, 10.f));
 
             static bool nt_user_send_input_patched = true;
             if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
                 nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
             ImGui::Dummy(ImVec2(.0f, 5.f));
-            if (ImGui::Button("Unload DLL"))
-                unload_dll();
             bool all_found = all_code_starts_found();
             if (all_found)
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -474,6 +472,10 @@ void update_ui()
             }
             if (all_found)
                 ImGui::PopItemFlag();
+            ImGui::SameLine(.0f, 20.f);
+            if (ImGui::Button("Unload DLL"))
+                unload_dll();
+            ImGui::Dummy(ImVec2(.0f, 5.f));
         }
         if (selected_tab == MenuTab::About)
         {
