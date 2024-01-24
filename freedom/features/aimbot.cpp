@@ -12,25 +12,38 @@ static inline Vector2<float> mouse_position()
     return mouse_pos;
 }
 
-static inline float lerp(float a, float b, float t)
+// Helper function to calculate quadratic Bézier curve point
+template <typename T>
+Vector2<T> quadraticBezier(const Vector2<T>& p0, const Vector2<T>& p1, const Vector2<T>& p2, float t)
 {
+    float u = 1.0f - t;
+    return u * u * p0 + 2.0f * u * t * p1 + t * t * p2;
+}
+
+template <typename T>
+Vector2<T> lerp(const Vector2<T>& a, const Vector2<T>& b, float t) {
     return a + t * (b - a);
 }
 
-static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t)
+static inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t)
 {
-    Vector2 target_on_screen = playfield_to_screen(target);
-    Vector2 predicted_position(lerp(cursor_pos.x, target_on_screen.x, t), lerp(cursor_pos.y, target_on_screen.y, t));
-    move_mouse_to(predicted_position.x, predicted_position.y);
+    // Convert target position from playfield to screen
+    Vector2<float> target_on_screen = playfield_to_screen(target);
+
+    // Calculate quadratic Bézier curve point
+    Vector2<float> point_on_curve = quadraticBezier(cursor_pos, target_on_screen, target_on_screen, t);
+
+    // Move the mouse to the calculated position
+    move_mouse_to(point_on_curve.x, point_on_curve.y);
 }
 
-void update_aimbot(Circle &circle, const int32_t audio_time)
+void update_aimbot(Circle& circle, const int32_t audio_time)
 {
     if (!cfg_aimbot_lock)
         return;
 
     float t = cfg_fraction_modifier * ImGui::GetIO().DeltaTime;
-    Vector2 cursor_pos = mouse_position();
+    Vector2<float> cursor_pos = mouse_position();
 
     if (circle.type == HitObjectType::Circle)
     {
@@ -38,16 +51,16 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
     }
     else if (circle.type == HitObjectType::Slider)
     {
-        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+        uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
         if (!osu_manager) return;
-        uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
+        uintptr_t hit_manager_ptr = *(uintptr_t*)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
         if (!hit_manager_ptr) return;
-        uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
-        uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
-        uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
-        uintptr_t animation_ptr = *(uintptr_t *)(hit_object_ptr + OSU_HIT_OBJECT_ANIMATION_OFFSET);
-        float slider_ball_x = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
-        float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
+        uintptr_t hit_objects_list_ptr = *(uintptr_t*)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
+        uintptr_t hit_objects_list_items_ptr = *(uintptr_t*)(hit_objects_list_ptr + 0x4);
+        uintptr_t hit_object_ptr = *(uintptr_t*)(hit_objects_list_items_ptr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
+        uintptr_t animation_ptr = *(uintptr_t*)(hit_object_ptr + OSU_HIT_OBJECT_ANIMATION_OFFSET);
+        float slider_ball_x = *(float*)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
+        float slider_ball_y = *(float*)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
         Vector2 slider_ball(slider_ball_x, slider_ball_y);
         move_mouse_to_target(slider_ball, cursor_pos, t);
     }
