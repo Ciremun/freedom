@@ -96,5 +96,5 @@ It doesn't function as an external, [features](#features) will not work.
 | console     | print logs to console         |
 | inject      | run injector after build      |
 | all         | build standalone and internal |
-| standalone  | build standlone only          |
+| standalone  | build standalone only         |
 | run         | run standalone after build    |
