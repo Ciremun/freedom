@@ -12,12 +12,16 @@ static inline Vector2<float> mouse_position()
     return mouse_pos;
 }
 
-// Helper function to calculate quadratic Bézier curve point
 template <typename T>
-Vector2<T> quadraticBezier(const Vector2<T>& p0, const Vector2<T>& p1, const Vector2<T>& p2, float t)
+Vector2<T> bezierCurve(const Vector2<T>& p0, const Vector2<T>& p1, const Vector2<T>& p2, float t)
 {
     float u = 1.0f - t;
-    return u * u * p0 + 2.0f * u * t * p1 + t * t * p2;
+    Vector2<T> point;
+    
+    point.x = u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x;
+    point.y = u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y;
+    
+    return point;
 }
 
 template <typename T>
@@ -27,13 +31,17 @@ Vector2<T> lerp(const Vector2<T>& a, const Vector2<T>& b, float t) {
 
 static inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t)
 {
-    // Convert target position from playfield to screen
     Vector2<float> target_on_screen = playfield_to_screen(target);
 
-    // Calculate quadratic Bézier curve point
-    Vector2<float> point_on_curve = quadraticBezier(cursor_pos, target_on_screen, target_on_screen, t);
+    // control point
+    Vector2<float> control_point = cursor_pos + (target_on_screen - cursor_pos) * 0.5f;
 
-    // Move the mouse to the calculated position
+    // Bezier curve using parametric equation
+    float u = 1.0f - t;
+    Vector2<float> point_on_curve;
+    point_on_curve.x = u * u * cursor_pos.x + 2.0f * u * t * control_point.x + t * t * target_on_screen.x;
+    point_on_curve.y = u * u * cursor_pos.y + 2.0f * u * t * control_point.y + t * t * target_on_screen.y;
+
     move_mouse_to(point_on_curve.x, point_on_curve.y);
 }
 
