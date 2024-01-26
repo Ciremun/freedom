@@ -1,5 +1,9 @@
 #include "features/relax.h"
 #include "window.h"
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <thread>
 
 float od_window = 5.f;
 float od_window_left_offset = .0f;
@@ -15,7 +19,7 @@ bool debug_relax = false;
 
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
-void calc_od_timing()
+static void calc_od_timing()
 {
     static const auto rand_range_f = [](float f_min, float f_max) -> float
     {
@@ -48,7 +52,7 @@ void calc_od_timing()
     }
 }
 
-Vector2<float> mouse_position()
+static Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
@@ -89,8 +93,10 @@ void update_relax(Circle &circle, const int32_t audio_time)
             {
                 if (cfg_relax_style == 'a')
                     current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
-
-                send_keyboard_input(current_click, 0);
+                int min_delay = -cfg_random_hit_delay;
+                int max_delay = cfg_random_hit_delay;
+                int random_delay = min_delay + std::rand() % (max_delay - min_delay + 1);
+                send_keyboard_inputd(current_click, 0, random_delay);
                 FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
                 keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
 
