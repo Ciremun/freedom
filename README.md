@@ -90,7 +90,6 @@ It doesn't function as an external, [features](#features) will not work.
 
 |    Flag     |          Description          |
 |:-----------:|:-----------------------------:|
-|             | Freedom only                  |
 | all         | Build All                     |
 | No Flags    | Freedom Only                  |
 | standalone  | Standalone Only               |
