@@ -21,6 +21,7 @@ extern bool cfg_relax_lock;
 extern bool cfg_aimbot_lock;
 extern bool cfg_relax_checks_od;
 extern int cfg_random_hit_delay;
+extern int cfg_random_hit_delay;
 extern bool cfg_jumping_window;
 extern bool cfg_score_multiplier_enabled;
 extern float cfg_score_multiplier_value;
