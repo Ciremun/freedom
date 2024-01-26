@@ -16,6 +16,7 @@ bool cfg_flashlight_enabled = false;
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
 bool cfg_relax_checks_od = true;
+int cfg_random_hit_delay = 10;
 bool cfg_jumping_window = true;
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
@@ -68,6 +69,7 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("relax=%d\n", cfg_relax_lock);
     buf->appendf("relax_style=%c\n", (char)cfg_relax_style);
     buf->appendf("relax_checks_od=%d\n", (int)cfg_relax_checks_od);
+    buf->appendf("random_hit_delay=%d\n", (int)cfg_random_hit_delay);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
     buf->appendf("fraction_modifier=%.3f\n", cfg_fraction_modifier);
@@ -108,6 +110,7 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                    cfg_relax_lock = relax_lock_i;
     else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)             cfg_relax_style = (int)relax_style_c;
     else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)     cfg_relax_checks_od = relax_checks_od_i;
+    else if (sscanf(line, "random_hit_delay=%d", &random_hit_delay_i) == 1)   cfg_random_hit_delay = random_hit_delay_i;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                  cfg_aimbot_lock = aimbot_lock_i;
     else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)   cfg_spins_per_minute = spins_per_minute_i;
     else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1) cfg_fraction_modifier = fraction_modifier_f;
