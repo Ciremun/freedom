@@ -14,4 +14,5 @@ extern char right_click[2];
 
 void init_input();
 void send_keyboard_input(char wVk, DWORD dwFlags);
+void send_keyboard_inputd(char wVk, DWORD dwFlags,int delay);
 void move_mouse_to(int x, int y);
