@@ -44,6 +44,20 @@ void send_keyboard_input(char wVk, DWORD dwFlags)
     SendInput(1, inputs, sizeof(INPUT));
 }
 
+void send_keyboard_inputd(char wVk, DWORD dwFlags,int delay)
+{
+    INPUT inputs[1];
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = 0;
+    inputs[0].ki.wScan = 0;
+    inputs[0].ki.time = 0;
+    inputs[0].ki.dwExtraInfo = 0;
+    inputs[0].ki.dwFlags = dwFlags;
+    inputs[0].ki.wVk = wVk;
+    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    SendInput(1, inputs, sizeof(INPUT));
+}
+
 void move_mouse_to(int x, int y)
 {
     INPUT inputs[1];
