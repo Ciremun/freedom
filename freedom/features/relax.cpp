@@ -19,7 +19,7 @@ bool debug_relax = false;
 
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
-static void calc_od_timing()
+void calc_od_timing()
 {
     static const auto rand_range_f = [](float f_min, float f_max) -> float
     {
@@ -52,7 +52,7 @@ static void calc_od_timing()
     }
 }
 
-static Vector2<float> mouse_position()
+Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
