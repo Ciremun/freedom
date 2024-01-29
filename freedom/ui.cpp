@@ -147,8 +147,8 @@ void update_ui()
                         song_name_u8[bytes_written] = '\0';
                     }
                 }
+                prev_song_str_ptr = song_str_ptr;
             }
-            prev_song_str_ptr = song_str_ptr;
         }
     }
 

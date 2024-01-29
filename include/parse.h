@@ -100,9 +100,11 @@ struct BeatmapData
 enum ReplayKeys : uint32_t
 {
     NO_KEY = 0,
-    KEY_LEFT = 5,
-    KEY_RIGHT = 10,
-    KEY_LEFT_AND_RIGHT = 15,
+    M1_KEY = 1,
+    M2_KEY = 2,
+    K1_KEY = 4,
+    K2_KEY = 8,
+    SMOKE_KEY = 16,
 };
 
 struct ReplayEntryData

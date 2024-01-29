@@ -23,36 +23,41 @@ void update_replay()
     {
         int32_t audio_time = *(int32_t *)audio_time_ptr;
         ReplayEntryData &entry = current_replay.current_entry();
-        if (audio_time >= current_replay.replay_ms + entry.ms_since_last_frame)
+        if (audio_time >= (current_replay.replay_ms + entry.ms_since_last_frame))
         {
             static bool left = false;
             static bool right = false;
             if (current_replay.entries_idx < current_replay.entries.size())
             {
-                if (cfg_replay_aim && entry.position.x > 0 && entry.position.y > 0)
+                if (cfg_replay_aim && entry.position.x >= 0 && entry.position.y >= 0)
                     move_mouse_to(entry.position.x, entry.position.y);
                 if (cfg_replay_keys)
                 {
-                    switch (entry.keypresses)
+                    if ((entry.keypresses & M1_KEY) || (entry.keypresses & K1_KEY))
                     {
-                        case ReplayKeys::KEY_LEFT: {
-                            if (!left) { send_keyboard_input(left_click[0], 0); left = true; }
-                            if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
-                        } break;
-                        case ReplayKeys::KEY_RIGHT: {
-                            if (left)   { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
-                            if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
-                        } break;
-                        case ReplayKeys::NO_KEY: {
-                            if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
-                            if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
-                        } break;
-                        case ReplayKeys::KEY_LEFT_AND_RIGHT: {
-                            if (!left)  { send_keyboard_input(left_click[0], 0); left = true; }
-                            if (!right) { send_keyboard_input(right_click[0], 0); right = true; }
-                        } break;
-                        default:
-                            break;
+                        if (!left)
+                        {
+                            send_keyboard_input(left_click[0], 0);
+                            left = true;
+                        }
+                    }
+                    else if (left)
+                    {
+                        send_keyboard_input(left_click[0], KEYEVENTF_KEYUP);
+                        left = false;
+                    }
+                    if ((entry.keypresses & M2_KEY) || (entry.keypresses & K2_KEY))
+                    {
+                        if (!right)
+                        {
+                            send_keyboard_input(right_click[0], 0);
+                            right = true;
+                        }
+                    }
+                    else if (right)
+                    {
+                        send_keyboard_input(right_click[0], KEYEVENTF_KEYUP);
+                        right = false;
                     }
                 }
                 current_replay.replay_ms += entry.ms_since_last_frame;
@@ -65,8 +70,6 @@ void update_replay()
                     if (left)  { send_keyboard_input(left_click[0], KEYEVENTF_KEYUP); left = false; }
                     if (right) { send_keyboard_input(right_click[0], KEYEVENTF_KEYUP); right = false; }
                 }
-                current_replay.replay_ms = 0;
-                current_replay.entries_idx = 0;
             }
         }
     }

@@ -147,13 +147,40 @@ static void mods_to_string(Mods &mods, char *buffer)
     buffer[cursor] = '\0';
 }
 
+static bool replay_beatmap_name(char *out)
+{
+    extern uintptr_t selected_song_ptr;
+    if (selected_song_ptr)
+    {
+        uintptr_t song_str_ptr = 0;
+        if (internal_memory_read(g_process, selected_song_ptr, &song_str_ptr))
+        {
+            song_str_ptr += 0x80;
+            uintptr_t song_str = 0;
+            if (internal_memory_read(g_process, song_str_ptr, &song_str))
+            {
+                song_str += 0x4;
+                uint32_t song_str_length = 0;
+                if (internal_memory_read(g_process, song_str, &song_str_length))
+                {
+                    song_str += 0x4;
+                    int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, out, 255, 0, 0);
+                    out[bytes_written] = '\0';
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 {
     FR_INFO("[+] New Replay Detected");
     replay.clear();
 
-    extern char song_name_u8[256];
-    memcpy(replay.song_name_u8, song_name_u8, 256);
+    if (!replay_beatmap_name(replay.song_name_u8))
+        memcpy(replay.song_name_u8, "Unknown Beatmap", sizeof("Unknown Beatmap"));
 
     uintptr_t author_str_obj = *(uintptr_t *)(selected_replay_ptr + OSU_REPLAY_AUTHOR_OFFSET);
     uint32_t author_str_length = *(uint32_t *)(author_str_obj + 0x4);
@@ -300,15 +327,19 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
     size_t next_comma_position = 0;
     ReplayEntryData entry;
     replay.entries.reserve(replay_data_size / 4);
-    while (entry.ms_since_last_frame != -12345)
+    extern bool cfg_replay_hardrock;
+    bool hardrock = cfg_replay_hardrock;
+    while (1)
     {
         if (sscanf(replay_data_ptr, "%lld|%f|%f|%u", &entry.ms_since_last_frame, &entry.position.x, &entry.position.y, &entry.keypresses) == 4)
         {
-            extern bool cfg_replay_hardrock;
-            if (cfg_replay_hardrock)
-                entry.position.y = std::abs(384.f - entry.position.y);
-            entry.position = playfield_to_screen(entry.position);
-            replay.entries.push_back(entry);
+            if (!(entry.ms_since_last_frame == -12345 && entry.position.x == 0 && entry.position.y == 0))
+            {
+                if (hardrock)
+                    entry.position.y = std::abs(384.f - entry.position.y);
+                entry.position = playfield_to_screen(entry.position);
+                replay.entries.push_back(entry);
+            }
         }
         else
             break;
