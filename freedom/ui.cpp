@@ -84,7 +84,9 @@ void init_ui(IDirect3DDevice9* pDevice)
 {
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
 
+#ifdef FR_DEBUG
     IMGUI_CHECKVERSION();
+#endif // FR_DEBUG
     ImGuiContext* ctx = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
 
@@ -106,7 +108,9 @@ void init_ui()
 {
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
 
+#ifdef FR_DEBUG
     IMGUI_CHECKVERSION();
+#endif // FR_DEBUG
     ImGuiContext* ctx = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
 

@@ -78,6 +78,8 @@ static void async_obj_foreach_file_in_dir(Pid *proc, size_t *proc_count, Cstr di
                                                cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
                 if (define_commit_hash[0] != '\0')
                     line = cstr_array_append(line, define_commit_hash);
+                if (*debug_flag)
+                    line = cstr_array_append(line, "/DFR_DEBUG");
                 if (*console_flag)
                     line = cstr_array_append(line, "/DFR_LOG_TO_CONSOLE");
                 Cmd cmd = {.line = line};
