@@ -13,6 +13,8 @@ extern uintptr_t window_manager_ptr;
 extern Vector2<float> window_size;
 extern Vector2<float> playfield_size;
 extern Vector2<float> playfield_position;
+extern Vector2<float> client_offset;
+extern Vector2<float> primary_monitor;
 
 extern float window_ratio;
 extern float playfield_ratio;

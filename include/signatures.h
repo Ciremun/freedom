@@ -12,7 +12,7 @@ constexpr auto audio_time_func_sig          { pattern::build<"55 8B EC 83 E4 F8 
 constexpr auto osu_manager_func_sig         { pattern::build<"55 8B EC 57 56 53 83 EC 14 80 3D"> };
 constexpr auto binding_manager_func_sig     { pattern::build<"55 8B EC 57 56 83 EC 58 8B F1 8D 7D A0"> };
 constexpr auto selected_replay_func_sig     { pattern::build<"55 8B EC 57 56 53 81 EC A0 00 00 00 8B F1 8D BD 68 FF FF FF B9 22 00 00 00 33 C0 F3 AB 8B CE 8B F1 8D 7D E0"> };
-constexpr auto window_manager_func_sig      { pattern::build<"57 56 53 83 EC 6C 8B F1 8D 7D A8 B9 12 00 00 00 33 C0 F3 AB 8B CE 89 4D 94"> };
+constexpr auto window_manager_func_sig      { pattern::build<"55 8B EC 57 56 53 50 8B 15 . . . . 8B 7A 04 8B 05"> };
 constexpr auto update_timing_func_sig       { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 18 8B F9 8B 0D"> };
 constexpr auto check_timewarp_func_sig      { pattern::build<"55 8B EC 57 56 53 81 EC B0 01 00 00 8B F1 8D BD 50 FE FF FF B9 68 00 00 00 33 C0"> };
 constexpr auto osu_client_id_func_sig       { pattern::build<"8B F1 8D 7D C4 B9 0C 00 00 00 33 C0 F3 AB 8B CE 89 4D C0 8B 15"> };
@@ -32,7 +32,7 @@ constexpr auto osu_manager_sig              { pattern::build<"85 C9"> };
 constexpr auto binding_manager_sig          { pattern::build<"8D 45 D8 50 8B 0D"> };
 constexpr auto selected_replay_sig          { pattern::build<"8B 46 38 83 78 30 00"> };
 constexpr auto osu_username_sig             { pattern::build<"8B 01 8B 40 28 FF 50 18 8B 15"> };
-constexpr auto window_manager_sig           { pattern::build<"83 C2 04 8B 0D"> };
+constexpr auto window_manager_sig           { pattern::build<"8B 15 . . . . 83 C2 04 39 09 E8 . . . . 59"> };
 constexpr auto score_multiplier_sig         { pattern::build<"8B F1 D9 E8 83 FA 04 0F 83"> };
 constexpr auto update_timing_sig            { pattern::build<"D9 C0 DD 05"> };
 constexpr auto update_timing_sig_2          { pattern::build<"DE E9 DD 1D"> };

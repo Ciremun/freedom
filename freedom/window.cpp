@@ -7,6 +7,8 @@ uintptr_t window_manager_ptr = 0;
 Vector2<float> window_size(.0f, .0f);
 Vector2<float> playfield_size(.0f, .0f);
 Vector2<float> playfield_position(.0f, .0f);
+Vector2<float> client_offset(.0f, .0f);
+Vector2<float> primary_monitor(.0f, .0f);
 
 float window_ratio = .0f;
 float playfield_ratio = .0f;
@@ -32,13 +34,12 @@ bool calc_playfield_from_window()
     if (!window_manager)
         return false;
 
-    uintptr_t window_size_ptr = *(uintptr_t *)(window_manager + 0x4);
-    window_size.x = (float)(*(uint32_t *)(window_size_ptr + 0x4));
-    window_size.y = (float)(*(uint32_t *)(window_size_ptr + 0x8));
-    playfield_size.x = *(float *)(window_manager + 0x8);
-    playfield_size.y = *(float *)(window_manager + 0xC);
-    playfield_position.x = *(float *)(window_manager + 0x18);
-    playfield_position.y = *(float *)(window_manager + 0x1C);
-    playfield_ratio = playfield_size.y / 384.0f;
+    primary_monitor.x = (float)GetSystemMetrics(SM_CXSCREEN);
+    primary_monitor.y = (float)GetSystemMetrics(SM_CYSCREEN);
+    client_offset.x = (float)(*(int32_t *)(window_manager + 0x4));
+    client_offset.y = (float)(*(int32_t *)(window_manager + 0x8));
+    calc_playfield_manual((float)(*(int32_t *)(window_manager + 0xC)),
+                          (float)(*(int32_t *)(window_manager + 0x10)));
+
     return true;
 }

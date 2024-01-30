@@ -117,6 +117,7 @@ static void scan_for_code_starts()
                         nt_user_send_input_dispatch_table_id_found = true;
                         if (all_code_starts_found())
                         {
+                            FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
                             memory_scan_progress = 1.f;
                             return;
                         }
@@ -272,12 +273,12 @@ static void try_find_hook_offsets()
             }
         });
     }
-    // if (window_manager_code_start)
-    // {
-    //     window_manager_offset = pattern::find<window_manager_sig>({ (uint8_t *)window_manager_code_start, 0xC0A + 0x50});
-    //     if (window_manager_offset)
-    //         window_manager_ptr = *(uintptr_t *)(window_manager_offset + window_manager_sig.size());
-    // }
+    if (window_manager_code_start)
+    {
+        window_manager_offset = pattern::find<window_manager_sig>({ (uint8_t *)window_manager_code_start, 0x55});
+        if (window_manager_offset)
+            window_manager_ptr = *(uintptr_t *)(window_manager_offset + 0x2);
+    }
 
     if (score_multiplier_code_start)
     {

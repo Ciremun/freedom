@@ -247,7 +247,13 @@ void update_ui()
             if (ImGui::Checkbox("Variable Unstable Rate", &cfg_relax_checks_od))
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, 5.f));
-            ImGui::Checkbox("Debug", &debug_relax);
+            bool relax_checks_od = cfg_relax_checks_od;
+            if (!relax_checks_od)
+                ImGui::BeginDisabled();
+            if (ImGui::Checkbox("Jumping Unstable Rate Window", &cfg_jumping_window))
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            if (!relax_checks_od)
+                ImGui::EndDisabled();
         }
         if (selected_tab == MenuTab::Aimbot)
         {
@@ -603,13 +609,13 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {
-                colored_if_null("Discord Rich Presence: %08X", discord_rich_presence_jump_back);
                 colored_if_null("AR Hook: %08X", ar_hook_jump_back);
+                colored_if_null("CS Hook: %08X", cs_hook_jump_back);
+                colored_if_null("OD Hook: %08X", od_hook_jump_back);
+                colored_if_null("Discord Rich Presence: %08X", discord_rich_presence_jump_back);
                 colored_if_null("Beatmap Onload: %08X", beatmap_onload_hook_jump_back);
                 colored_if_null("Check Timewarp 1: %08X", check_timewarp_hook_1_jump_back);
                 colored_if_null("Check Timewarp 2: %08X", check_timewarp_hook_2_jump_back);
-                colored_if_null("CS Hook: %08X", cs_hook_jump_back);
-                colored_if_null("OD Hook: %08X", od_hook_jump_back);
                 colored_if_null("Score Multiplier: %08X", score_multiplier_hook_jump_back);
                 colored_if_null("Selected Replay: %08X", selected_replay_hook_jump_back);
                 colored_if_null("Set Playback Rate: %08X", set_playback_rate_jump_back);

@@ -27,8 +27,10 @@ void init_input()
     FR_INFO_FMT("Left Click: %c", left_click[0]);
     FR_INFO_FMT("Right Click: %c", right_click[0]);
 
+    primary_monitor.x = (float)GetSystemMetrics(SM_CXSCREEN);
+    primary_monitor.y = (float)GetSystemMetrics(SM_CYSCREEN);
     if (!calc_playfield_from_window())
-        calc_playfield_manual(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+        calc_playfield_manual(primary_monitor.x, primary_monitor.y);
 }
 
 void send_keyboard_input(char wVk, DWORD dwFlags)
@@ -46,10 +48,12 @@ void send_keyboard_input(char wVk, DWORD dwFlags)
 
 void move_mouse_to(int x, int y)
 {
+    x += client_offset.x;
+    y += client_offset.y;
     INPUT inputs[1];
     inputs[0].type = INPUT_MOUSE;
-    inputs[0].mi.dx = (x * (0xFFFF / window_size.x));
-    inputs[0].mi.dy = (y * (0xFFFF / window_size.y));
+    inputs[0].mi.dx = (x * (0xFFFF / primary_monitor.x));
+    inputs[0].mi.dy = (y * (0xFFFF / primary_monitor.y));
     inputs[0].mi.mouseData = 0;
     inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
     inputs[0].mi.time = 0;

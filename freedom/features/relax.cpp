@@ -8,10 +8,8 @@ float od_check_ms = .0f;
 
 float jumping_window_offset = .0f;
 
-int wait_hitobjects_min = 10;
-int wait_hitobjects_max = 25;
-
-bool debug_relax = false;
+int wait_hitobjects_min = 2;
+int wait_hitobjects_max = 5;
 
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
@@ -73,17 +71,9 @@ void update_relax(Circle &circle, const int32_t audio_time)
         auto mouse_pos = mouse_position();
         Vector2 screen_pos = playfield_to_screen(circle.position);
         auto scalar_dist = sqrt((mouse_pos.x - screen_pos.x) * (mouse_pos.x - screen_pos.x) + (mouse_pos.y - screen_pos.y) * (mouse_pos.y - screen_pos.y));
-        auto valid_position = scalar_dist <= current_beatmap.scaled_hit_object_radius;
+        // auto valid_position = scalar_dist <= current_beatmap.scaled_hit_object_radius;
 
-        if (debug_relax)
-        {
-            ImGui::GetBackgroundDrawList()->AddCircleFilled(
-            ImVec2(screen_pos.x, screen_pos.y),
-            current_beatmap.scaled_hit_object_radius,
-            ImColor( 0, 255, 255, 100 ) );
-        }
-
-        if (valid_timing /* && valid_position */)
+        if (valid_timing)
         {
             if (!circle.clicked)
             {

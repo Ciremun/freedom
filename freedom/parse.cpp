@@ -59,6 +59,8 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     //     return false;
     // }
 
+    calc_playfield_from_window();
+
     uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
@@ -110,6 +112,19 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 
     if (beatmap_data.mods & Mods::DoubleTime)    od_window *= 0.67f;
     else if (beatmap_data.mods & Mods::HalfTime) od_window *= 1.33f;
+
+    // FIXME(Ciremun): refactor
+    static const auto rand_range_f = [](float f_min, float f_max) -> float
+    {
+        float scale = rand() / (float)RAND_MAX;
+        return f_min + scale * (f_max - f_min);
+    };
+
+    extern float od_window_left_offset;
+    extern float od_window_right_offset;
+    srand(time(NULL));
+    od_window_left_offset = -(od_window * rand_range_f(0.35f, 0.65f));
+    od_window_right_offset = od_window * rand_range_f(0.15f, 0.85f);
 
     beatmap_data.ready = true;
     return true;
@@ -181,6 +196,8 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
     if (!replay_beatmap_name(replay.song_name_u8))
         memcpy(replay.song_name_u8, "Unknown Beatmap", sizeof("Unknown Beatmap"));
+
+    calc_playfield_from_window();
 
     uintptr_t author_str_obj = *(uintptr_t *)(selected_replay_ptr + OSU_REPLAY_AUTHOR_OFFSET);
     uint32_t author_str_length = *(uint32_t *)(author_str_obj + 0x4);
