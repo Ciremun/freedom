@@ -4,6 +4,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Freedom
 {
@@ -198,6 +199,7 @@ namespace Freedom
         {
             var assembly = Assembly.GetEntryAssembly();
             Type[] classes = assembly.GetTypes();
+            var tasks = new List<Task>();
             int i = 0;
             foreach (Type c in classes)
             {
@@ -212,14 +214,17 @@ namespace Freedom
                             continue;
                         if (!VerifyClassMethod(c, m, cm))
                             continue;
-                        try
-                        {
-                            i += 1;
-                            System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
-                        } catch (Exception) {}
+                        tasks.Add(Task.Run(() => {
+                            try
+                            {
+                                System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(m.MethodHandle);
+                            } catch (Exception) {}
+                        }));
+                        i += 1;
                     }
                 }
             }
+            Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(10));
             return i;
         }
     }
