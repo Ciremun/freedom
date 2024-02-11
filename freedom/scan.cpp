@@ -443,6 +443,7 @@ __declspec(naked) void notify_on_scene_change()
     else
     {
         __asm {
+            mov current_beatmap.ready, 0
             call disable_nt_user_send_input_patch
         }
     }

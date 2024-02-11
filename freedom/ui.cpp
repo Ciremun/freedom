@@ -467,11 +467,6 @@ void update_ui()
             }
 
             ImGui::Dummy(ImVec2(.0f, 10.f));
-
-            static bool nt_user_send_input_patched = true;
-            if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
-                nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
-            ImGui::Dummy(ImVec2(.0f, 5.f));
             bool all_found = all_code_starts_found();
             if (all_found)
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);

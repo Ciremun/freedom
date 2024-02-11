@@ -48,22 +48,50 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     beatmap_data.clear();
 
     if (osu_manager_ptr == 0)
+    {
+        FR_INFO("[!] Parse Beatmap: osu_manager_ptr");
         return false;
+    }
 
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+    if (osu_manager == 0)
+    {
+        FR_INFO("[!] Parse Beatmap: osu_manager");
+        return false;
+    }
 
-    // bool replay_mode = *(bool *)(osu_manager + 0x17B);
-    // if (replay_mode)
-    // {
-    //     FR_INFO_FMT("skipping current beatmap: replay mode");
-    //     return false;
-    // }
+    bool replay_mode = *(bool *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET);
+    if (replay_mode)
+    {
+        FR_INFO_FMT("Skipping current beatmap: replay mode");
+        extern bool beatmap_loaded;
+        beatmap_loaded = false;
+        return false;
+    }
 
     calc_playfield_from_window();
 
     uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
+    if (hit_manager_ptr == 0)
+    {
+        FR_INFO("[!] Parse Beatmap: hit_manager_ptr");
+        return false;
+    }
+
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
+    if (hit_objects_list_ptr == 0)
+    {
+        FR_INFO("[!] Parse Beatmap: hit_objects_list_ptr");
+        return false;
+    }
+
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
+    if (hit_objects_list_items_ptr == 0)
+    {
+        FR_INFO("[!] Parse Beatmap: hit_objects_list_items_ptr");
+        return false;
+    }
+
     int32_t hit_objects_count = *(int32_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_COUNT_OFFSET);
 
     beatmap_data.hit_objects.reserve(hit_objects_count);
@@ -71,6 +99,11 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     for (int32_t i = 0; i < hit_objects_count; ++i)
     {
         uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * i);
+        if (hit_object_ptr == 0)
+        {
+            FR_INFO("[!] Parse Beatmap: hit_object_ptr");
+            return false;
+        }
 
         HitObjectType circle_type = *(HitObjectType *)(hit_object_ptr + OSU_HIT_OBJECT_CIRCLE_TYPE_OFFSET);
         circle_type &= ~HitObjectType::ComboOffset;

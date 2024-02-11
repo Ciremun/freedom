@@ -30,14 +30,14 @@ void process_hitobject()
 {
     if (beatmap_loaded)
     {
-        parse_beatmap(osu_manager_ptr, current_beatmap);
-
-        relax_on_beatmap_load();
-        replay_on_beatmap_load();
-        unmod_flashlight_on_beatmap_load();
-        unmod_hidden_on_beatmap_load();
-
-        beatmap_loaded = false;
+        if (parse_beatmap(osu_manager_ptr, current_beatmap))
+        {
+            relax_on_beatmap_load();
+            replay_on_beatmap_load();
+            unmod_flashlight_on_beatmap_load();
+            unmod_hidden_on_beatmap_load();
+            beatmap_loaded = false;
+        }
     }
 
     if (start_parse_replay)
