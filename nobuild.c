@@ -34,15 +34,18 @@
         body;                                                                    \
     } while (0)
 
-#define CALL_LINK(objs, ...)                                  \
-    do                                                        \
-    {                                                         \
-        Cstr_Array line = cstr_array_make(__VA_ARGS__, NULL); \
-        for (size_t i = 0; i < objs.count; ++i)               \
-            line = cstr_array_append(line, objs.elems[i]);    \
-        Cmd cmd = {.line = line};                             \
-        INFO("CMD: %s", cmd_show(cmd));                       \
-        cmd_run_sync(cmd);                                    \
+#define CALL_LINK(objs, ...)                                      \
+    do                                                            \
+    {                                                             \
+        if (do_link)                                              \
+        {                                                         \
+            Cstr_Array line = cstr_array_make(__VA_ARGS__, NULL); \
+            for (size_t i = 0; i < objs.count; ++i)               \
+                line = cstr_array_append(line, objs.elems[i]);    \
+            Cmd cmd = {.line = line};                             \
+            INFO("CMD: %s", cmd_show(cmd));                       \
+            cmd_run_sync(cmd);                                    \
+        }                                                         \
     } while (0)
 
 int *standalone_flag = 0;
@@ -53,6 +56,7 @@ int *all_flag = 0;
 int *console_flag = 0;
 int *inject_flag = 0;
 
+int do_link = 0;
 char define_commit_hash[32] = {0};
 
 static void remove_object_files()
@@ -74,6 +78,7 @@ static void async_obj_foreach_file_in_dir(Pid *proc, size_t *proc_count, Cstr di
             if (!PATH_EXISTS(obj) ||
                 (*rebuild_flag || is_path1_modified_after_path2(src, obj)))
             {
+                do_link = 1;
                 Cstr_Array line = *debug_flag ? cstr_array_make("cl", MSVC_DEBUG_FLAGS, src, "/c", NULL) :
                                                cstr_array_make("cl", MSVC_RELEASE_FLAGS, src, "/c", NULL);
                 if (define_commit_hash[0] != '\0')
