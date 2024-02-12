@@ -33,6 +33,7 @@ void process_hitobject()
         if (parse_beatmap(osu_manager_ptr, current_beatmap))
         {
             relax_on_beatmap_load();
+            aimbot_on_beatmap_load();
             replay_on_beatmap_load();
             unmod_flashlight_on_beatmap_load();
             unmod_hidden_on_beatmap_load();
@@ -85,6 +86,7 @@ void process_hitobject()
             if (audio_time + od_check_ms >= circle.end_time)
             {
                 current_beatmap.hit_object_idx++;
+                aimbot_on_advance_hit_object();
                 if (current_beatmap.hit_object_idx >= current_beatmap.hit_objects.size())
                     current_beatmap.ready = false;
             }

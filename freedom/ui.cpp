@@ -263,7 +263,7 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 50.f, 500.f, "Cursor Speed: %.0f");
+            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, .01f, 5.f, "Cursor Delay: %.2f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));
@@ -682,9 +682,6 @@ void draw_debug_log()
         ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
         ImGui::PushFont(font);
         ImGui::Begin("Debug Log", &cfg_show_debug_log);
-        if (ImGui::Checkbox("Write Debug Log", &cfg_write_debug_log))
-            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-        ImGui::Dummy(ImVec2(.0f, 2.f));
         debug_log.draw();
         ImGui::End();
         ImGui::PopFont();

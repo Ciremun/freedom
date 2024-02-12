@@ -111,5 +111,8 @@ void update_relax(Circle &circle, const int32_t audio_time)
 
 void relax_on_beatmap_load()
 {
-    current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
+    if (cfg_relax_lock)
+    {
+        current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
+    }
 }

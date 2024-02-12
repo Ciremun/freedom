@@ -1,5 +1,7 @@
 #include "features/aimbot.h"
 
+float elapsed_lerp = 0;
+
 static inline Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos(.0f, .0f);
@@ -17,11 +19,18 @@ static inline float lerp(float a, float b, float t)
     return a + t * (b - a);
 }
 
-static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t)
+static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos)
 {
     Vector2 target_on_screen = playfield_to_screen(target);
-    Vector2 predicted_position(lerp(cursor_pos.x, target_on_screen.x, t), lerp(cursor_pos.y, target_on_screen.y, t));
-    move_mouse_to(predicted_position.x, predicted_position.y);
+    if (elapsed_lerp < cfg_fraction_modifier)
+    {
+        float x = lerp(cursor_pos.x, target_on_screen.x, elapsed_lerp / cfg_fraction_modifier);
+        float y = lerp(cursor_pos.y, target_on_screen.y, elapsed_lerp / cfg_fraction_modifier);
+        elapsed_lerp += ImGui::GetIO().DeltaTime;
+        move_mouse_to(x, y);
+    }
+    else
+        move_mouse_to(target_on_screen.x, target_on_screen.y);
 }
 
 void update_aimbot(Circle &circle, const int32_t audio_time)
@@ -29,12 +38,11 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
     if (!cfg_aimbot_lock)
         return;
 
-    float t = cfg_fraction_modifier * ImGui::GetIO().DeltaTime;
     Vector2 cursor_pos = mouse_position();
 
     if (circle.type == HitObjectType::Circle)
     {
-        move_mouse_to_target(circle.position, cursor_pos, t);
+        move_mouse_to_target(circle.position, cursor_pos);
     }
     else if (circle.type == HitObjectType::Slider)
     {
@@ -53,7 +61,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         float slider_ball_x = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
         float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
         Vector2 slider_ball(slider_ball_x, slider_ball_y);
-        move_mouse_to_target(slider_ball, cursor_pos, t);
+        move_mouse_to_target(slider_ball, cursor_pos);
     }
     else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time)
     {
@@ -62,7 +70,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         constexpr float PI = 3.14159f;
         static float angle = .0f;
         Vector2 next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
-        move_mouse_to_target(next_point_on_circle, cursor_pos, t);
+        move_mouse_to_target(next_point_on_circle, cursor_pos);
         float three_pi = 3 * PI;
         if (cfg_timewarp_enabled)
         {
@@ -72,4 +80,17 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         }
         angle > 2 * PI ? angle = 0 : angle += cfg_spins_per_minute / three_pi * ImGui::GetIO().DeltaTime;
     }
+}
+
+void aimbot_on_beatmap_load()
+{
+    if (cfg_aimbot_lock)
+    {
+        elapsed_lerp = 0;
+    }
+}
+
+void aimbot_on_advance_hit_object()
+{
+    elapsed_lerp = 0;
 }

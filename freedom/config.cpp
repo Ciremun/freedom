@@ -3,7 +3,7 @@
 int cfg_font_size = 30;
 int cfg_spins_per_minute = 300;
 bool cfg_mod_menu_visible = true;
-float cfg_fraction_modifier = 100.f;
+float cfg_fraction_modifier = .5f;
 bool cfg_replay_enabled = false;
 bool cfg_replay_aim = true;
 bool cfg_replay_keys = true;
@@ -70,7 +70,7 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("relax_checks_od=%d\n", (int)cfg_relax_checks_od);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
-    buf->appendf("fraction_modifier=%.3f\n", cfg_fraction_modifier);
+    buf->appendf("fraction_modifier=%.2f\n", cfg_fraction_modifier);
     buf->appendf("replay=%d\n", (int)cfg_replay_enabled);
     buf->appendf("replay_aim=%d\n", (int)cfg_replay_aim);
     buf->appendf("replay_keys=%d\n", (int)cfg_replay_keys);
