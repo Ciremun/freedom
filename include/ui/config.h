@@ -31,5 +31,12 @@ extern bool cfg_hidden_remover_enabled;
 extern bool cfg_write_debug_log;
 extern bool cfg_show_debug_log;
 
+extern char cfg_discord_rich_presence_state[512];
+extern char cfg_discord_rich_presence_large_text[512];
+extern char cfg_discord_rich_presence_small_text[512];
+extern wchar_t discord_rich_presence_state_wchar[512];
+extern wchar_t discord_rich_presence_large_text_wchar[512];
+extern wchar_t discord_rich_presence_small_text_wchar[512];
+
 const char *get_imgui_ini_filename(HMODULE hMod);
 void set_imgui_ini_handler();

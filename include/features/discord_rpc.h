@@ -12,6 +12,7 @@ extern DWORD discord_rich_presence_small_text_string_ptr;
 
 void init_discord_rpc();
 
+void set_discord_rpc_str(wchar_t *w_str, char *c_str, DWORD *output_str_ptr);
 void enable_discord_rich_presence_hooks();
 void disable_discord_rich_presence_hooks();
 

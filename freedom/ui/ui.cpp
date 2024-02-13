@@ -393,49 +393,21 @@ void update_ui()
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
-
-            static char discord_rich_presence_state[512] = {0};
-            if (ImGui::InputTextEx("##rpc_state", "State", discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_state", "State", cfg_discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                static wchar_t discord_rich_presence_state_wchar[512] = {0};
-                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_state_wchar);
-                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, NULL, 0);
-                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, discord_rich_presence_state_wchar, wchars_count);
-                discord_rich_presence_state_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_state_wchar);
-                if (variant_ok(&v))
-                    discord_rich_presence_state_string_ptr = v.intVal;
+                set_discord_rpc_str(discord_rich_presence_state_wchar, cfg_discord_rich_presence_state, &discord_rich_presence_state_string_ptr);
             }
-
-            static char discord_rich_presence_large_text[512] = {0};
-            if (ImGui::InputTextEx("##rpc_large_text", "Large Text", discord_rich_presence_large_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_large_text", "Large Text", cfg_discord_rich_presence_large_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                static wchar_t discord_rich_presence_large_text_wchar[512] = {0};
-                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_large_text_wchar);
-                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, NULL, 0);
-                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, discord_rich_presence_large_text_wchar, wchars_count);
-                discord_rich_presence_large_text_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar);
-                if (variant_ok(&v))
-                    discord_rich_presence_large_text_string_ptr = v.intVal;
+                set_discord_rpc_str(discord_rich_presence_large_text_wchar, cfg_discord_rich_presence_large_text, &discord_rich_presence_large_text_string_ptr);
             }
-
-            static char discord_rich_presence_small_text[512] = {0};
-            if (ImGui::InputTextEx("##rpc_small_text", "Small Text", discord_rich_presence_small_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_small_text", "Small Text", cfg_discord_rich_presence_small_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                static wchar_t discord_rich_presence_small_text_wchar[512] = {0};
-                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_small_text_wchar);
-                int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, NULL, 0);
-                int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, discord_rich_presence_small_text_wchar, wchars_count);
-                discord_rich_presence_small_text_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar);
-                if (variant_ok(&v))
-                    discord_rich_presence_small_text_string_ptr = v.intVal;
+                set_discord_rpc_str(discord_rich_presence_small_text_wchar, cfg_discord_rich_presence_small_text, &discord_rich_presence_small_text_string_ptr);
             }
-
             if (!cfg_discord_rich_presence_enabled)
             {
                 ImGui::PopStyleColor();
