@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hook.h"
+
 #include "ui/config.h"
 
 extern uintptr_t selected_replay_code_start;

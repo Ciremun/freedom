@@ -5,13 +5,14 @@
 #include <d3d9.h>
 
 #include "scan.h"
-#include "ui/font.h"
 #include "freedom.h"
-#include "ui/config.h"
 #include "input.h"
 #include "hitobject.h"
-#include "ui/log.h"
 #include "clrhost.h"
+
+#include "ui/font.h"
+#include "ui/config.h"
+#include "ui/log.h"
 #include "ui/colors.h"
 
 #include "imgui.h"

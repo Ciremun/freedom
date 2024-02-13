@@ -6,8 +6,9 @@
 #include "scan.h"
 #include "parse.h"
 #include "input.h"
-#include "ui/ui.h"
 #include "hitobject.h"
+
+#include "ui/ui.h"
 
 #define D3DDEV9_LEN 119
 

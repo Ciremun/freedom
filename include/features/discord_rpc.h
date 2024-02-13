@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hook.h"
+
 #include "ui/config.h"
 
 extern DWORD discord_rich_presence_code_start;

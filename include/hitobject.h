@@ -6,8 +6,9 @@
 #include "window.h"
 #include "memory.h"
 #include "input.h"
-#include "ui/config.h"
 #include "struct_offsets.h"
+
+#include "ui/config.h"
 
 extern bool beatmap_loaded;
 extern bool start_parse_replay;

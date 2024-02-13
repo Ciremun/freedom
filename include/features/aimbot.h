@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector.h"
+
 #include "ui/config.h"
 
 void aimbot_on_beatmap_load();

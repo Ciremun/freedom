@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "hook.h"
+
 #include "ui/config.h"
 
 extern uintptr_t score_multiplier_code_start;

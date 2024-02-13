@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "hook.h"
+
 #include "ui/config.h"
 
 typedef void(*tHiddenHook)();
