@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <tlhelp32.h>
 #include <d3d9.h>
 
 #include <stdint.h>
@@ -10,7 +11,7 @@
 #include "hook.h"
 #include "signatures.h"
 #include "hitobject.h"
-#include "mem.h"
+#include "memory.h"
 #include "clrhost.h"
 
 #include "features/relax.h"

@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "mem.h"
+#include "memory.h"
 #include "vector.h"
 #include "freedom.h"
 

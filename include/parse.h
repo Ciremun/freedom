@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "mem.h"
+#include "memory.h"
 #include "vector.h"
 #include "window.h"
 #include "struct_offsets.h"

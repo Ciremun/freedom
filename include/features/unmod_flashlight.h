@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "hook.h"
-#include "config.h"
+#include "ui/config.h"
 
 extern uintptr_t update_flashlight_code_start;
 extern uint8_t update_flashlight_original_byte;

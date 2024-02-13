@@ -3,12 +3,10 @@
 
 #include <d3d9.h>
 
-#include "stdafx.h"
-
 #include "scan.h"
 #include "parse.h"
 #include "input.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "hitobject.h"
 
 #define D3DDEV9_LEN 119

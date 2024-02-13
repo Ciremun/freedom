@@ -1,4 +1,4 @@
-#include "config.h"
+#include "ui/config.h"
 
 int cfg_font_size = 30;
 int cfg_spins_per_minute = 300;

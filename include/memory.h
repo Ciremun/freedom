@@ -1,14 +1,11 @@
 #pragma once
 
-#include "stdafx.h"
-
+#include <windows.h>
 #include <psapi.h>
 
 #include <stdint.h>
 
-#include "log.h"
-
-uintptr_t GetModuleBaseAddress(const wchar_t *modName);
+#include "ui/log.h"
 
 void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);
 

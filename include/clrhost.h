@@ -1,8 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
+#include <mscoree.h>
+#include <metahost.h>
 
-#include "mem.h"
+#include "memory.h"
 
 #include <vector>
 #include <string>

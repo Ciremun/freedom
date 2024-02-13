@@ -4,7 +4,7 @@
 
 #include "imgui.h"
 
-#include "colors.h"
+#include "ui/colors.h"
 
 #ifdef FR_LOG_TO_CONSOLE
 #define FR_ERROR(message) fprintf(stderr, "[!] %s:%d: %s\n", __FUNCSIG__, __LINE__, message)

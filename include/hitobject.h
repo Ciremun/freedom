@@ -4,9 +4,9 @@
 
 #include "parse.h"
 #include "window.h"
-#include "mem.h"
+#include "memory.h"
 #include "input.h"
-#include "config.h"
+#include "ui/config.h"
 #include "struct_offsets.h"
 
 extern bool beatmap_loaded;

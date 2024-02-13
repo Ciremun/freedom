@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hook.h"
-#include "config.h"
+#include "ui/config.h"
 
 extern uintptr_t set_playback_rate_code_start;
 extern uintptr_t set_playback_rate_jump_back;

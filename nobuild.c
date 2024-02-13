@@ -4,8 +4,9 @@
 #define STB_SPRINTF_IMPLEMENTATION
 #include "vendor/imgui/stb_sprintf.h"
 
-#define DLL_DIRS "freedom/", "freedom/dll/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/"
-#define STANDALONE_DIRS "freedom/", "freedom/standalone/", "freedom/features/", "vendor/imgui/", "vendor/imgui/backends/", "vendor/imgui/backends/standalone/"
+#define COMMON_DIRS "freedom/", "freedom/features/", "freedom/ui/", "vendor/imgui/", "vendor/imgui/backends/"
+#define DLL_DIRS "freedom/dll/", COMMON_DIRS
+#define STANDALONE_DIRS "freedom/standalone/", COMMON_DIRS, "vendor/imgui/backends/standalone/"
 
 #define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_DEFINE_MATH_OPERATORS", "/DIMGUI_USE_STB_SPRINTF", "/std:c++latest"
 #define MSVC_INCLUDE_FLAGS "/Iinclude", "/Ivendor/lzma", "/Ivendor/imgui", "/Ivendor/imgui/backends", "/Ivendor/imgui/backends/standalone", "/Ivendor/GLFW/include"

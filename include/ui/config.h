@@ -6,7 +6,7 @@
 #include "imgui_internal.h"
 
 #include "scan.h"
-#include "mem.h"
+#include "memory.h"
 
 extern int cfg_font_size;
 extern int cfg_spins_per_minute;
