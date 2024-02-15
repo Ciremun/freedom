@@ -20,16 +20,18 @@ void init_discord_rpc()
     {
         DiscordRichPresenceHook = Hook<Detour32>(discord_rich_presence_code_start, (BYTE *)set_discord_rich_presence, 5);
         if (cfg_discord_rich_presence_enabled)
+        {
             enable_discord_rich_presence_hooks();
 
-        if (cfg_discord_rich_presence_state[0] != '\0')
-            set_discord_rpc_str(discord_rich_presence_state_wchar, cfg_discord_rich_presence_state, &discord_rich_presence_state_string_ptr);
+            if (cfg_discord_rich_presence_state[0] != '\0')
+                set_discord_rpc_str(discord_rich_presence_state_wchar, cfg_discord_rich_presence_state, &discord_rich_presence_state_string_ptr);
 
-        if (cfg_discord_rich_presence_large_text[0] != '\0')
-            set_discord_rpc_str(discord_rich_presence_large_text_wchar, cfg_discord_rich_presence_large_text, &discord_rich_presence_large_text_string_ptr);
+            if (cfg_discord_rich_presence_large_text[0] != '\0')
+                set_discord_rpc_str(discord_rich_presence_large_text_wchar, cfg_discord_rich_presence_large_text, &discord_rich_presence_large_text_string_ptr);
 
-        if (cfg_discord_rich_presence_small_text[0] != '\0')
-            set_discord_rpc_str(discord_rich_presence_small_text_wchar, cfg_discord_rich_presence_small_text, &discord_rich_presence_small_text_string_ptr);
+            if (cfg_discord_rich_presence_small_text[0] != '\0')
+                set_discord_rpc_str(discord_rich_presence_small_text_wchar, cfg_discord_rich_presence_small_text, &discord_rich_presence_small_text_string_ptr);
+        }
     }
 }
 
