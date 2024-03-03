@@ -15,6 +15,7 @@
 #define mkfunc(f) auto s##f(mks(#f)); _##f = (t##f)GetProcAddress(k32, s##f.c_str())
 
 typedef DWORD (WINAPI *tGetFullPathNameW)(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR *lpFilePart);
+typedef DWORD (WINAPI *tGetLastError)();
 typedef HANDLE (WINAPI *tCreateToolhelp32Snapshot)(DWORD dwFlags, DWORD th32ProcessID);
 typedef BOOL (WINAPI *tProcess32FirstW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
 typedef BOOL (WINAPI *tProcess32NextW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
@@ -28,6 +29,7 @@ typedef HMODULE (WINAPI *tLoadLibraryW)(LPCWSTR lpLibFileName);
 
 tCreateToolhelp32Snapshot _CreateToolhelp32Snapshot = 0;
 tGetFullPathNameW _GetFullPathNameW = 0;
+tGetLastError _GetLastError = 0;
 tProcess32FirstW _Process32FirstW = 0;
 tProcess32NextW _Process32NextW = 0;
 tCloseHandle _CloseHandle = 0;
@@ -117,6 +119,7 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
     mkfunc(WriteProcessMemory);
     mkfunc(CreateRemoteThread);
     mkfunc(LoadLibraryW);
+    mkfunc(GetLastError);
 
     auto get_process_id_err = mks("get_process_id failed: launch %S first!\n");
     auto getfullpathnamea_err = mks("GetFullPathNameA failed: %ld\n");
@@ -144,7 +147,7 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
     DWORD module_path_length = _GetFullPathNameW(dll_name, MAX_PATH * 2, module_path, NULL);
     if (module_path_length == 0)
     {
-        fprintf(stderr, getfullpathnamea_err.c_str(), GetLastError());
+        fprintf(stderr, getfullpathnamea_err.c_str(), _GetLastError());
         return 1;
     }
 
@@ -160,16 +163,16 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
                 if (hThread)
                     _CloseHandle(hThread);
                 else
-                    fprintf(stderr, createremotethread_err.c_str(), GetLastError());
+                    fprintf(stderr, createremotethread_err.c_str(), _GetLastError());
             }
             else
-                fprintf(stderr, writeprocessmemory_err.c_str(), GetLastError());
+                fprintf(stderr, writeprocessmemory_err.c_str(), _GetLastError());
         }
         else
-            fprintf(stderr, virtualallocex_err.c_str(), GetLastError());
+            fprintf(stderr, virtualallocex_err.c_str(), _GetLastError());
     }
     else
-        fprintf(stderr, openprocess_err.c_str(), GetLastError());
+        fprintf(stderr, openprocess_err.c_str(), _GetLastError());
 
     if (hProc)
         _CloseHandle(hProc);
