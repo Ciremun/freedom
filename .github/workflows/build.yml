@@ -15,16 +15,13 @@ jobs:
   windows-msvc:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: Ciremun/gha-setup-vsdevenv@avoid-deprecation-warnings
-        with:
-          arch: 'x86'
+      - uses: actions/checkout@v4
       - name: build
         shell: cmd
         run: |
-          cl nobuild.c && nobuild.exe
+          nobuild.exe
       - name: freedom
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: freedom
           path: |
