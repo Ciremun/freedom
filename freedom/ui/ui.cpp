@@ -491,6 +491,8 @@ void update_ui()
                     }
                 };
                 ImGui::Text("Current Scene: %s", scene_ptr_to_str(current_scene_ptr));
+                static char selected_mods[64] = "Unknown";
+                ImGui::Text("Selected Mods: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
                 ImGui::Text("Prepared Methods: %d", prepared_methods_count);
             }
@@ -547,6 +549,7 @@ void update_ui()
                 colored_if_null("Update Timing: %08X", update_timing_code_start);
                 colored_if_null("Set Playback Rate: %08X", set_playback_rate_code_start);
                 colored_if_null("Check Timewarp: %08X", check_timewarp_code_start);
+                colored_if_null("Selected Mods: %08X", selected_mods_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {

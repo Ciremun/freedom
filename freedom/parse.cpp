@@ -172,27 +172,33 @@ static float score_percent(uint16_t _300, uint16_t _100, uint16_t _50, uint16_t 
     return percent;
 }
 
-static void mods_to_string(Mods &mods, char *buffer)
+char *mods_to_string(Mods &mods, char *buffer)
 {
     if (mods == Mods::None)
     {
         memcpy(buffer, "No Mod", 7);
-        return;
+        return buffer;
     }
     size_t cursor = 0;
     const auto apply_mod = [](size_t &cursor, char *buffer, const char *mod){
         memcpy(buffer + cursor, mod, 2);
         cursor += 2;
     };
-    if (mods & Mods::SpunOut)         apply_mod(cursor, buffer, "SO");
-    if (mods & Mods::NoFail)          apply_mod(cursor, buffer, "NF");
-    if (mods & Mods::Hidden)          apply_mod(cursor, buffer, "HD");
-    if (mods & Mods::HardRock)        apply_mod(cursor, buffer, "HR");
-    if (mods & Mods::HalfTime)        apply_mod(cursor, buffer, "HT");
-    else if (mods & Mods::Nightcore)  apply_mod(cursor, buffer, "NC");
-    else if (mods & Mods::DoubleTime) apply_mod(cursor, buffer, "DT");
-    if (mods & Mods::Flashlight)      apply_mod(cursor, buffer, "FL");
+    if      (mods & Mods::SpunOut)     apply_mod(cursor, buffer, "SO");
+    if      (mods & Mods::NoFail)      apply_mod(cursor, buffer, "NF");
+    if      (mods & Mods::Hidden)      apply_mod(cursor, buffer, "HD");
+    if      (mods & Mods::HalfTime)    apply_mod(cursor, buffer, "HT");
+    else if (mods & Mods::Nightcore)   apply_mod(cursor, buffer, "NC");
+    else if (mods & Mods::DoubleTime)  apply_mod(cursor, buffer, "DT");
+    if      (mods & Mods::HardRock)    apply_mod(cursor, buffer, "HR");
+    else if (mods & Mods::Easy)        apply_mod(cursor, buffer, "EZ");
+    if      (mods & Mods::Flashlight)  apply_mod(cursor, buffer, "FL");
+    if      (mods & Mods::TouchDevice) apply_mod(cursor, buffer, "TD");
+    if      (mods & Mods::Perfect)     apply_mod(cursor, buffer, "PF");
+    else if (mods & Mods::SuddenDeath) apply_mod(cursor, buffer, "SD");
+    if      (mods & Mods::ScoreV2)     apply_mod(cursor, buffer, "V2");
     buffer[cursor] = '\0';
+    return buffer;
 }
 
 static bool replay_beatmap_name(char *out)

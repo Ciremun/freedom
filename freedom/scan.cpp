@@ -21,6 +21,9 @@ uintptr_t audio_time_ptr = 0;
 uintptr_t osu_manager_code_start = 0;
 uintptr_t osu_manager_ptr = 0;
 
+uintptr_t selected_mods_code_start = 0;
+Mods *selected_mods_ptr = 0;
+
 uintptr_t nt_user_send_input_ptr = 0;
 uintptr_t nt_user_send_input_original_jmp_address = 0;
 uintptr_t dispatch_table_id = 0x0000107F;
@@ -55,7 +58,7 @@ inline bool all_code_starts_found()
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
            score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
-           && hom_update_vars_hidden_loc;
+           && hom_update_vars_hidden_loc && selected_mods_code_start;
 }
 
 static int filter(unsigned int code)
@@ -172,6 +175,7 @@ static void scan_for_code_starts()
             PATTERN_SCAN(check_flashlight_code_start,  check_flashlight_func_sig,   opcodes);
             PATTERN_SCAN(update_timing_code_start,     update_timing_func_sig,      opcodes);
             PATTERN_SCAN(check_timewarp_code_start,    check_timewarp_func_sig,     opcodes);
+            PATTERN_SCAN(selected_mods_code_start,     selected_mods_func_sig,      opcodes);
             PATTERN_SCAN(hom_update_vars_hidden_loc,   hom_update_vars_hidden_sig,  opcodes);
 
             if (!set_playback_rate_code_start && is_set_playback_rate(opcodes))
@@ -333,6 +337,11 @@ static void try_find_hook_offsets()
     if (set_playback_rate_code_start)
     {
         set_playback_rate_jump_back = set_playback_rate_code_start + 0xA;
+    }
+
+    if (selected_mods_code_start)
+    {
+        selected_mods_ptr = *(Mods **)(selected_mods_code_start + 0x9);
     }
 }
 

@@ -45,6 +45,9 @@ extern uintptr_t audio_time_ptr;
 extern uintptr_t osu_manager_code_start;
 extern uintptr_t osu_manager_ptr;
 
+extern uintptr_t selected_mods_code_start;
+extern Mods *selected_mods_ptr;
+
 extern uintptr_t osu_client_id_code_start;
 extern char osu_client_id[64];
 

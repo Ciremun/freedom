@@ -132,5 +132,6 @@ struct ReplayData
     ReplayEntryData& current_entry();
 };
 
+char *mods_to_string(Mods &mods, char *buffer);
 bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data);
 bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay);
