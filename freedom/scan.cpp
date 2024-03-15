@@ -321,8 +321,8 @@ static void try_find_hook_offsets()
 
     if (score_multiplier_code_start)
     {
-        score_multiplier_code_start += 0x2;
-        score_multiplier_hook_jump_back = score_multiplier_code_start + 0x5;
+        score_multiplier_offset = score_multiplier_code_start + 0xA;
+        score_multiplier_hook_jump_back = score_multiplier_offset + 0x5;
     }
 
     if (check_timewarp_code_start)

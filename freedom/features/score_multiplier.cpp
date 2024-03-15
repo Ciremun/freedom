@@ -1,15 +1,16 @@
 #include "features/score_multiplier.h"
 
 uintptr_t score_multiplier_code_start = 0;
+uintptr_t score_multiplier_offset = 0;
 uintptr_t score_multiplier_hook_jump_back = 0;
 
 Hook<Detour32> ScoreMultiplierHook;
 
 void init_score_multiplier()
 {
-    if (score_multiplier_code_start)
+    if (score_multiplier_offset)
     {
-        ScoreMultiplierHook = Hook<Detour32>(score_multiplier_code_start, (BYTE *)set_score_multiplier, 5);
+        ScoreMultiplierHook = Hook<Detour32>(score_multiplier_offset, (BYTE *)set_score_multiplier, 5);
         if (cfg_score_multiplier_enabled)
             enable_score_multiplier_hooks();
     }

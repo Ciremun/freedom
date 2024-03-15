@@ -345,7 +345,7 @@ void update_ui()
             if (!unmod_hidden_found)
                 ImGui::EndDisabled();
             ImGui::Dummy(ImVec2(.0f, 5.f));
-            uintptr_t score_multiplier_found = score_multiplier_code_start;
+            uintptr_t score_multiplier_found = score_multiplier_offset;
             if (!score_multiplier_found)
                 ImGui::BeginDisabled();
             ImGui::Text("Score Multiplier");
@@ -571,6 +571,7 @@ void update_ui()
                 colored_if_null("Username: %08X", username_offset);
                 colored_if_null("Check Timewarp: %08X", check_timewarp_offset);
                 colored_if_null("Update Mods: %08X", update_mods_offset);
+                colored_if_null("Score Multiplier: %08X", score_multiplier_offset);
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {

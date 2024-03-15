@@ -35,7 +35,7 @@ constexpr auto binding_manager_sig          { pattern::build<"8D 45 D8 50 8B 0D"
 constexpr auto selected_replay_sig          { pattern::build<"8B 46 38 83 78 30 00"> };
 constexpr auto osu_username_sig             { pattern::build<"8B 01 8B 40 28 FF 50 18 8B 15"> };
 constexpr auto window_manager_sig           { pattern::build<"8B 15 . . . . 83 C2 04 39 09 E8 . . . . 59"> };
-constexpr auto score_multiplier_sig         { pattern::build<"8B F1 D9 E8 83 FA 04 0F 83"> };
+constexpr auto score_multiplier_sig         { pattern::build<"55 8B EC 57 56 83 EC . 8B F1 D9 E8 83 FA 04"> };
 constexpr auto update_timing_sig            { pattern::build<"D9 C0 DD 05"> };
 constexpr auto update_timing_sig_2          { pattern::build<"DE E9 DD 1D"> };
 constexpr auto check_timewarp_sig           { pattern::build<"D9 E8 DE F1 DE C9"> };
