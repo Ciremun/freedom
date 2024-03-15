@@ -11,6 +11,9 @@ uintptr_t beatmap_onload_hook_jump_back = 0;
 uintptr_t current_scene_code_start = 0;
 uintptr_t current_scene_offset = 0;
 Scene *current_scene_ptr = 0;
+typedef void(*tSceneHook)();
+tSceneHook o_scene_hook;
+Hook<Trampoline32> SceneHook;
 
 uintptr_t selected_song_code_start = 0;
 uintptr_t selected_song_ptr = 0;
@@ -23,6 +26,12 @@ uintptr_t osu_manager_ptr = 0;
 
 uintptr_t selected_mods_code_start = 0;
 Mods *selected_mods_ptr = 0;
+
+uintptr_t update_mods_code_start = 0;
+uintptr_t update_mods_offset = 0;
+typedef void(*tUpdateModsHook)();
+tUpdateModsHook o_update_mods_hook;
+Hook<Trampoline32> UpdateModsHook;
 
 uintptr_t nt_user_send_input_ptr = 0;
 uintptr_t nt_user_send_input_original_jmp_address = 0;
@@ -40,10 +49,6 @@ float memory_scan_progress = .0f;
 Hook<Trampoline32> SwapBuffersHook;
 Hook<Detour32> BeatmapOnLoadHook;
 
-typedef void(*tSceneHook)();
-tSceneHook o_scene_hook;
-Hook<Trampoline32> SceneHook;
-
 uintptr_t selected_song_offset = 0;
 uintptr_t audio_time_offset = 0;
 uintptr_t osu_manager_offset = 0;
@@ -58,7 +63,12 @@ inline bool all_code_starts_found()
            audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
            score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
-           && hom_update_vars_hidden_loc && selected_mods_code_start;
+           && hom_update_vars_hidden_loc && selected_mods_code_start && update_mods_code_start;
+}
+
+static inline bool some_feature_requires_notify_hooks()
+{
+    return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled || ar_parameter.lock || cs_parameter.lock || od_parameter.lock;
 }
 
 static int filter(unsigned int code)
@@ -176,6 +186,7 @@ static void scan_for_code_starts()
             PATTERN_SCAN(update_timing_code_start,     update_timing_func_sig,      opcodes);
             PATTERN_SCAN(check_timewarp_code_start,    check_timewarp_func_sig,     opcodes);
             PATTERN_SCAN(selected_mods_code_start,     selected_mods_func_sig,      opcodes);
+            PATTERN_SCAN(update_mods_code_start,       update_mods_func_sig,        opcodes);
             PATTERN_SCAN(hom_update_vars_hidden_loc,   hom_update_vars_hidden_sig,  opcodes);
 
             if (!set_playback_rate_code_start && is_set_playback_rate(opcodes))
@@ -343,6 +354,15 @@ static void try_find_hook_offsets()
     {
         selected_mods_ptr = *(Mods **)(selected_mods_code_start + 0x9);
     }
+
+    if (update_mods_code_start)
+    {
+        update_mods_offset = pattern::find<update_mods_sig>({ (uint8_t *)update_mods_code_start, 0xC1});
+        if (update_mods_offset && !selected_mods_ptr)
+        {
+            selected_mods_ptr = *(Mods **)(update_mods_offset + 0x7);
+        }
+    }
 }
 
 static inline void init_nt_user_send_input_patch()
@@ -377,18 +397,24 @@ static inline void init_hooks_wrapper()
     init_unmod_flashlight();
     init_unmod_hidden();
 
+    bool notify_hooks_required = some_feature_requires_notify_hooks();
     if (beatmap_onload_offset)
     {
         BeatmapOnLoadHook = Hook<Detour32>(beatmap_onload_offset, (BYTE *)notify_on_beatmap_load, 6);
-        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+        if (notify_hooks_required)
             BeatmapOnLoadHook.Enable();
     }
-
     if (current_scene_offset)
     {
         SceneHook = Hook<Trampoline32>(current_scene_offset + 0xF, (BYTE *)notify_on_scene_change, (BYTE *)&o_scene_hook, 5);
-        if (cfg_replay_enabled || cfg_relax_lock || cfg_aimbot_lock)
+        if (notify_hooks_required)
             SceneHook.Enable();
+    }
+    if (update_mods_offset)
+    {
+        UpdateModsHook = Hook<Trampoline32>(update_mods_offset, (BYTE *)notify_on_update_mods, (BYTE *)&o_update_mods_hook, 5);
+        if (notify_hooks_required)
+            UpdateModsHook.Enable();
     }
 }
 
@@ -422,15 +448,11 @@ void disable_nt_user_send_input_patch()
     }
 }
 
-static inline bool some_feature_requires_notify_hooks()
-{
-    return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled;
-}
-
 void enable_notify_hooks()
 {
     BeatmapOnLoadHook.Enable();
     SceneHook.Enable();
+    UpdateModsHook.Enable();
 }
 
 void disable_notify_hooks()
@@ -439,6 +461,7 @@ void disable_notify_hooks()
     {
         BeatmapOnLoadHook.Disable();
         SceneHook.Disable();
+        UpdateModsHook.Disable();
     }
 }
 
@@ -446,6 +469,7 @@ static inline void disable_notify_hooks_force()
 {
     BeatmapOnLoadHook.Disable();
     SceneHook.Disable();
+    UpdateModsHook.Disable();
 }
 
 __declspec(naked) void notify_on_beatmap_load()
@@ -484,6 +508,14 @@ __declspec(naked) void notify_on_scene_change()
     __asm {
         pop eax
         jmp o_scene_hook
+    }
+}
+
+__declspec(naked) void notify_on_update_mods()
+{
+    __asm {
+        mov mods_updated, 1
+        jmp o_update_mods_hook
     }
 }
 

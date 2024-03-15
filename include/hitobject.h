@@ -11,6 +11,7 @@
 #include "ui/config.h"
 
 extern bool beatmap_loaded;
+extern bool mods_updated;
 extern bool start_parse_replay;
 extern BeatmapData current_beatmap;
 extern ReplayData current_replay;

@@ -48,6 +48,9 @@ extern uintptr_t osu_manager_ptr;
 extern uintptr_t selected_mods_code_start;
 extern Mods *selected_mods_ptr;
 
+extern uintptr_t update_mods_code_start;
+extern uintptr_t update_mods_offset;
+
 extern uintptr_t osu_client_id_code_start;
 extern char osu_client_id[64];
 
@@ -85,6 +88,7 @@ void disable_nt_user_send_input_patch();
 
 void notify_on_beatmap_load();
 void notify_on_scene_change();
+void notify_on_update_mods();
 
 void destroy_hooks();
 void destroy_hooks_except_swap();

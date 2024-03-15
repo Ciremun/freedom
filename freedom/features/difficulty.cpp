@@ -86,18 +86,21 @@ void init_difficulty()
 
 void enable_od_hooks()
 {
+    enable_notify_hooks();
     OverallDifficultyHook1.Enable();
     OverallDifficultyHook2.Enable();
 }
 
 void disable_od_hooks()
 {
+    disable_notify_hooks();
     OverallDifficultyHook1.Disable();
     OverallDifficultyHook2.Disable();
 }
 
 void enable_cs_hooks()
 {
+    enable_notify_hooks();
     CircleSizeHook1.Enable();
     CircleSizeHook2.Enable();
     CircleSizeHook3.Enable();
@@ -105,6 +108,7 @@ void enable_cs_hooks()
 
 void disable_cs_hooks()
 {
+    disable_notify_hooks();
     CircleSizeHook1.Disable();
     CircleSizeHook2.Disable();
     CircleSizeHook3.Disable();
@@ -112,6 +116,7 @@ void disable_cs_hooks()
 
 void enable_ar_hooks()
 {
+    enable_notify_hooks();
     ApproachRateHook1.Enable();
     ApproachRateHook2.Enable();
     ApproachRateHook3.Enable();
@@ -119,6 +124,7 @@ void enable_ar_hooks()
 
 void disable_ar_hooks()
 {
+    disable_notify_hooks();
     ApproachRateHook1.Disable();
     ApproachRateHook2.Disable();
     ApproachRateHook3.Disable();

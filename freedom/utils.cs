@@ -18,7 +18,8 @@ namespace Freedom
             CheckFlashlight = 3,
             UpdateFlashlight = 4,
             CheckTime = 5,
-            UpdateVariables = 6
+            UpdateVariables = 6,
+            UpdateMods = 7
         }
 
         struct ClassMethod
@@ -117,6 +118,17 @@ namespace Freedom
                 mptl = new int[] { 14, 14, 14 },
                 mrt = typeof(void),
                 t = ClassMethodType.UpdateVariables,
+            },
+            new ClassMethod {
+                c = "#=zNDts0g6JXE$Y_YpheSvbgzzhzpoQ",
+                ca = TypeAttributes.NotPublic | TypeAttributes.AutoLayout | TypeAttributes.Class | TypeAttributes.Sealed,
+                m = "#=zO5qmbpU=",
+                ma = MethodAttributes.PrivateScope | MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.ReuseSlot,
+                mpc = 2,
+                mpnl = new int[] { 11, 11 },
+                mptl = new int[] { 6, 9 },
+                mrt = typeof(void),
+                t = ClassMethodType.UpdateMods,
             },
         };
 

@@ -20,6 +20,7 @@ constexpr auto username_func_sig            { pattern::build<"55 8B EC 57 56 53 
 constexpr auto update_flashlight_func_sig   { pattern::build<"55 8B EC 56 83 EC 14 8B F1 8B 56 5C"> };
 constexpr auto check_flashlight_func_sig    { pattern::build<"55 8B EC 57 56 53 83 EC 18 8B F9 80"> };
 constexpr auto selected_mods_func_sig       { pattern::build<"55 8B EC 57 56 53 8B F1 A1 . . . . 25 . . . . 85 C0"> };
+constexpr auto update_mods_func_sig         { pattern::build<"55 8B EC 57 56 83 EC 40 8B F1 8D 7D B8 B9 0F 00 00 00 33 C0 F3 AB 8B CE 89 4D BC 8B 45 BC 80 78 24 00"> };
 
 constexpr auto approach_rate_sig            { pattern::build<"8B 85 B0 FE FF FF D9 58 2C"> };
 constexpr auto approach_rate_sig_2          { pattern::build<"8B 85 B0 FE FF FF D9 40 38 D9 58 2C"> };
@@ -39,3 +40,4 @@ constexpr auto update_timing_sig            { pattern::build<"D9 C0 DD 05"> };
 constexpr auto update_timing_sig_2          { pattern::build<"DE E9 DD 1D"> };
 constexpr auto check_timewarp_sig           { pattern::build<"D9 E8 DE F1 DE C9"> };
 constexpr auto hom_update_vars_hidden_sig   { pattern::build<"DD 1C 24 8B CE 8B 01 8B 40 . FF 50 . DD 5E . 8B 7E ."> };
+constexpr auto update_mods_sig              { pattern::build<"8B 45 DC F7 D0 21 05"> };

@@ -4,6 +4,7 @@ BeatmapData current_beatmap;
 ReplayData current_replay;
 
 bool beatmap_loaded = false;
+bool mods_updated = false;
 bool start_parse_replay = false;
 
 bool scene_is_game(Scene *current_scene_ptr)
@@ -39,6 +40,14 @@ void process_hitobject()
             unmod_hidden_on_beatmap_load();
             beatmap_loaded = false;
         }
+    }
+
+    if (mods_updated)
+    {
+        // TODO(Ciremun): calc AR value
+        static char selected_mods[64] = "Unknown";
+        FR_INFO_FMT("mods updated: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
+        mods_updated = false;
     }
 
     if (start_parse_replay)

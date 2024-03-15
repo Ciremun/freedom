@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "hook.h"
+#include "scan.h"
 #include "struct_offsets.h"
 
 struct Parameter

@@ -521,6 +521,7 @@ void update_ui()
                 colored_if_null("Osu Manager: %08X", osu_manager_ptr);
                 colored_if_null("Selected Replay: %08X", selected_replay_ptr);
                 colored_if_null("Selected Song: %08X", selected_song_ptr);
+                colored_if_null("Selected Mods: %08X", (uintptr_t)selected_mods_ptr);
                 colored_if_null("Update Timing 1: %08X", update_timing_ptr_1);
                 colored_if_null("Update Timing 2: %08X", update_timing_ptr_2);
                 colored_if_null("Update Timing 3: %08X", update_timing_ptr_3);
@@ -550,6 +551,7 @@ void update_ui()
                 colored_if_null("Set Playback Rate: %08X", set_playback_rate_code_start);
                 colored_if_null("Check Timewarp: %08X", check_timewarp_code_start);
                 colored_if_null("Selected Mods: %08X", selected_mods_code_start);
+                colored_if_null("Update Mods: %08X", update_mods_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
@@ -568,6 +570,7 @@ void update_ui()
                 colored_if_null("Client ID: %08X", client_id_offset);
                 colored_if_null("Username: %08X", username_offset);
                 colored_if_null("Check Timewarp: %08X", check_timewarp_offset);
+                colored_if_null("Update Mods: %08X", update_mods_offset);
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {

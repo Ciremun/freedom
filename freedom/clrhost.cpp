@@ -154,8 +154,6 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
 
 VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name)
 {
-    VARIANT variant;
-    VariantInit(&variant);
     SAFEARRAY* params = SafeArrayCreateVector(VT_VARIANT, 0, 0);
     VARIANT v = invoke_csharp_method(type_name, method_name, params);
     SafeArrayDestroy(params);
@@ -204,8 +202,10 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
     HRESULT hr = method_ptr->raw_Invoke_3(variant, params, &variant);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
-        FR_INFO_FMT("[!] Invoke (0x%X)", hr);
+        FR_INFO_FMT("[!] Invoke %s::%s (0x%X)", type_name_s.c_str(), method_name_s.c_str(), hr);
+        SysFreeString(type_name_b);
+        SysFreeString(method_name_b);
+        return variant;
     }
 
     SysFreeString(type_name_b);
