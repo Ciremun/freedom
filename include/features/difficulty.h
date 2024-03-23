@@ -10,11 +10,13 @@ struct Parameter
 {
     bool lock;
     float value;
+    float calculated_value;
     uintptr_t offset;
     const char *slider_fmt;
     const char *error_message;
     void (*enable)();
     void (*disable)();
+    void (*apply_mods)();
     bool found = false;
 };
 
@@ -37,12 +39,15 @@ void init_difficulty();
 
 void enable_ar_hooks();
 void disable_ar_hooks();
+void apply_mods_ar();
 
 void enable_cs_hooks();
 void disable_cs_hooks();
+void apply_mods_cs();
 
 void enable_od_hooks();
 void disable_od_hooks();
+void apply_mods_od();
 
 void set_approach_rate();
 void set_approach_rate_2();

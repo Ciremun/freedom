@@ -44,9 +44,9 @@ void process_hitobject()
 
     if (mods_updated)
     {
-        // TODO(Ciremun): calc AR value
         static char selected_mods[64] = "Unknown";
         FR_INFO_FMT("mods updated: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
+        ar_parameter.apply_mods();
         mods_updated = false;
     }
 

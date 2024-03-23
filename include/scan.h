@@ -83,6 +83,9 @@ void init_hooks();
 void enable_notify_hooks();
 void disable_notify_hooks();
 
+void enable_update_mods_hook();
+void disable_update_mods_hook();
+
 void enable_nt_user_send_input_patch();
 void disable_nt_user_send_input_patch();
 

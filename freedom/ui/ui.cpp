@@ -635,7 +635,8 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     else
     {
         ImGui::PushID(slider_fmt);
-        ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
+        if (ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt))
+            p->apply_mods();
         ImGui::PopID();
         if (ImGui::IsItemDeactivatedAfterEdit())
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);

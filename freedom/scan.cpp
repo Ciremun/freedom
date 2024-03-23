@@ -66,9 +66,14 @@ inline bool all_code_starts_found()
            && hom_update_vars_hidden_loc && selected_mods_code_start && update_mods_code_start;
 }
 
+static inline bool some_feature_requires_update_mods_hook()
+{
+    return ar_parameter.lock || cs_parameter.lock || od_parameter.lock;
+}
+
 static inline bool some_feature_requires_notify_hooks()
 {
-    return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled || ar_parameter.lock || cs_parameter.lock || od_parameter.lock;
+    return cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled || cfg_hidden_remover_enabled || cfg_flashlight_enabled;
 }
 
 static int filter(unsigned int code)
@@ -388,15 +393,6 @@ static inline void init_hooks_wrapper()
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();
 
-    init_input();
-    init_difficulty();
-    init_timewarp();
-    init_score_multiplier();
-    init_discord_rpc();
-    init_replay();
-    init_unmod_flashlight();
-    init_unmod_hidden();
-
     bool notify_hooks_required = some_feature_requires_notify_hooks();
     if (beatmap_onload_offset)
     {
@@ -413,9 +409,18 @@ static inline void init_hooks_wrapper()
     if (update_mods_offset)
     {
         UpdateModsHook = Hook<Trampoline32>(update_mods_offset, (BYTE *)notify_on_update_mods, (BYTE *)&o_update_mods_hook, 5);
-        if (notify_hooks_required)
+        if (some_feature_requires_update_mods_hook())
             UpdateModsHook.Enable();
     }
+
+    init_input();
+    init_difficulty();
+    init_timewarp();
+    init_score_multiplier();
+    init_discord_rpc();
+    init_replay();
+    init_unmod_flashlight();
+    init_unmod_hidden();
 }
 
 void init_hooks()
@@ -452,7 +457,6 @@ void enable_notify_hooks()
 {
     BeatmapOnLoadHook.Enable();
     SceneHook.Enable();
-    UpdateModsHook.Enable();
 }
 
 void disable_notify_hooks()
@@ -461,7 +465,6 @@ void disable_notify_hooks()
     {
         BeatmapOnLoadHook.Disable();
         SceneHook.Disable();
-        UpdateModsHook.Disable();
     }
 }
 
@@ -469,6 +472,21 @@ static inline void disable_notify_hooks_force()
 {
     BeatmapOnLoadHook.Disable();
     SceneHook.Disable();
+}
+
+void enable_update_mods_hook()
+{
+    UpdateModsHook.Enable();
+}
+
+void disable_update_mods_hook()
+{
+    if (!some_feature_requires_update_mods_hook())
+        UpdateModsHook.Disable();
+}
+
+static inline void disable_update_mods_hook_force()
+{
     UpdateModsHook.Disable();
 }
 
@@ -525,6 +543,7 @@ void destroy_hooks_except_swap()
     disable_cs_hooks();
     disable_od_hooks();
     disable_notify_hooks_force();
+    disable_update_mods_hook_force();
     disable_replay_hooks();
     disable_flashlight_hooks();
     disable_score_multiplier_hooks();
