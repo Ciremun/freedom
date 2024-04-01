@@ -118,8 +118,8 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     }
 
     uintptr_t mods_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_MODS_OFFSET);
-    int32_t encrypted_value = *(int32_t *)(mods_ptr + 0x08);
-    int32_t decryption_key = *(int32_t *)(mods_ptr + 0x0C);
+    int32_t encrypted_value = *(int32_t *)(mods_ptr + OSU_HIT_MANAGER_MODS_ENC_VAL);
+    int32_t decryption_key = *(int32_t *)(mods_ptr + OSU_HIT_MANAGER_MODS_DEC_KEY);
     beatmap_data.mods = (Mods)(encrypted_value ^ decryption_key);
     beatmap_data.hit_object_radius = *(float *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECT_RADIUS_OFFSET);
 

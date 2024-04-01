@@ -47,7 +47,7 @@ struct Vector2
         return sqrt(this->x * this->x + this->y * this->y);
     }
 
-    template<typename T> 
+    template <typename T>
     constexpr Vector2<T> interpolate_to(const Vector2<T> &transform, float time)
     {
         this->x = interpolate(this->x, transform.x, time);

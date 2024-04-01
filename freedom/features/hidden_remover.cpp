@@ -24,7 +24,7 @@ void unmod_hidden_on_beatmap_load()
         {
             uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
             uintptr_t mods_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_MODS_OFFSET);
-            *(int32_t *)(mods_ptr + 0x0C) = hom_mods_original_value;
+            *(int32_t *)(mods_ptr + OSU_HIT_MANAGER_MODS_DEC_KEY) = hom_mods_original_value;
             hom_mods_original_value = 0;
         }
     }
@@ -49,13 +49,13 @@ __declspec(naked) void hk_hom_update_vars_hidden()
         push ebx
         push edx
         mov eax, [ecx+OSU_HIT_MANAGER_MODS_OFFSET]
-        mov ebx, [eax+0x8]
-        mov edx, [eax+0xC]
+        mov ebx, [eax+OSU_HIT_MANAGER_MODS_ENC_VAL]
+        mov edx, [eax+OSU_HIT_MANAGER_MODS_DEC_KEY]
         mov hom_mods_original_value, edx
         xor edx, ebx
         and edx, -0x9
         xor edx, ebx
-        mov [eax+0xC], edx
+        mov [eax+OSU_HIT_MANAGER_MODS_DEC_KEY], edx
         pop edx
         pop ebx
         pop eax
