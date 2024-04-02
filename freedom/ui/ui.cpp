@@ -41,7 +41,13 @@ inline void init_imgui_styles()
     ImGui::StyleColorsDark();
     ImGuiStyle &style = ImGui::GetStyle();
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    style.WindowBorderSize = .0f;
     style.FrameRounding = 3.f;
+    style.FramePadding = ImVec2(style.FramePadding.x, 5.f);
+    style.FrameBorderSize = .0f;
+    style.PopupBorderSize = .0f;
+    style.ChildBorderSize = .0f;
+    style.ItemInnerSpacing = ImVec2(8.f, style.ItemInnerSpacing.y);
     style.Colors[ImGuiCol_TitleBgActive] = PURPLE;
     style.Colors[ImGuiCol_Button] = PURPLE;
     style.Colors[ImGuiCol_ButtonHovered] = MAGENTA;
@@ -71,7 +77,7 @@ inline void init_imgui_fonts()
     config.PixelSnapH = true;
     config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
 
-    for (int size = 40; size >= 10; size -= 2)
+    for (int size = 40; size >= 18; size -= 2)
     {
         config.SizePixels = size;
         ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
@@ -97,8 +103,8 @@ void init_ui(IDirect3DDevice9* pDevice)
 
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
-    init_imgui_styles();
     init_imgui_fonts();
+    init_imgui_styles();
 
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplDX9_Init(pDevice);
@@ -121,8 +127,8 @@ void init_ui()
 
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
-    init_imgui_styles();
     init_imgui_fonts();
+    init_imgui_styles();
 
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplOpenGL3_Init();
@@ -167,7 +173,7 @@ void update_ui()
     {
         static char overlay_buf[32] = {0};
         ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), "Memory Scan: %.0f%%", memory_scan_progress * 100 + 0.01f);
-        ImGui::ProgressBar(memory_scan_progress, ImVec2(.0f, .0f), overlay_buf);
+        ImGui::ProgressBar(memory_scan_progress, ImVec2(ImGui::GetContentRegionAvail().x, .0f), overlay_buf);
     }
 
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + ImGui::GetWindowHeight()), ImGuiCond_Appearing);
@@ -203,7 +209,7 @@ void update_ui()
         update_tab("About", MenuTab::About);
         update_tab("Debug", MenuTab::Debug);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, 0.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(540.0f, ImGui::GetWindowHeight()));
         if (selected_tab == MenuTab::Debug || selected_tab == MenuTab::Misc || selected_tab == MenuTab::Relax)
             ImGui::SetNextWindowSize(ImVec2(.0f, .0f), ImGuiCond_Always);
         else

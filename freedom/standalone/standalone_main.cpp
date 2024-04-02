@@ -150,18 +150,18 @@ int main(int, char**)
 
         ImGui::ShowStyleEditor();
 
+        static ImVec4 clear_color = BLACK;
+        ImGui::Begin("Background Color");
+        ImGui::ColorPicker4("##Color Picker", (float *)&clear_color);
+        ImGui::End();
+
         // Rendering
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        double time = ImGui::GetTime();
-        float c = sinf(time);
-        ImVec4 clear_color = ImVec4(c, c, c, 1.00f);
-
-        glClearColor(0.f, 0.f, 0.f, 1.f);
-        // glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
