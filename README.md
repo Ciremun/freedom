@@ -1,5 +1,8 @@
 # Freedom
 
+![Platform](https://img.shields.io/badge/Windows_8.1+-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Mode](https://img.shields.io/badge/Mode%20--%20osu!-E3619B?style=for-the-badge&logo=osu&logoColor=white)
+
 Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
 ![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
@@ -31,7 +34,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 - Timewarp:
     * Scale
 
-- Replay Copy (*a bit buggy!*):
+- Replay Copy:
     * Add/Remove Hard Rock (HR)
     * Replay Keys Only
     * Replay Aim Only
@@ -41,7 +44,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Cursor Speed
     * Spins Per Minute
 
-- Relax (*unstable rate beta!*):
+- Relax:
     * SingleTap
     * Alternate
     * Variable Unstable Rate
@@ -57,8 +60,6 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Unload DLL
 
 ## Build
-
-It shouldn't be necessary to build the project unless you're debugging or modifying the source code  
 
 ### Requirements
 
@@ -81,12 +82,9 @@ Alternatively, bootstrap nobuild
 
 ### Optional nobuild flags
 
-Build and run standalone Freedom with debug symbols:
+rebuild and inject freedom with debug symbols and console log:
 
-    nobuild.exe debug standalone run
-
-Standalone Freedom is currently used for ui debugging as an alternative to unloading the dll.  
-It doesn't function as an external, [features](#features) will not work.
+    nobuild.exe rebuild debug console inject
 
 |    Flag     |          Description          |
 |:-----------:|:-----------------------------:|
@@ -95,6 +93,6 @@ It doesn't function as an external, [features](#features) will not work.
 | debug       | symbols, disable optimizations|
 | console     | print logs to console         |
 | inject      | run injector after build      |
-| all         | build standalone and internal |
 | standalone  | build standalone only         |
+| all         | build standalone and internal |
 | run         | run standalone after build    |
