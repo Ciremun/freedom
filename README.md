@@ -1,7 +1,7 @@
+Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
+
 ![Platform](https://img.shields.io/badge/Windows_8.1+-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![Mode](https://img.shields.io/badge/Mode%20--%20osu!-E3619B?style=for-the-badge&logo=osu&logoColor=white)
-
-Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
 ![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
 
