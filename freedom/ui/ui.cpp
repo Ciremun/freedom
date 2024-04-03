@@ -313,10 +313,7 @@ void update_ui()
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Usage: Open Replay Preview in-game to Select a Replay");
             ImGui::SameLine(210.0f);
             if (!cfg_replay_enabled)
-            {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-            }
+                ImGui::BeginDisabled();
             if (ImGui::Checkbox("Hardrock", &cfg_replay_hardrock))         current_replay.toggle_hardrock();
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Convert Replay to/from Hardrock");
             ImGui::Dummy(ImVec2(.0f, 2.f));
@@ -326,10 +323,7 @@ void update_ui()
             if (ImGui::Checkbox("Replay Keys", &cfg_replay_keys))          ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Press Keys According to Replay Data");
             if (!cfg_replay_enabled)
-            {
-                ImGui::PopStyleColor();
-                ImGui::PopItemFlag();
-            }
+                ImGui::EndDisabled();
         }
         if (selected_tab == MenuTab::Mods)
         {
@@ -451,14 +445,17 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, 10.f));
             bool all_found = all_code_starts_found();
             if (all_found)
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                ImGui::BeginDisabled();
             if (ImGui::Button("Rescan Memory"))
             {
                 destroy_hooks_except_swap();
                 CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
             }
             if (all_found)
-                ImGui::PopItemFlag();
+            {
+                ImGui::EndDisabled();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("No Rescan Needed: All Found");
+            }
             ImGui::SameLine(.0f, 20.f);
             if (ImGui::Button("Unload DLL"))
                 unload_dll();

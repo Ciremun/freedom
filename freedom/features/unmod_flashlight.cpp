@@ -1,10 +1,10 @@
 #include "features/unmod_flashlight.h"
 
 uintptr_t update_flashlight_code_start = 0;
-uint8_t update_flashlight_original_byte = 0xC3;
+uint8_t update_flashlight_original_byte = update_flashlight_func_sig[0].m_value;
 
 uintptr_t check_flashlight_code_start = 0;
-uint8_t check_flashlight_original_byte = 0xC3;
+uint8_t check_flashlight_original_byte = check_flashlight_func_sig[0].m_value;
 
 void init_unmod_flashlight()
 {
