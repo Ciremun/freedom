@@ -24,10 +24,11 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
     if (message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
     {
         ImGui::GetIO().MouseDrawCursor = false;
-        cfg_mod_menu_visible = false;
+        ImGui::ClosePopupsOverWindow(0, false);
     }
 
-    if (cfg_mod_menu_visible && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
+    if ((ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) || ImGui::IsPopupOpen((ImGuiID)0, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+         && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
         message->message = WM_NULL;
         return 1;
@@ -136,6 +137,9 @@ void init_ui()
 
 void update_ui()
 {
+    if (!cfg_mod_menu_visible)
+        return;
+
     if (selected_song_ptr)
     {
         uintptr_t song_str_ptr = 0;

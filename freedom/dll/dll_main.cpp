@@ -54,16 +54,9 @@ static inline void imgui_new_frame()
     draw_debug_log();
     ImGui::GetIO().MouseDrawCursor = ImGui::GetIO().WantCaptureMouse;
 
-    if (!cfg_mod_menu_visible)
-    {
-        if (!cfg_show_debug_log)
-            ImGui::GetIO().MouseDrawCursor = false;
-        goto frame_end;
-    }
-
     update_ui();
-
-frame_end:
+    if (!cfg_mod_menu_visible && !cfg_show_debug_log)
+        ImGui::GetIO().MouseDrawCursor = false;
 
     ImGui::EndFrame();
     ImGui::Render();
