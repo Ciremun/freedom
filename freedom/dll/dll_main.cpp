@@ -45,7 +45,7 @@ static inline void imgui_new_frame()
 
     process_hitobject();
 
-    if (GetAsyncKeyState(VK_F11) & 1)
+    if (ImGui::IsKeyPressed(ImGuiKey_F11, false))
     {
         cfg_mod_menu_visible = !cfg_mod_menu_visible;
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
