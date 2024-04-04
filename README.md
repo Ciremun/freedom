@@ -85,13 +85,12 @@ rebuild and inject freedom with debug symbols and console log:
 
     nobuild.exe rebuild debug console inject
 
-|    Flag     |          Description          |
-|:-----------:|:-----------------------------:|
-|             | Freedom only                  |
-| rebuild     | update headers / rebuild all  |
-| debug       | symbols, disable optimizations|
-| console     | print logs to console         |
-| inject      | run injector after build      |
-| standalone  | build standalone only         |
-| all         | build standalone and internal |
-| run         | run standalone after build    |
+|    Flag     |          Description                |
+|:-----------:|:-----------------------------------:|
+|             | Freedom only                        |
+| rebuild     | update headers / rebuild all        |
+| debug       | symbols, disable optimizations      |
+| console     | print logs to console               |
+| standalone  | build standalone only               |
+| all         | build standalone and internal       |
+| run         | run osu and inject / run standalone |

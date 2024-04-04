@@ -14,7 +14,12 @@ typedef pid_t Pid;
 typedef int Fd;
 #else
 #    define WIN32_MEAN_AND_LEAN
-#    include "windows.h"
+#    ifndef COBJMACROS
+#        define COBJMACROS
+#    endif // COBJMACROS
+#    include <windows.h>
+#    include <shlobj.h>
+#    pragma comment(lib, "Shell32.lib")
 #    include <process.h>
 #    define PATH_SEP "\\"
 typedef HANDLE Pid;
@@ -57,7 +62,7 @@ typedef HANDLE Fd;
 #define MINIRENT_H_
 
 #define WIN32_LEAN_AND_MEAN
-#include "windows.h"
+#include <windows.h>
 
 struct dirent {
     char d_name[MAX_PATH+1];
@@ -1642,8 +1647,8 @@ void find_visual_studio_by_fighting_through_microsoft_craziness(Find_Result *res
         free(vcruntime_filename);
 
         if (vcruntime_exists) {
-            result->vs_exe_path     = concat2(buffer, L"VC\\bin\\amd64");
-            result->vs_library_path = lib_path;
+            // result->vs_exe_path     = concat2(buffer, L"VC\\bin\\amd64");
+            // result->vs_library_path = lib_path;
 
             free(buffer);
             RegCloseKey(vs7_key);
@@ -1662,6 +1667,8 @@ void find_visual_studio_by_fighting_through_microsoft_craziness(Find_Result *res
 
 Find_Result find_visual_studio() {
     Find_Result result;
+    result.vs_exe_path = 0;
+    result.vs_library_path = 0;
     find_visual_studio_by_fighting_through_microsoft_craziness(&result);
     return result;
 }
@@ -2065,7 +2072,10 @@ static void parse_flags(int argc, char **argv)
             }
         }
         if (!found)
-            WARN("unknown flag '%s'", flag);
+        {
+            ERRO("unknown flag '%s'", flag);
+            exit(1);
+        }
     }
 }
 

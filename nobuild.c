@@ -55,12 +55,76 @@ int *rebuild_flag = 0;
 int *run_flag = 0;
 int *all_flag = 0;
 int *console_flag = 0;
-int *inject_flag = 0;
 
 int do_link = 0;
 char define_commit_hash[32] = {0};
 
-static void remove_object_files()
+wchar_t osu_exe_path[MAX_PATH * 2] = {0};
+
+static inline bool find_osu_exe(LPWSTR osu_exe_path)
+{
+    PWSTR roaming_path;
+    if (SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &roaming_path) != S_OK)
+        return false;
+    const wchar_t *append_osu_lnk = L"\\Microsoft\\Windows\\Start Menu\\Programs\\osu!.lnk";
+    size_t new_length = wcslen(roaming_path) + wcslen(append_osu_lnk) + sizeof(WCHAR);
+    LPVOID new_ptr = CoTaskMemRealloc(roaming_path, new_length * sizeof(WCHAR));
+    if (!new_ptr)
+    {
+        CoTaskMemFree(roaming_path);
+        goto return_false;
+    }
+    roaming_path = (PWSTR)new_ptr;
+    wcscat_s(roaming_path, new_length, append_osu_lnk);
+    IShellLinkW *psl;
+    CoInitialize(NULL);
+    HRESULT hr = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLinkW, (LPVOID *)&psl);
+    if (SUCCEEDED(hr))
+    {
+        IPersistFile *ppf;
+        hr = IShellLinkW_QueryInterface(psl, &IID_IPersistFile, &ppf);
+        if (SUCCEEDED(hr))
+        {
+            hr = IPersistFile_Load(ppf, roaming_path, STGM_READ);
+            if (SUCCEEDED(hr))
+            {
+                WIN32_FIND_DATAW wfd;
+                IShellLinkW_GetPath(psl, osu_exe_path, MAX_PATH * 2, &wfd, SLGP_UNCPRIORITY | SLGP_RAWPATH);
+            }
+            else
+                goto return_false;
+        }
+        else
+            goto return_false;
+    }
+    else
+        goto return_false;
+
+    CoUninitialize();
+    CoTaskMemFree(roaming_path);
+    return true;
+
+return_false:
+    CoUninitialize();
+    CoTaskMemFree(roaming_path);
+    return false;
+}
+
+static inline bool launch_osu(LPWSTR osu_exe_path)
+{
+    STARTUPINFOW siStartInfo;
+    ZeroMemory(&siStartInfo, sizeof(siStartInfo));
+    siStartInfo.cb = sizeof(STARTUPINFOW);
+    siStartInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+    siStartInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    siStartInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+    PROCESS_INFORMATION piProcInfo;
+    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+    return CreateProcessW(NULL, osu_exe_path, NULL, NULL, TRUE, 0, NULL, NULL, &siStartInfo, &piProcInfo);
+}
+
+static inline void remove_object_files()
 {
     FOREACH_FILE_IN_DIR(file, ".", {
         if (ENDS_WITH(file, ".obj"))
@@ -232,9 +296,29 @@ static void inject()
     CMD(".\\freedom_injector.exe");
 }
 
+static void launch_osu_and_inject(LPWSTR osu_exe_path)
+{
+    if (find_osu_exe(osu_exe_path))
+    {
+        if (launch_osu(osu_exe_path))
+        {
+            INFO("Launched osu!. Injecting in 8 seconds.");
+            Sleep(8000);
+            inject();
+        }
+        else
+            WARN("Couldn't launch osu!");
+    }
+    else
+        WARN("Couldn't find osu!.exe");
+}
+
 static void run()
 {
-    CMD(".\\freedom_standalone.exe");
+    if (*standalone_flag)
+        CMD(".\\freedom_standalone.exe");
+    else
+        launch_osu_and_inject(osu_exe_path);
 }
 
 static void process_args(int argc, char **argv)
@@ -250,14 +334,11 @@ static void process_args(int argc, char **argv)
     run_flag =        flag_int("run");
     all_flag =        flag_int("all");
     console_flag =    flag_int("console");
-    inject_flag =     flag_int("inject");
     parse_flags(argc, argv);
 
     if (*rebuild_flag)
         remove_object_files();
     build();
-    if (*inject_flag)
-        inject();
     if (*run_flag)
         run();
 }
@@ -265,6 +346,11 @@ static void process_args(int argc, char **argv)
 static inline void setup_vsdev_env()
 {
     Find_Result result = find_visual_studio();
+    if (!result.vs_exe_path)
+    {
+        WARN("Couldn't find Visual Studio 2017 or higher. Please run this from the MSVC x86 native tools command prompt.");
+        return;
+    }
 
     wchar_t *setup_cmd = concat4(L"\"", result.vs_exe_path, L"\" x86 && ", GetCommandLineW());
     printf("%S\n", setup_cmd);
