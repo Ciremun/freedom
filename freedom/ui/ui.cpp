@@ -185,13 +185,18 @@ void update_ui()
     {
         static MenuTab selected_tab = MenuTab::Difficulty;
 
-        const auto update_tab = [](const char *tab_name, MenuTab tab_type)
+        const auto update_tab = [](const char *tab_name, MenuTab tab_type, bool highlight = false)
         {
-            if (ImGui::Selectable(tab_name, selected_tab == tab_type, ImGuiSelectableFlags_DontClosePopups))
+            bool is_selected = selected_tab == tab_type;
+            if (!is_selected && highlight)
+                ImGui::PushStyleColor(ImGuiCol_Text, SILVER);
+            if (ImGui::Selectable(tab_name, is_selected, ImGuiSelectableFlags_DontClosePopups))
             {
                 selected_tab = tab_type;
                 ImGui::SetNextWindowFocus();
             }
+            if (!is_selected && highlight)
+                ImGui::PopStyleColor();
         };
 
         const auto inactive_tab = [](const char *tab_name)
@@ -201,15 +206,15 @@ void update_ui()
             ImGui::EndDisabled();
         };
 
-        update_tab("Difficulty", MenuTab::Difficulty);
+        update_tab("Difficulty", MenuTab::Difficulty, ar_parameter.lock || cs_parameter.lock || od_parameter.lock);
 
-        beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax)  : inactive_tab("Relax");
-        beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot) : inactive_tab("Aimbot");
-        set_playback_rate_code_start ? update_tab("Timewarp", MenuTab::Timewarp) : inactive_tab("Timewarp");
-        selected_replay_offset ? update_tab("Replay", MenuTab::Replay) : inactive_tab("Replay");
+        beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax, cfg_relax_lock)  : inactive_tab("Relax");
+        beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot, cfg_aimbot_lock) : inactive_tab("Aimbot");
+        set_playback_rate_code_start ? update_tab("Timewarp", MenuTab::Timewarp, cfg_timewarp_enabled) : inactive_tab("Timewarp");
+        selected_replay_offset ? update_tab("Replay", MenuTab::Replay, cfg_replay_enabled) : inactive_tab("Replay");
 
-        update_tab("Mods", MenuTab::Mods);
-        update_tab("Misc", MenuTab::Misc);
+        update_tab("Mods", MenuTab::Mods, cfg_flashlight_enabled || cfg_hidden_remover_enabled || cfg_score_multiplier_enabled);
+        update_tab("Misc", MenuTab::Misc, cfg_discord_rich_presence_enabled);
         update_tab("About", MenuTab::About);
         update_tab("Debug", MenuTab::Debug);
 

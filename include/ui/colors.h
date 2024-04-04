@@ -9,3 +9,4 @@
 #define MAGENTA ImVec4(0.34f, 0.04f, 0.68f, 1.0f)
 #define LOG_OK ImVec4(0.50f, 0.77f, 0.14f, 1.0f)
 #define LOG_ERROR ImVec4(0.85f, 0.03f, 0.09f, 1.0f)
+#define SILVER ImVec4(0.686f, 0.694f, 0.722f, 1.0f)
