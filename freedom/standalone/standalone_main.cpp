@@ -111,9 +111,6 @@ int main(int, char**)
     od_window = 13.37f;
     set_playback_rate_code_start = 1;
 
-    for (int i = 0; i < (1 << 8); ++i)
-        debug_log.add("%s %d\n", "Test Log", i);
-
     // Main loop
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
@@ -123,8 +120,11 @@ int main(int, char**)
 #else
     set_imgui_ini_handler();
     io.IniFilename = "config.ini";
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+    for (int i = 0; i < (1 << 8); ++i)
+        debug_log.add("%s %d\n", "Test Log", i);
     while (!glfwWindowShouldClose(window))
-#endif
+#endif // __EMSCRIPTEN__
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
