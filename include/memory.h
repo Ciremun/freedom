@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#include "ui/log.h"
+#include "ui/debug_log.h"
 
 void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);
 

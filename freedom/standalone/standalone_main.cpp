@@ -94,6 +94,14 @@ int main(int, char**)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+#ifdef __EMSCRIPTEN__
+    io.IniFilename = NULL;
+#else
+    set_imgui_ini_handler();
+    io.IniFilename = "config.ini";
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+#endif // __EMSCRIPTEN__
+
     init_imgui_styles();
     init_imgui_fonts();
 
@@ -111,18 +119,15 @@ int main(int, char**)
     od_window = 13.37f;
     set_playback_rate_code_start = 1;
 
+    for (int i = 0; i < (1 << 8); ++i)
+        debug_log.add("%s %d\n", "Test Log", i);
+
     // Main loop
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
     // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
-    io.IniFilename = NULL;
     EMSCRIPTEN_MAINLOOP_BEGIN
 #else
-    set_imgui_ini_handler();
-    io.IniFilename = "config.ini";
-    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
-    for (int i = 0; i < (1 << 8); ++i)
-        debug_log.add("%s %d\n", "Test Log", i);
     while (!glfwWindowShouldClose(window))
 #endif // __EMSCRIPTEN__
     {

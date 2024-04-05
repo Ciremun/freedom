@@ -12,7 +12,7 @@
 
 #include "ui/font.h"
 #include "ui/config.h"
-#include "ui/log.h"
+#include "ui/debug_log.h"
 #include "ui/colors.h"
 
 #include "imgui.h"

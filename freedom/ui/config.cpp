@@ -20,7 +20,6 @@ bool cfg_jumping_window = false;
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 bool cfg_hidden_remover_enabled = false;
-bool cfg_write_debug_log = false;
 bool cfg_show_debug_log = false;
 
 char cfg_discord_rich_presence_state[512] = {0};
@@ -92,7 +91,6 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
     buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
     buf->appendf("jump_window=%d\n", (int)cfg_jumping_window);
-    buf->appendf("write_debug=%d\n", (int)cfg_write_debug_log);
     buf->appendf("show_debug=%d\n", (int)cfg_show_debug_log);
     buf->append("\n");
 }
@@ -103,7 +101,7 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
         hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
         jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
-        write_debug_i, show_debug_i;
+        show_debug_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
     double timewarp_playback_rate_d;
     char relax_style_c;
@@ -135,7 +133,6 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)            cfg_timewarp_enabled = timewarp_enabled_i;
     else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)    cfg_timewarp_playback_rate = timewarp_playback_rate_d;
     else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)             cfg_jumping_window = jump_window_i;
-    else if (sscanf(line, "write_debug=%d", &write_debug_i) == 1)             cfg_write_debug_log = write_debug_i;
     else if (sscanf(line, "show_debug=%d", &show_debug_i) == 1)               cfg_show_debug_log = show_debug_i;
 }
 

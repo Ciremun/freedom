@@ -1,4 +1,4 @@
-#include "ui/log.h"
+#include "ui/debug_log.h"
 
 ImGuiLogger debug_log;
 
@@ -22,8 +22,8 @@ void ImGuiLogger::clear()
 
 void ImGuiLogger::add(const char *fmt, ...)
 {
-    extern bool cfg_write_debug_log;
-    if (!cfg_write_debug_log)
+    extern bool cfg_show_debug_log;
+    if (!cfg_show_debug_log)
         return;
     if (lines.size() >= 1024)
         clear();
@@ -45,7 +45,7 @@ static inline void TextColored(const char *line_begin, ImVec4 color)
 
 void ImGuiLogger::draw()
 {
-    ImGui::BeginChild("##debug_log");
+    ImGui::BeginChild("##debug_log", ImVec2(.0f, -30.f));
     for (const auto &line : lines)
     {
         if (line->size() >= 3 && line->c_str()[0] == '[' && line->Buf.Data[2] == ']')
