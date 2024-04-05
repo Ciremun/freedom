@@ -43,12 +43,12 @@ inline void init_imgui_styles()
     ImGuiStyle &style = ImGui::GetStyle();
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
     style.WindowBorderSize = .0f;
-    style.FrameRounding = 3.f;
-    style.FramePadding = ImVec2(style.FramePadding.x, 5.f);
+    style.FrameRounding = 2.f;
+    style.FramePadding = ImVec2(style.FramePadding.x, 4.f);
     style.FrameBorderSize = .0f;
     style.PopupBorderSize = .0f;
     style.ChildBorderSize = .0f;
-    style.ItemInnerSpacing = ImVec2(8.f, style.ItemInnerSpacing.y);
+    style.ItemInnerSpacing = ImVec2(6.f, style.ItemInnerSpacing.y);
     style.Colors[ImGuiCol_TitleBgActive] = PURPLE;
     style.Colors[ImGuiCol_Button] = PURPLE;
     style.Colors[ImGuiCol_ButtonHovered] = MAGENTA;
