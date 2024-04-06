@@ -117,6 +117,34 @@ void init_ui(IDirect3DDevice9* pDevice)
     ImGui_ImplDX9_Init(pDevice);
 }
 
+void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
+{
+    uintptr_t found = ptr;
+    if (!found)
+        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+
+    char id_str[64] = {0};
+    IM_ASSERT(strlen(label) < IM_ARRAYSIZE(id_str));
+    ImFormatString(id_str, IM_ARRAYSIZE(id_str), "##%s", label);
+
+    char ptr_str[32] = {0};
+    ImFormatString(ptr_str, IM_ARRAYSIZE(ptr_str), "%08X", ptr);
+
+    if (draw_label)
+    {
+        ImGui::Text(label);
+        ImGui::SameLine(ImGui::GetFontSize() * 8.f);
+    }
+    ImGui::PushItemWidth(ImGui::GetFontSize() * 4.f);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(BLACK_TRANSPARENT));
+    ImGui::InputText(id_str, ptr_str, 32, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+    ImGui::PopStyleColor();
+    ImGui::PopItemWidth();
+
+    if (!found)
+        ImGui::PopStyleColor();
+}
+
 void init_ui()
 {
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
@@ -557,8 +585,6 @@ void draw_debug_log()
         ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
         ImGui::PushFont(font);
         ImGui::Begin("Debug", &cfg_show_debug_log, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-        // enabled hooks
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16.f, ImGui::GetStyle().FramePadding.y));
         if (ImGui::BeginTabBar("##debug_tabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTabListScrollingButtons))
         {
@@ -599,29 +625,6 @@ void draw_debug_log()
             if (ImGui::BeginTabItem("Scan"))
             {
                 ImGui::PopStyleVar();
-                const auto colored_if_null = [](const char *label, uintptr_t ptr) {
-                    uintptr_t found = ptr;
-                    if (!found)
-                        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
-
-                    char id_str[64] = {0};
-                    IM_ASSERT(strlen(label) < IM_ARRAYSIZE(id_str));
-                    ImFormatString(id_str, IM_ARRAYSIZE(id_str), "##%s", label);
-
-                    char ptr_str[32] = {0};
-                    ImFormatString(ptr_str, IM_ARRAYSIZE(ptr_str), "%08X", ptr);
-
-                    ImGui::Text(label);
-                    ImGui::SameLine(ImGui::GetFontSize() * 8.f);
-                    ImGui::PushItemWidth(ImGui::GetFontSize() * 4.f);
-                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(BLACK_TRANSPARENT));
-                    ImGui::InputText(id_str, ptr_str, 32, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
-                    ImGui::PopStyleColor();
-                    ImGui::PopItemWidth();
-
-                    if (!found)
-                        ImGui::PopStyleColor();
-                };
                 ImGui::BeginChild("##debug_scan", ImVec2(.0f, -30.f));
                 if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
                 {
@@ -691,6 +694,41 @@ void draw_debug_log()
                     ImGui::Text("AR: %08X %08X %08X", approach_rate_offsets[0], approach_rate_offsets[1], approach_rate_offsets[2]);
                     ImGui::Text("CS: %08X %08X %08X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
                     ImGui::Text("OD: %08X %08X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
+                }
+                if (ImGui::CollapsingHeader("Hooks", ImGuiTreeNodeFlags_None))
+                {
+                    const auto hook_info = [](const char *label, BYTE *hook_src, bool hook_enabled){
+                        ImGui::Text(label);
+                        ImGui::SameLine(.0f, 1.f);
+                        ImGui::Text(": ");
+                        ImGui::SameLine(ImGui::GetFontSize() * 8.f);
+                        if (!hook_enabled)
+                            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+                        ImGui::Text("%d", hook_enabled);
+                        if (!hook_enabled)
+                            ImGui::PopStyleColor();
+                        ImGui::SameLine(ImGui::GetFontSize() * 9.f);
+                        colored_if_null(label, (uintptr_t)hook_src, false);
+                    };
+                    hook_info("Scene", SceneHook.src, SceneHook.enabled);
+                    hook_info("Update Mods", UpdateModsHook.src, UpdateModsHook.enabled);
+                    hook_info("Swap Buffers", SwapBuffersHook.src, SwapBuffersHook.enabled);
+                    hook_info("Beatmap On Load", BeatmapOnLoadHook.src, BeatmapOnLoadHook.enabled);
+                    hook_info("AR 1", ApproachRateHook1.src, ApproachRateHook1.enabled);
+                    hook_info("AR 2", ApproachRateHook2.src, ApproachRateHook2.enabled);
+                    hook_info("AR 3", ApproachRateHook3.src, ApproachRateHook3.enabled);
+                    hook_info("CS 1", CircleSizeHook1.src, CircleSizeHook1.enabled);
+                    hook_info("CS 2", CircleSizeHook2.src, CircleSizeHook2.enabled);
+                    hook_info("CS 3", CircleSizeHook3.src, CircleSizeHook3.enabled);
+                    hook_info("OD 1", OverallDifficultyHook1.src, OverallDifficultyHook1.enabled);
+                    hook_info("OD 2", OverallDifficultyHook2.src, OverallDifficultyHook2.enabled);
+                    hook_info("Discord RPC", DiscordRichPresenceHook.src, DiscordRichPresenceHook.enabled);
+                    hook_info("Hidden", HiddenHook.src, HiddenHook.enabled);
+                    hook_info("Selected Replay", SelectedReplayHook.src, SelectedReplayHook.enabled);
+                    hook_info("Score Multiplier", ScoreMultiplierHook.src, ScoreMultiplierHook.enabled);
+                    hook_info("Set Playback Rate", SetPlaybackRateHook.src, SetPlaybackRateHook.enabled);
+                    hook_info("Check Timewarp 1", CheckTimewarpHook1.src, CheckTimewarpHook1.enabled);
+                    hook_info("Check Timewarp 2", CheckTimewarpHook2.src, CheckTimewarpHook2.enabled);
                 }
                 if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
                 {

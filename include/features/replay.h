@@ -9,6 +9,8 @@ extern uintptr_t selected_replay_offset;
 extern uintptr_t selected_replay_hook_jump_back;
 extern uintptr_t selected_replay_ptr;
 
+extern Hook<Detour32> SelectedReplayHook;
+
 void init_replay();
 
 void update_replay();

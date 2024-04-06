@@ -73,6 +73,9 @@ extern uintptr_t hom_update_vars_hidden_loc;
 extern twglSwapBuffers wglSwapBuffersGateway;
 
 extern Hook<Trampoline32> SwapBuffersHook;
+extern Hook<Trampoline32> SceneHook;
+extern Hook<Trampoline32> UpdateModsHook;
+extern Hook<Detour32> BeatmapOnLoadHook;
 
 extern float memory_scan_progress;
 

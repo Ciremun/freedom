@@ -11,6 +11,8 @@ typedef void(*tHiddenHook)();
 extern uintptr_t hom_update_vars_hidden_loc;
 extern uintptr_t osu_manager_ptr;
 
+extern Hook<Trampoline32> HiddenHook;
+
 void init_unmod_hidden();
 void unmod_hidden_on_beatmap_load();
 void enable_hidden_remover_hooks();

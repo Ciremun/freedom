@@ -24,6 +24,17 @@ extern Parameter ar_parameter;
 extern Parameter cs_parameter;
 extern Parameter od_parameter;
 
+extern Hook<Detour32> ApproachRateHook1;
+extern Hook<Detour32> ApproachRateHook2;
+extern Hook<Detour32> ApproachRateHook3;
+
+extern Hook<Detour32> CircleSizeHook1;
+extern Hook<Detour32> CircleSizeHook2;
+extern Hook<Detour32> CircleSizeHook3;
+
+extern Hook<Detour32> OverallDifficultyHook1;
+extern Hook<Detour32> OverallDifficultyHook2;
+
 extern uintptr_t parse_beatmap_code_start;
 
 extern uintptr_t approach_rate_offsets[3];

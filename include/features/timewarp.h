@@ -24,6 +24,10 @@ extern uintptr_t update_timing_ptr_2;
 extern uintptr_t update_timing_ptr_3;
 extern uintptr_t update_timing_ptr_4;
 
+extern Hook<Detour32> SetPlaybackRateHook;
+extern Hook<Detour32> CheckTimewarpHook1;
+extern Hook<Detour32> CheckTimewarpHook2;
+
 void init_timewarp();
 
 void enable_timewarp_hooks();
