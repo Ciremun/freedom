@@ -122,6 +122,13 @@ int main(int, char**)
     for (int i = 0; i < (1 << 8); ++i)
         debug_log.add("%s %d\n", "Test Log", i);
 
+    ImFontConfig config;
+    config.OversampleH = config.OversampleV = 1;
+    config.PixelSnapH = true;
+    config.GlyphRanges = io.Fonts->GetGlyphRangesCyrillic();
+    config.SizePixels = 20;
+    ImFont *debug_font = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, 20, &config);
+
     // Main loop
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
@@ -153,12 +160,18 @@ int main(int, char**)
         draw_debug_log();
         update_ui();
 
+        ImGui::PushFont(debug_font);
+        ImGui::PushID(69);
+        ImGui::Begin("Style Editor");
         ImGui::ShowStyleEditor();
+        ImGui::End();
+        ImGui::PopID();
 
         static ImVec4 clear_color = BLACK;
         ImGui::Begin("Background Color");
         ImGui::ColorPicker4("##Color Picker", (float *)&clear_color);
         ImGui::End();
+        ImGui::PopFont();
 
         // Rendering
         ImGui::Render();
