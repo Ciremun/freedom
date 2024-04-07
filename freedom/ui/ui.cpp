@@ -616,7 +616,7 @@ void draw_debug_log()
                     }
                 };
                 ImGui::Text("Current Scene: %s", scene_ptr_to_str(current_scene_ptr));
-                static char selected_mods[64] = "Unknown";
+                char selected_mods[64] = "Unknown";
                 ImGui::Text("Selected Mods: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
                 ImGui::Text("Prepared Methods: %d", prepared_methods_count);
@@ -750,6 +750,23 @@ void draw_debug_log()
             {
                 ImGui::PopStyleVar();
                 ImGui::Text("Current Beatmap:");
+                ImGui::Text("Hit Objects Count: %zu", current_beatmap.hit_objects.size());
+                ImGui::Text("Hit Object Index: %u", current_beatmap.hit_object_idx);
+                ImGui::Text("Hit Object Radius: %f", current_beatmap.hit_object_radius);
+                ImGui::Text("Scaled Hit Object Radius: %f", current_beatmap.scaled_hit_object_radius);
+                ImGui::Text("Ready: %s", current_beatmap.ready ? "Yes" : "No");
+                char current_beatmap_mods[64] = "Unknown";
+                ImGui::Text("Mods: %s", mods_to_string(current_beatmap.mods, current_beatmap_mods));
+                if (current_beatmap.hit_objects.size() > 0)
+                {
+                    ImGui::Dummy(ImVec2(.0f, 5.f));
+                    ImGui::Text("Current Circle:");
+                    Circle& c = current_beatmap.current_circle();
+                    ImGui::Text("Time: %d %d", c.start_time, c.end_time);
+                    ImGui::Text("Clicked: %s", c.clicked ? "Yes" : "No");
+                    ImGui::Text("Type: %d", c.type);
+                    ImGui::Text("Position: %.2f %.2f", c.position.x, c.position.y);
+                }
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
