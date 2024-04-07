@@ -746,6 +746,12 @@ void draw_debug_log()
                 ImGui::EndChild(); // debug_scan
                 ImGui::EndTabItem();
             }
+            if (ImGui::BeginTabItem("Beatmap"))
+            {
+                ImGui::PopStyleVar();
+                ImGui::Text("Current Beatmap:");
+                ImGui::EndTabItem();
+            }
             ImGui::EndTabBar();
         }
         else
