@@ -83,7 +83,7 @@ Alternatively, bootstrap nobuild
 
 rebuild and inject freedom with debug symbols and console log:
 
-    nobuild.exe rebuild debug console inject
+    nobuild.exe rebuild debug console run
 
 |    Flag     |          Description                |
 |:-----------:|:-----------------------------------:|
