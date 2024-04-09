@@ -45,12 +45,15 @@ inline void init_imgui_styles()
     style.FrameRounding = 2.f;
     style.TabRounding = 2.f;
     style.ScrollbarRounding = 2.f;
+    style.GrabRounding = 2.f;
     style.FramePadding = ImVec2(style.FramePadding.x, 4.f);
     style.WindowBorderSize = .0f;
     style.FrameBorderSize = .0f;
     style.PopupBorderSize = .0f;
     style.ChildBorderSize = .0f;
+    style.GrabMinSize = 20.f;
     style.ScrollbarSize = cfg_font_size * .65f;
+    style.ItemSpacing = ImVec2(style.ItemSpacing.x, 6.f);
     style.ItemInnerSpacing = ImVec2(6.f, style.ItemInnerSpacing.y);
     style.Colors[ImGuiCol_TitleBgActive] = PURPLE;
     style.Colors[ImGuiCol_Button] = PURPLE;
@@ -117,7 +120,7 @@ void init_ui(IDirect3DDevice9* pDevice)
     ImGui_ImplDX9_Init(pDevice);
 }
 
-void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
+static void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
 {
     uintptr_t found = ptr;
     if (!found)
@@ -143,6 +146,14 @@ void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
 
     if (!found)
         ImGui::PopStyleColor();
+}
+
+static inline bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
+{
+    ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
+    bool value_changed = ImGui::SliderFloat(label, v, v_min, v_max, format, flags);
+    ImGui::PopItemWidth();
+    return value_changed;
 }
 
 void init_ui()
@@ -260,11 +271,11 @@ void update_ui()
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(ImGui::GetFontSize() * 18.f, ImGui::GetWindowHeight()));
         ImGui::SetNextWindowSize(ImVec2(.0f, .0f), ImGuiCond_Always);
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Always);
-        ImGui::Begin("##tab_content", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("##tab_content", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
         ImGui::PopStyleVar();
         if (selected_tab == MenuTab::Difficulty)
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(7.5f, 7.5f));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetFontSize() * .25f, ImGui::GetFontSize() * .25f));
             parameter_slider(selected_song_ptr, &ar_parameter);
             parameter_slider(selected_song_ptr, &cs_parameter);
             parameter_slider(selected_song_ptr, &od_parameter);
@@ -314,11 +325,13 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, .01f, 5.f, "Cursor Delay: %.2f");
+            SliderFloat("##fraction_modifier", &cfg_fraction_modifier, .01f, 5.f, "Cursor Delay: %.2f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));
+            ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
             ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 600, "Spins Per Minute: %d");
+            ImGui::PopItemWidth();
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
@@ -334,8 +347,10 @@ void update_ui()
             static double p_min = 0.1;
             static double p_max = 2.0;
             static double timewarp_playback_rate = cfg_timewarp_playback_rate / 100.0;
+            ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
             if (ImGui::SliderScalar("##timewarp_scale", ImGuiDataType_Double, &timewarp_playback_rate, &p_min, &p_max, "Timewarp Scale: %.2lf"))
                 cfg_timewarp_playback_rate = timewarp_playback_rate * 100.0;
+            ImGui::PopItemWidth();
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
         }
@@ -408,7 +423,7 @@ void update_ui()
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
-            ImGui::SliderFloat("##score_multiplier", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
+            SliderFloat("##score_multiplier", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Hold Ctrl To Set a Custom Value");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
@@ -438,6 +453,7 @@ void update_ui()
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
+            ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
             if (ImGui::InputTextEx("##rpc_state", "State", cfg_discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
@@ -462,7 +478,7 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, 10.f));
 
             static char preview_font_size[16] = {0};
-            stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)font->ConfigData->SizePixels);
+            stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)ImGui::GetFontSize());
             if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
             {
                 const ImGuiIO& io = ImGui::GetIO();
@@ -483,7 +499,7 @@ void update_ui()
                 }
                 ImGui::EndCombo();
             }
-
+            ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(.0f, 10.f));
             bool all_found = all_code_starts_found();
             if (all_found)
@@ -551,14 +567,14 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
         }
         ImGui::PushID(slider_fmt);
         ImGui::BeginDisabled();
-        ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
+        SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
         ImGui::EndDisabled();
         ImGui::PopID();
     }
     else
     {
         ImGui::PushID(slider_fmt);
-        if (ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt))
+        if (SliderFloat("", &p->value, .0f, 11.0f, slider_fmt))
             p->apply_mods();
         ImGui::PopID();
         if (ImGui::IsItemDeactivatedAfterEdit())
