@@ -94,3 +94,9 @@ rebuild and inject freedom with debug symbols and console log:
 | standalone  | build standalone only               |
 | all         | build standalone and internal       |
 | run         | run osu and inject / run standalone |
+
+## Thank
+
+[Dear ImGui](https://github.com/ocornut/imgui)  
+[stb](https://github.com/nothings/stb)  
+[nobuild](https://github.com/tsoding/nobuild)  
