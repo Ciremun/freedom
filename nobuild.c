@@ -24,7 +24,7 @@
     {                                                                            \
         Cstr_Array objs = cstr_array_make(NULL);                                 \
         const char *dirs[] = {__VA_ARGS__};                                      \
-        for (size_t i = 0; i < _countof(dirs); ++i)                              \
+        for (size_t i = 0; i < (sizeof(dirs) / sizeof(dirs[0])); ++i)            \
         {                                                                        \
             FOREACH_FILE_IN_DIR(file, dirs[i],                                   \
             {                                                                    \
@@ -35,25 +35,11 @@
         body;                                                                    \
     } while (0)
 
-#define CALL_LINK(objs, ...)                                      \
-    do                                                            \
-    {                                                             \
-        if (do_link)                                              \
-        {                                                         \
-            Cstr_Array line = cstr_array_make(__VA_ARGS__, NULL); \
-            for (size_t i = 0; i < objs.count; ++i)               \
-                line = cstr_array_append(line, objs.elems[i]);    \
-            Cmd cmd = {.line = line};                             \
-            INFO("CMD: %s", cmd_show(cmd));                       \
-            cmd_run_sync(cmd);                                    \
-        }                                                         \
-    } while (0)
-
 static inline void bake_utils_dll();
-static void async_obj_foreach_file_in_dirs(Cstr first, ...);
 static inline void set_git_commit_hash();
 static inline bool find_osu_exe(LPWSTR osu_exe_path);
 static inline bool launch_osu(LPWSTR osu_exe_path);
+static void async_obj_foreach_file_in_dirs(Cstr first, ...);
 
 int *standalone_flag = 0;
 int *debug_flag = 0;
@@ -74,12 +60,13 @@ static void build_freedom_dll()
         bake_utils_dll();
     }
     async_obj_foreach_file_in_dirs(DLL_DIRS, NULL);
+    if (!do_link) return;
     OBJS_FOR_DIRS(
         objs, {
             if (*debug_flag)
-                { CALL_LINK(objs, "LINK", "/DLL", "/OUT:freedom.dll", MSVC_LINK_DEBUG_FLAGS); }
+                { CMD("LINK", cstr_array_join(" ", objs), "/DLL", "/OUT:freedom.dll", MSVC_LINK_DEBUG_FLAGS); }
             else
-                { CALL_LINK(objs, "LINK", "/DLL", "/OUT:freedom.dll", MSVC_LINK_RELEASE_FLAGS); }
+                { CMD("LINK", cstr_array_join(" ", objs), "/DLL", "/OUT:freedom.dll", MSVC_LINK_RELEASE_FLAGS); }
         },
         DLL_DIRS);
     if (!PATH_EXISTS("freedom_injector.exe") || *rebuild_flag || is_path1_modified_after_path2("injector.cpp", "freedom_injector.exe"))
@@ -91,15 +78,16 @@ static void build_freedom_dll()
 static void build_standalone()
 {
     async_obj_foreach_file_in_dirs(STANDALONE_DIRS, NULL);
+    if (!do_link) return;
     OBJS_FOR_DIRS(
         objs, {
             if (*debug_flag)
             {
-                CALL_LINK(objs, "LINK", "/OUT:freedom_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:console", MSVC_LINK_DEBUG_FLAGS);
+                CMD("LINK", cstr_array_join(" ", objs), "/OUT:freedom_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:console", MSVC_LINK_DEBUG_FLAGS);
             }
             else
             {
-                CALL_LINK(objs, "LINK", "/OUT:freedom_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:windows", MSVC_LINK_RELEASE_FLAGS);
+                CMD("LINK", cstr_array_join(" ", objs), "/OUT:freedom_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:windows", MSVC_LINK_RELEASE_FLAGS);
             }
         },
         STANDALONE_DIRS);
