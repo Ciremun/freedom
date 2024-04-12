@@ -161,11 +161,11 @@ int main(int, char**)
         update_ui();
 
         ImGui::PushFont(debug_font);
-        ImGui::PushID(69);
         ImGui::Begin("Style Editor");
         ImGui::ShowStyleEditor();
         ImGui::End();
-        ImGui::PopID();
+
+        ImGui::ShowAboutWindow();
 
         static ImVec4 clear_color = BLACK;
         ImGui::Begin("Background Color");
