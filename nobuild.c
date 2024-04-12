@@ -59,6 +59,10 @@ static void build_freedom_dll()
         CMD("csc", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "freedom/utils.cs");
         bake_utils_dll();
     }
+    if (!PATH_EXISTS("freedom_injector.exe") || *rebuild_flag || is_path1_modified_after_path2("injector.cpp", "freedom_injector.exe"))
+    {
+        CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
+    }
     async_obj_foreach_file_in_dirs(DLL_DIRS, NULL);
     if (!do_link) return;
     OBJS_FOR_DIRS(
@@ -69,10 +73,6 @@ static void build_freedom_dll()
                 { CMD("LINK", cstr_array_join(" ", objs), "/DLL", "/OUT:freedom.dll", MSVC_LINK_RELEASE_FLAGS); }
         },
         DLL_DIRS);
-    if (!PATH_EXISTS("freedom_injector.exe") || *rebuild_flag || is_path1_modified_after_path2("injector.cpp", "freedom_injector.exe"))
-    {
-        CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:freedom_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
-    }
 }
 
 static void build_standalone()
