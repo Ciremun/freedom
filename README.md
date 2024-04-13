@@ -13,7 +13,7 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 
 ## Usage
 
-run osu!, then run your favorite injector, you may use the supplied one (freedom_injector.exe).  
+run osu!, then run your favorite manual map injector (freedom_injector **[causes issues](https://github.com/Ciremun/freedom/issues/144#issuecomment-2053630852)** for now).  
 mod ui should appear in top left corner of the osu! window, see [controls](#controls).  
 
 ### Controls
