@@ -96,30 +96,6 @@ inline void init_imgui_fonts()
     }
 }
 
-void init_ui()
-{
-    oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
-
-#ifdef FR_DEBUG
-    IMGUI_CHECKVERSION();
-#endif // FR_DEBUG
-    ImGuiContext* ctx = ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-
-    ctx->SettingsHandlers.clear();
-
-    set_imgui_ini_handler();
-    io.IniFilename = get_imgui_ini_filename(g_module);
-
-    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
-
-    init_imgui_fonts();
-    init_imgui_styles();
-
-    ImGui_ImplWin32_Init(g_hwnd);
-    ImGui_ImplOpenGL3_Init();
-}
-
 void init_ui(IDirect3DDevice9* pDevice)
 {
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
@@ -141,7 +117,7 @@ void init_ui(IDirect3DDevice9* pDevice)
     init_imgui_styles();
 
     ImGui_ImplWin32_Init(g_hwnd);
-    ImGui_ImplDX9_Init(pDevice);
+    pDevice ? ImGui_ImplDX9_Init(pDevice) : ImGui_ImplOpenGL3_Init();
 }
 
 static void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)

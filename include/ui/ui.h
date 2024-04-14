@@ -39,8 +39,7 @@ enum class MenuTab
 extern char song_name_u8[256];
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void init_ui();
-void init_ui(IDirect3DDevice9* pDevice);
+void init_ui(IDirect3DDevice9* pDevice = 0);
 void init_imgui_styles();
 void init_imgui_fonts();
 void update_ui();
