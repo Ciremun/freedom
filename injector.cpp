@@ -238,7 +238,7 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData) {
 
 //Note: Exception support only x64 with build params /EHa or /EHc
 bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeader, bool ClearNonNeededSections,
-				  bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
+                    bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
     IMAGE_NT_HEADERS* pOldNtHeader = NULL;
     IMAGE_OPTIONAL_HEADER* pOldOptHeader = NULL;
     IMAGE_FILE_HEADER* pOldFileHeader = NULL;
@@ -383,9 +383,9 @@ bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHea
     }
 
     if (ClearNonNeededSections) {
-		auto pdata_s = mks(".pdata");
-		auto rsrc_s = mks(".rsrc");
-		auto reloc_s = mks(".reloc");
+        auto pdata_s = mks(".pdata");
+        auto rsrc_s = mks(".rsrc");
+        auto reloc_s = mks(".reloc");
         pSectionHeader = IMAGE_FIRST_SECTION(pOldNtHeader);
         for (UINT i = 0; i != pOldFileHeader->NumberOfSections; ++i, ++pSectionHeader) {
             if (pSectionHeader->Misc.VirtualSize) {
@@ -504,31 +504,31 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         return 1;
     }
 
-	TOKEN_PRIVILEGES priv = {0};
-	HANDLE hToken = NULL;
-	if (_OpenProcessToken(_GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
-		priv.PrivilegeCount = 1;
-		priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+    TOKEN_PRIVILEGES priv = {0};
+    HANDLE hToken = NULL;
+    if (_OpenProcessToken(_GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+        priv.PrivilegeCount = 1;
+        priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-		if (_LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
-			_AdjustTokenPrivileges(hToken, FALSE, &priv, 0, NULL, NULL);
+        if (_LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+            _AdjustTokenPrivileges(hToken, FALSE, &priv, 0, NULL, NULL);
 
-		_CloseHandle(hToken);
-	}
+        _CloseHandle(hToken);
+    }
 
-	HANDLE hProc = _OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
-	if (hProc == NULL)
-	{
-		log_error("Couldn't open process: 0x%X", _GetLastError());
-		return 1;
-	}
+    HANDLE hProc = _OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
+    if (hProc == NULL)
+    {
+        log_error("Couldn't open process: 0x%X", _GetLastError());
+        return 1;
+    }
 
-	if (!is_correct_target_arch(hProc))
-	{
-		log_error("Couldn't confirm target process architecture: 0x%X", _GetLastError());
-		_CloseHandle(hProc);
-		return 1;
-	}
+    if (!is_correct_target_arch(hProc))
+    {
+        log_error("Couldn't confirm target process architecture: 0x%X", _GetLastError());
+        _CloseHandle(hProc);
+        return 1;
+    }
 
     const wchar_t *dll_name = argc > 2 ? argv[2] : dll_name_w.c_str();
     static wchar_t module_path[MAX_PATH * 2];
@@ -536,14 +536,14 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
     if (module_path_length == 0)
     {
         log_error("Failed to retrieve the full path and file name of the dll. (0x%X)", _GetLastError());
-		_CloseHandle(hProc);
-		return 1;
+        _CloseHandle(hProc);
+        return 1;
     }
 
-	// file exists
-	// read file
-	// manual map
+    // file exists
+    // read file
+    // manual map
 
-	_CloseHandle(hProc);
+    _CloseHandle(hProc);
     return 0;
 }
