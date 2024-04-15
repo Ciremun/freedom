@@ -34,7 +34,10 @@ const char *get_imgui_ini_filename(HMODULE hMod)
     static wchar_t module_path[MAX_PATH * 2];
     DWORD module_path_length = GetModuleFileNameW(hMod, module_path, MAX_PATH * 2);
     if (module_path_length == 0)
+    {
+        FR_INFO_FMT("[!] GetModuleFileName (0x%X)", GetLastError());
         return 0;
+    }
 
     static char module_path_u8[MAX_PATH * 2];
     int module_path_u8_length = WideCharToMultiByte(CP_UTF8, 0, module_path, module_path_length, module_path_u8, MAX_PATH * 2, 0, 0);

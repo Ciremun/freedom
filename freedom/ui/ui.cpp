@@ -110,6 +110,7 @@ void init_ui(IDirect3DDevice9* pDevice)
 
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
+    if (io.IniFilename == 0) { FR_INFO("[!] Couldn't get config path"); }
 
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
@@ -612,6 +613,7 @@ void draw_debug_log()
                 ImGui::Text("Selected Mods: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
                 ImGui::Text("Prepared Methods: %d", prepared_methods_count);
+                ImGui::Text("config.ini path: %s", ImGui::GetIO().IniFilename);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Scan"))

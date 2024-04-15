@@ -28,8 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
-#pragma comment(lib, "Advapi32.lib")
+#include <assert.h>
 
 #ifdef _WIN64
 #define CURRENT_ARCH IMAGE_FILE_MACHINE_AMD64
@@ -55,7 +54,8 @@
     return std::string{ crypt(_.data, _.seed).data };            \
 }())
 
-#define mkfunc(f) auto s##f(mks(#f)); _##f = (t##f)GetProcAddress(k32, s##f.c_str())
+#define k32func(f) auto s##f(mks(#f)); _##f = (t##f)GetProcAddress(k32, s##f.c_str()); assert(_##f != NULL)
+#define a32func(f) auto s##f(mks(#f)); _##f = (t##f)GetProcAddress(a32, s##f.c_str()); assert(_##f != NULL)
 
 typedef DWORD (WINAPI *tGetFullPathNameW)(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR *lpFilePart);
 typedef DWORD (WINAPI *tGetLastError)();
@@ -65,10 +65,19 @@ typedef BOOL (WINAPI *tProcess32NextW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
 typedef BOOL (WINAPI *tCloseHandle)(HANDLE hObject);
 typedef HANDLE (WINAPI *tOpenProcess)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
 typedef LPVOID (WINAPI *tVirtualAllocEx)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
+typedef BOOL (WINAPI *tVirtualProtectEx)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flNewProtect, PDWORD lpflOldProtect);
+typedef BOOL (WINAPI *tVirtualFreeEx)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);
 typedef BOOL (WINAPI *tWriteProcessMemory)(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
-typedef HANDLE (WINAPI *tCreateRemoteThread)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+typedef BOOL (WINAPI *tReadProcessMemory)(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead);
 typedef HMODULE (WINAPI *tLoadLibraryW)(LPCWSTR lpLibFileName);
+typedef BOOL (WINAPI *tIsWow64Process)( HANDLE hProcess, PBOOL Wow64Process);
+typedef BOOL (WINAPI *tOpenProcessToken)(HANDLE ProcessHandle, DWORD DesiredAccess, PHANDLE TokenHandle);
+typedef BOOL (WINAPI *tLookupPrivilegeValueW)(LPCWSTR lpSystemName, LPCWSTR lpName, PLUID lpLuid);
+typedef HANDLE (WINAPI *tGetCurrentProcess)();
+typedef HANDLE (WINAPI *tCreateRemoteThread)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize,
+                                             LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+typedef BOOL (WINAPI *tAdjustTokenPrivileges)(HANDLE TokenHandle, BOOL DisableAllPrivileges, PTOKEN_PRIVILEGES NewState,
+                                             DWORD BufferLength, PTOKEN_PRIVILEGES PreviousState, PDWORD ReturnLength);
 
 tCreateToolhelp32Snapshot _CreateToolhelp32Snapshot = 0;
 tGetFullPathNameW _GetFullPathNameW = 0;
@@ -78,9 +87,17 @@ tProcess32NextW _Process32NextW = 0;
 tCloseHandle _CloseHandle = 0;
 tOpenProcess _OpenProcess = 0;
 tVirtualAllocEx _VirtualAllocEx = 0;
+tVirtualProtectEx _VirtualProtectEx = 0;
+tVirtualFreeEx _VirtualFreeEx = 0;
 tWriteProcessMemory _WriteProcessMemory = 0;
+tReadProcessMemory _ReadProcessMemory = 0;
 tCreateRemoteThread _CreateRemoteThread = 0;
 tLoadLibraryW _LoadLibraryW = 0;
+tIsWow64Process _IsWow64Process = 0;
+tGetCurrentProcess _GetCurrentProcess = 0;
+tOpenProcessToken _OpenProcessToken = 0;
+tLookupPrivilegeValueW _LookupPrivilegeValueW = 0;
+tAdjustTokenPrivileges _AdjustTokenPrivileges = 0;
 
 using f_LoadLibraryA = HINSTANCE(WINAPI*)(const char* lpLibFilename);
 using f_GetProcAddress = FARPROC(WINAPI*)(HMODULE hModule, LPCSTR lpProcName);
@@ -102,6 +119,174 @@ struct MANUAL_MAPPING_DATA
     LPVOID reservedParam;
     BOOL SEHSupport;
 };
+
+typedef enum
+{
+    FR_READ_WRITE = 0,
+    FR_READ_ONLY,
+} flag_t;
+
+typedef struct
+{
+    HANDLE hMap;
+    HANDLE handle;
+    flag_t access;
+    size_t size;
+    uint8_t *start;
+} File;
+
+File open_or_create_file(const wchar_t *path, flag_t access, int create);
+File open_file(const wchar_t *path, flag_t access);
+int close_file(HANDLE handle);
+int file_exists(const wchar_t *path);
+int get_file_size(File *f);
+int map_file(File *f);
+int unmap_file(File f);
+
+File open_file(const wchar_t *path, flag_t access)
+{
+    File f = open_or_create_file(path, access, 0);
+    if (f.handle == INVALID_HANDLE_VALUE)
+    {
+        log_error("Couldn't open file: %S", path);
+        exit(1);
+    }
+    return f;
+}
+
+File open_or_create_file(const wchar_t *path, flag_t access, int create)
+{
+    File f = {0};
+    DWORD dwCreationDisposition;
+    if (create && !file_exists(path))
+        dwCreationDisposition = CREATE_NEW;
+    else
+        dwCreationDisposition = OPEN_EXISTING;
+
+    DWORD dwDesiredAccess;
+    switch (access)
+    {
+        case FR_READ_WRITE:
+            dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+            break;
+        case FR_READ_ONLY:
+            dwDesiredAccess = GENERIC_READ;
+            break;
+        default:
+        {
+            assert(0 && "unreachable");
+            exit(1);
+        }
+        break;
+    }
+
+    f.handle = CreateFileW(path, dwDesiredAccess, 0, 0, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, 0);
+    if (f.handle == INVALID_HANDLE_VALUE)
+    {
+        log_error("Opening file %S", path);
+        return f;
+    }
+    if (dwCreationDisposition == OPEN_EXISTING && !get_file_size(&f))
+    {
+        log_error("Invalid file size %S", path);
+        close_file(f.handle);
+        f.handle = INVALID_HANDLE_VALUE;
+        return f;
+    }
+    f.access = access;
+    return f;
+}
+
+int close_file(HANDLE handle)
+{
+    if (_CloseHandle(handle) == 0)
+    {
+        log_error("CloseHandle failed (%ld)", GetLastError());
+        return 0;
+    }
+    return 1;
+}
+
+int file_exists(const wchar_t *path)
+{
+    DWORD dwAttrib = GetFileAttributesW(path);
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+            !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+
+int get_file_size(File *f)
+{
+    LARGE_INTEGER lpFileSize;
+    if (!GetFileSizeEx(f->handle, &lpFileSize))
+    {
+        log_error("GetFileSizeEx failed (%ld)", GetLastError());
+        return 0;
+    }
+    f->size = lpFileSize.QuadPart;
+    return 1;
+}
+
+int map_file(File *f)
+{
+    DWORD flProtect;
+    switch (f->access)
+    {
+        case FR_READ_WRITE:
+            flProtect = PAGE_READWRITE;
+            break;
+        case FR_READ_ONLY:
+            flProtect = PAGE_READONLY;
+            break;
+        default:
+            return 0;
+    }
+
+    f->hMap = CreateFileMappingA(f->handle, 0, flProtect, 0, 0, 0);
+    if (f->hMap == 0)
+    {
+        log_error("CreateFileMappingA failed (%ld)", GetLastError());
+        _CloseHandle(f->handle);
+        return 0;
+    }
+
+    DWORD dwDesiredAccess;
+    switch (f->access)
+    {
+        case FR_READ_WRITE:
+            dwDesiredAccess = FILE_MAP_ALL_ACCESS;
+            break;
+        case FR_READ_ONLY:
+            dwDesiredAccess = FILE_MAP_READ;
+            break;
+        default:
+            return 0;
+    }
+
+    f->start = (uint8_t *)MapViewOfFile(f->hMap, dwDesiredAccess, 0, 0, 0);
+    if (f->start == 0)
+    {
+        log_error("MapViewOfFile failed (%ld)", GetLastError());
+        _CloseHandle(f->hMap);
+        _CloseHandle(f->handle);
+        return 0;
+    }
+    return 1;
+}
+
+int unmap_file(File f)
+{
+    if (UnmapViewOfFile(f.start) == 0)
+    {
+        log_error("UnmapViewOfFile failed (%ld)", GetLastError());
+        return 0;
+    }
+    if (_CloseHandle(f.hMap) == 0)
+    {
+        log_error("_CloseHandle failed (%ld)", GetLastError());
+        return 0;
+    }
+    return 1;
+}
 
 // https://gist.github.com/EvanMcBroom/ace2a9af19fb5e7b2451b1cd4c07bf96
 constexpr uint32_t modulus() {
@@ -145,7 +330,8 @@ constexpr auto crypt(const char(&input)[N], const uint32_t seed = 0) {
 
 #pragma runtime_checks( "", off )
 #pragma optimize( "", off )
-void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData) {
+void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData)
+{
     if (!pData) {
         pData->hMod = (HINSTANCE)0x404040;
         return;
@@ -237,8 +423,12 @@ void __stdcall Shellcode(MANUAL_MAPPING_DATA* pData) {
 }
 
 //Note: Exception support only x64 with build params /EHa or /EHc
-bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHeader, bool ClearNonNeededSections,
-                    bool AdjustProtections, bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved) {
+bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, bool ClearHeader = true, bool ClearNonNeededSections = true, bool AdjustProtections = true,
+                  bool SEHExceptionSupport = true, DWORD fdwReason = DLL_PROCESS_ATTACH, LPVOID lpReserved = 0);
+
+bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, bool ClearHeader, bool ClearNonNeededSections, bool AdjustProtections,
+                    bool SEHExceptionSupport, DWORD fdwReason, LPVOID lpReserved)
+{
     IMAGE_NT_HEADERS* pOldNtHeader = NULL;
     IMAGE_OPTIONAL_HEADER* pOldOptHeader = NULL;
     IMAGE_FILE_HEADER* pOldFileHeader = NULL;
@@ -352,8 +542,8 @@ bool manual_map_dll(HANDLE hProc, BYTE* pSrcData, SIZE_T FileSize, bool ClearHea
             return false;
         }
 
-        MANUAL_MAPPING_DATA data_checked{ 0 };
-        ReadProcessMemory(hProc, MappingDataAlloc, &data_checked, sizeof(data_checked), NULL);
+        MANUAL_MAPPING_DATA data_checked {0};
+        _ReadProcessMemory(hProc, MappingDataAlloc, &data_checked, sizeof(data_checked), NULL);
         hCheck = data_checked.hMod;
 
         if (hCheck == (HINSTANCE)0x404040) {
@@ -478,18 +668,28 @@ static inline DWORD get_process_id(const wchar_t *process_name)
 int wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
     auto sKernel32Dll(mks("Kernel32.dll"));
+    auto sAdvapi32Dll(mks("Advapi32.dll"));
     auto k32 = GetModuleHandleA(sKernel32Dll.c_str());
-    mkfunc(GetFullPathNameW);
-    mkfunc(CreateToolhelp32Snapshot);
-    mkfunc(Process32FirstW);
-    mkfunc(Process32NextW);
-    mkfunc(CloseHandle);
-    mkfunc(OpenProcess);
-    mkfunc(VirtualAllocEx);
-    mkfunc(WriteProcessMemory);
-    mkfunc(CreateRemoteThread);
-    mkfunc(LoadLibraryW);
-    mkfunc(GetLastError);
+    auto a32 = LoadLibraryA(sAdvapi32Dll.c_str());
+    k32func(CreateToolhelp32Snapshot);
+    k32func(GetFullPathNameW);
+    k32func(GetLastError);
+    k32func(Process32FirstW);
+    k32func(Process32NextW);
+    k32func(CloseHandle);
+    k32func(OpenProcess);
+    k32func(VirtualAllocEx);
+    k32func(VirtualProtectEx);
+    k32func(VirtualFreeEx);
+    k32func(WriteProcessMemory);
+    k32func(ReadProcessMemory);
+    k32func(CreateRemoteThread);
+    k32func(LoadLibraryW);
+    k32func(IsWow64Process);
+    k32func(GetCurrentProcess);
+    a32func(OpenProcessToken);
+    a32func(LookupPrivilegeValueW);
+    a32func(AdjustTokenPrivileges);
 
     auto process_name_s = mks("osu!.exe");
     auto process_name_w = std::wstring(process_name_s.begin(), process_name_s.end());
@@ -510,7 +710,7 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         priv.PrivilegeCount = 1;
         priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-        if (_LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
+        if (_LookupPrivilegeValueW(NULL, SE_DEBUG_NAME, &priv.Privileges[0].Luid))
             _AdjustTokenPrivileges(hToken, FALSE, &priv, 0, NULL, NULL);
 
         _CloseHandle(hToken);
@@ -540,9 +740,26 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         return 1;
     }
 
-    // file exists
-    // read file
-    // manual map
+    if (!file_exists(module_path))
+    {
+        log_error("File %S doesn't exist", module_path);
+        _CloseHandle(hProc);
+        return 1;
+    }
+
+    File module_file = open_file(module_path, FR_READ_ONLY);
+    if (!map_file(&module_file))
+    {
+        log_error("Couldn't map module file");
+        close_file(module_file.handle);
+        _CloseHandle(hProc);
+        return 1;
+    }
+
+    manual_map_dll(hProc, (BYTE *)module_file.start);
+
+    unmap_file(module_file);
+    close_file(module_file.handle);
 
     _CloseHandle(hProc);
     return 0;
