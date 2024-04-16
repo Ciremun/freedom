@@ -110,9 +110,10 @@ void init_ui(IDirect3DDevice9* pDevice)
 
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
-    if (io.IniFilename == 0) { FR_INFO("[!] Couldn't get config path"); }
-
-    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+    if (io.IniFilename == 0)
+        { FR_INFO("[!] Couldn't get config path"); }
+    else
+        ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
     init_imgui_fonts();
     init_imgui_styles();
