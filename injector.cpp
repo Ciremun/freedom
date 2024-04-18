@@ -756,7 +756,13 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
         return 1;
     }
 
-    manual_map_dll(hProc, (BYTE *)module_file.start);
+    LPVOID config_path = _VirtualAllocEx(hProc, NULL, sizeof(module_path), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (!config_path)
+        log_warn("Couldn't allocate config path 0x%X", _GetLastError());
+    else if (!_WriteProcessMemory(hProc, config_path, module_path, sizeof(module_path), NULL))
+        log_warn("Couldn't write config path 0x%X", _GetLastError());
+
+    manual_map_dll(hProc, (BYTE *)module_file.start, true, true, true, true, DLL_PROCESS_ATTACH, config_path);
 
     unmap_file(module_file);
     close_file(module_file.handle);

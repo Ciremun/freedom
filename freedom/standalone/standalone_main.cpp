@@ -45,6 +45,7 @@
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
+LPVOID g_config_path = NULL;
 bool compatibility_mode = false;
 IDirect3DDevice9 *g_d3d9_device = 0;
 void unload_dll() {}

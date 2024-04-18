@@ -36,7 +36,23 @@ const char *get_imgui_ini_filename(HMODULE hMod)
     if (module_path_length == 0)
     {
         FR_INFO_FMT("[!] GetModuleFileName (0x%X)", GetLastError());
-        return 0;
+
+        // NOTE(Ciremun): config path from freedom_injector
+        extern LPVOID g_config_path;
+        if (g_config_path == NULL)
+            return 0;
+
+        uint8_t test_byte = 0;
+        if (!internal_memory_read(g_process, (uintptr_t)g_config_path, &test_byte))
+            return 0;
+
+        module_path_length = wcslen((wchar_t *)g_config_path);
+        if (module_path_length == 0)
+            return 0;
+
+        memcpy(module_path, g_config_path, (module_path_length + 1) * sizeof(wchar_t));
+        SecureZeroMemory(g_config_path, (module_path_length + 1) * sizeof(wchar_t));
+        VirtualFreeEx(g_process, g_config_path, 0, MEM_RELEASE);
     }
 
     static char module_path_u8[MAX_PATH * 2];

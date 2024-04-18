@@ -19,6 +19,7 @@ static bool init = false;
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
+LPVOID g_config_path = NULL;
 IDirect3DDevice9 *g_d3d9_device = 0;
 void *pDeviceTable[D3DDEV9_LEN];
 
@@ -203,6 +204,9 @@ DWORD WINAPI freedom_main(HMODULE hModule)
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+    {
+        g_config_path = lpReserved;
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)freedom_main, hModule, 0, 0));
+    }
     return TRUE;
 }
