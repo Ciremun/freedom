@@ -591,6 +591,7 @@ void draw_debug_log()
             if (ImGui::BeginTabItem("Game"))
             {
                 ImGui::PopStyleVar();
+                ImGui::BeginChild("##debug_game", ImVec2(.0f, -30.f));
                 ImGui::Text("Audio Time: %d", audio_time_ptr ? *(int32_t *)audio_time_ptr : 0);
                 static const auto scene_ptr_to_str = [](Scene *s){
                     if (!s) return "Unknown";
@@ -615,6 +616,7 @@ void draw_debug_log()
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
                 ImGui::Text("Prepared Methods: %d", prepared_methods_count);
                 ImGui::Text("config.ini path: %s", ImGui::GetIO().IniFilename);
+                ImGui::EndChild(); // debug_game
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Scan"))
@@ -744,6 +746,7 @@ void draw_debug_log()
             if (ImGui::BeginTabItem("Beatmap"))
             {
                 ImGui::PopStyleVar();
+                ImGui::BeginChild("##debug_beatmap", ImVec2(.0f, -30.f));
                 ImGui::Text("Current Beatmap:");
                 ImGui::Text("Hit Objects Count: %zu", current_beatmap.hit_objects.size());
                 ImGui::Text("Hit Object Index: %u", current_beatmap.hit_object_idx);
@@ -762,6 +765,7 @@ void draw_debug_log()
                     ImGui::Text("Type: %d", c.type);
                     ImGui::Text("Position: %.2f %.2f", c.position.x, c.position.y);
                 }
+                ImGui::EndChild(); // debug_beatmap
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
