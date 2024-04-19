@@ -8,7 +8,7 @@
 #define DLL_DIRS "freedom/dll/", COMMON_DIRS
 #define STANDALONE_DIRS "freedom/standalone/", COMMON_DIRS, "vendor/imgui/backends/standalone/"
 
-#define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_DEFINE_MATH_OPERATORS", "/DIMGUI_USE_STB_SPRINTF", "/std:c++latest"
+#define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/std:c++latest"
 #define MSVC_INCLUDE_FLAGS "/Iinclude", "/Ivendor", "/Ivendor/imgui", "/Ivendor/imgui/backends", "/Ivendor/imgui/backends/standalone", "/Ivendor/GLFW/include"
 
 #define MSVC_RELEASE_FLAGS MSVC_COMMON_FLAGS, "/DNDEBUG", MSVC_INCLUDE_FLAGS, "/O2", "/MT", "/GL"
