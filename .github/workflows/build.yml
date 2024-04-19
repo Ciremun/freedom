@@ -27,4 +27,3 @@ jobs:
           path: |
             freedom_injector.exe
             freedom.dll
-            config.ini
