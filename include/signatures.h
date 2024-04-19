@@ -8,7 +8,6 @@ constexpr auto parse_beatmap_func_sig       { pattern::build<"55 8B EC 57 56 53 
 constexpr auto current_scene_func_sig       { pattern::build<"55 8B EC 57 56 53 50 8B D9 83 3D"> };
 constexpr auto beatmap_onload_func_sig      { pattern::build<"55 8B EC 57 56 53 83 EC 44 8B F1 B9"> };
 constexpr auto selected_song_func_sig       { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 38 83 3D"> };
-constexpr auto audio_time_func_sig          { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 38 83 3D"> };
 constexpr auto osu_manager_func_sig         { pattern::build<"55 8B EC 57 56 53 83 EC 14 80 3D"> };
 constexpr auto binding_manager_func_sig     { pattern::build<"55 8B EC 57 56 83 EC 58 8B F1 8D 7D A0"> };
 constexpr auto selected_replay_func_sig     { pattern::build<"55 8B EC 57 56 53 81 EC A0 00 00 00 8B F1 8D BD 68 FF FF FF B9 22 00 00 00 33 C0 F3 AB 8B CE 8B F1 8D 7D E0"> };

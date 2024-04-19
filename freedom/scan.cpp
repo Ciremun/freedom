@@ -60,7 +60,7 @@ uintptr_t check_timewarp_offset = 0;
 inline bool all_code_starts_found()
 {
     return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
-           audio_time_code_start && osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
+           osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
            osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
            score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
            && hom_update_vars_hidden_loc && selected_mods_code_start && update_mods_code_start;
@@ -178,7 +178,6 @@ static void scan_for_code_starts()
             PATTERN_SCAN(beatmap_onload_code_start,    beatmap_onload_func_sig,     opcodes);
             PATTERN_SCAN(current_scene_code_start,     current_scene_func_sig,      opcodes);
             PATTERN_SCAN(selected_song_code_start,     selected_song_func_sig,      opcodes);
-            PATTERN_SCAN(audio_time_code_start,        audio_time_func_sig,         opcodes);
             PATTERN_SCAN(osu_manager_code_start,       osu_manager_func_sig,        opcodes);
             PATTERN_SCAN(binding_manager_code_start,   binding_manager_func_sig,    opcodes);
             PATTERN_SCAN(selected_replay_code_start,   selected_replay_func_sig,    opcodes);
@@ -248,9 +247,9 @@ static void try_find_hook_offsets()
         selected_song_offset = pattern::find<selected_song_sig>({ (uint8_t *)selected_song_code_start, 0x5A6 + 0x100});
         if (selected_song_offset)
             selected_song_ptr = *(uintptr_t *)(selected_song_offset + 0x8);
-    }
-    if (audio_time_code_start)
-    {
+
+        // NOTE(Ciremun): same signature
+        audio_time_code_start = selected_song_code_start;
         audio_time_offset = pattern::find<audio_time_sig>({ (uint8_t *)audio_time_code_start, 0x5A6});
         if (audio_time_offset)
             audio_time_ptr = *(uintptr_t *)(audio_time_offset - 0xA);
