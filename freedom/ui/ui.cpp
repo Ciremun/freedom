@@ -606,8 +606,10 @@ void draw_debug_log()
                 char selected_mods[64] = "Unknown";
                 ImGui::Text("Selected Mods: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
+                ImGui::Dummy(ImVec2(.0f, 5.f));
+                ImGui::Text("All Methods Found: %s", all_code_starts_found() ? "Yes" : "No");
                 ImGui::Text("Prepared Methods: %d", prepared_methods_count);
-                ImGui::TextWrapped("config.ini path: %s", ImGui::GetIO().IniFilename);
+                ImGui::TextWrapped("Config Path: %s", ImGui::GetIO().IniFilename);
                 ImGui::EndChild(); // debug_game
                 ImGui::EndTabItem();
             }
