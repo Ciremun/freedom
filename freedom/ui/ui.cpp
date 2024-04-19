@@ -479,20 +479,12 @@ void update_ui()
             }
             ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(.0f, 10.f));
-            bool all_found = all_code_starts_found();
-            if (all_found)
-                ImGui::BeginDisabled();
             if (ImGui::Button("Rescan Memory"))
             {
                 destroy_hooks_except_swap();
                 CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
             }
-            if (all_found)
-            {
-                ImGui::EndDisabled();
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("No Rescan Needed: All Found");
-            }
-            ImGui::SameLine(.0f, 20.f);
+            ImGui::SameLine(.0f, ImGui::GetFontSize());
             if (ImGui::Button("Unload DLL"))
                 unload_dll();
             ImGui::Dummy(ImVec2(.0f, 5.f));
