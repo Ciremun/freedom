@@ -630,6 +630,7 @@ void draw_debug_log()
                 }
                 if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
                 {
+                    colored_if_null("Audio Time", audio_time_ptr);
                     colored_if_null("Binding Manager", binding_manager_ptr);
                     colored_if_null("Osu Manager", osu_manager_ptr);
                     colored_if_null("Selected Replay", selected_replay_ptr);
