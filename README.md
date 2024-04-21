@@ -43,7 +43,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Leaderboard Replay Download
 
 - Aimbot:
-    * Cursor Speed
+    * Cursor Delay
     * Spins Per Minute
 
 - Relax:
