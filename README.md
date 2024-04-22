@@ -103,3 +103,4 @@ rebuild and inject freedom with debug symbols and console log:
 [Dear ImGui](https://github.com/ocornut/imgui)  
 [stb](https://github.com/nothings/stb)  
 [nobuild](https://github.com/tsoding/nobuild)  
+[pattern.h](https://github.com/Ciremun/freedom/blob/6c0ebbc374dc34ff8925b1758d01ed5911e9fc47/vendor/pattern.h)  
