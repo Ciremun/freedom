@@ -22,6 +22,7 @@ struct Hook
     uintptr_t len = 0;
     BYTE originalBytes[16] = {0};
     bool enabled = false;
+    bool free_gateway = true;
 
     Hook() {}
     Hook(uintptr_t src, BYTE *dst, uintptr_t len) : src((BYTE *)src), dst(dst), len(len) {}
@@ -34,14 +35,7 @@ struct Hook
         this->src = (BYTE *)GetProcAddress(hMod, exportName);
     }
     void Enable();
-    void Disable()
-    {
-        if (enabled)
-        {
-            internal_memory_patch(src, originalBytes, len);
-            enabled = false;
-        }
-    }
+    void Disable();
 };
 
 template <>
@@ -57,6 +51,18 @@ inline void Hook<Trampoline32>::Enable()
 }
 
 template <>
+inline void Hook<Trampoline32>::Disable()
+{
+    if (enabled)
+    {
+        internal_memory_patch(src, originalBytes, len);
+        if (free_gateway)
+            VirtualFree(*(LPVOID *)PtrToGatewayFnPtr, 0, MEM_RELEASE);
+        enabled = false;
+    }
+}
+
+template <>
 inline void Hook<Detour32>::Enable()
 {
     assert(len <= 16);
@@ -65,5 +71,16 @@ inline void Hook<Detour32>::Enable()
         memcpy(originalBytes, src, len);
         detour_32(src, dst, len);
         enabled = true;
+    }
+}
+
+
+template <>
+inline void Hook<Detour32>::Disable()
+{
+    if (enabled)
+    {
+        internal_memory_patch(src, originalBytes, len);
+        enabled = false;
     }
 }

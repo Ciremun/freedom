@@ -23,9 +23,9 @@
 extern int prepared_methods_count;
 
 bool prepare_methods();
-bool load_csharp_assembly();
+bool init_clrhost();
 
-bool variant_ok(void *variant_ptr);
+bool variant_ok(VARIANT variant);
 VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name, const wchar_t *wchar_string_arg);
 VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name);
 VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name, SAFEARRAY* params);

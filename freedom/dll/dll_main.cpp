@@ -179,6 +179,7 @@ DWORD WINAPI freedom_main(HMODULE hModule)
     g_module = hModule;
 
     SwapBuffersHook = Hook<Trampoline32>("wglSwapBuffers", "opengl32.dll", (BYTE *)opengl_update, (BYTE *)&wglSwapBuffersGateway, 5);
+    SwapBuffersHook.free_gateway = false;
     SwapBuffersHook.src += 14;
     SwapBuffersHook.Enable();
 
@@ -194,6 +195,7 @@ DWORD WINAPI freedom_main(HMODULE hModule)
         {
             void *pEndScene = pDeviceTable[42];
             SwapBuffersHook = Hook<Trampoline32>((BYTE *)pEndScene, (BYTE *)d3d9_update, (BYTE *)&wglSwapBuffersGateway, 7);
+            SwapBuffersHook.free_gateway = false;
             SwapBuffersHook.Enable();
         }
     }

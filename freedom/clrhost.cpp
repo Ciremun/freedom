@@ -20,13 +20,18 @@ bool prepare_methods()
 {
     double s = ImGui::GetTime();
     VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"PrepareMethods");
-    if (variant_ok(&v))
-        prepared_methods_count = v.intVal;
+    if (variant_ok(v))
+        prepared_methods_count = V_INT(&v);
     FR_INFO_FMT("Preparing Methods Took: %lfs", ImGui::GetTime() - s);
     return true;
 }
 
-static inline ICorRuntimeHost* getCorRtHost_byVersion(LPCWSTR sz_runtimeVersion) {
+bool variant_ok(VARIANT variant)
+{
+    return V_VT(&variant) != VT_EMPTY;
+}
+
+static inline ICorRuntimeHost* init_clr_runtime_host(LPCWSTR sz_runtimeVersion) {
 	ICLRRuntimeInfo* pRuntimeInfo = NULL;
 	ICorRuntimeHost* pRuntimeHost = NULL;
 	ICLRMetaHost* pMetaHost = NULL;
@@ -68,13 +73,12 @@ static inline ICorRuntimeHost* getCorRtHost_byVersion(LPCWSTR sz_runtimeVersion)
 	return pRuntimeHost;
 }
 
-static inline _AppDomainPtr getDefaultDomain(ICorRuntimeHost* pRuntimeHost) {
+static inline _AppDomainPtr get_default_domain(ICorRuntimeHost* pRuntimeHost) {
 	IUnknownPtr pAppDomainThunk = NULL;
 	if (FAILED(pRuntimeHost->GetDefaultDomain(&pAppDomainThunk))) {
 		FR_INFO("[!] GetDefaultDomain");
 		return NULL;
 	}
-
 	_AppDomainPtr pDefaultAppDomain = NULL;
 	if (FAILED(pAppDomainThunk->QueryInterface(__uuidof(_AppDomain), (LPVOID*)&pDefaultAppDomain))) {
 		FR_INFO("[!] QueryInterface");
@@ -83,7 +87,7 @@ static inline _AppDomainPtr getDefaultDomain(ICorRuntimeHost* pRuntimeHost) {
 	return pDefaultAppDomain;
 }
 
-static inline _AssemblyPtr getAssembly_fromBinary(_AppDomainPtr pDefaultAppDomain, LPBYTE rawData, ULONG lenRawData) {
+static inline _AssemblyPtr get_assembly_from_binary(_AppDomainPtr pDefaultAppDomain, LPBYTE rawData, ULONG lenRawData) {
 	_AssemblyPtr pAssembly = NULL;
 	SAFEARRAY* pSafeArray = SafeArrayCreate(VT_UI1, 1, new SAFEARRAYBOUND{ lenRawData , 0 });
 
@@ -112,17 +116,17 @@ static inline _AssemblyPtr getAssembly_fromBinary(_AppDomainPtr pDefaultAppDomai
 	return pAssembly;
 }
 
-bool load_csharp_assembly()
+bool init_clrhost()
 {
-	ICorRuntimeHost* pRuntimeHost = getCorRtHost_byVersion(L"v4.0.30319");
+	ICorRuntimeHost* pRuntimeHost = init_clr_runtime_host(L"v4.0.30319");
 
 	if (!pRuntimeHost)
 		return false;
 
 	_MethodInfoPtr pMethodInfo = NULL;
-	if (auto pDefaultAppDomain = getDefaultDomain(pRuntimeHost))
+	if (auto pDefaultAppDomain = get_default_domain(pRuntimeHost))
     {
-		if (assembly_ptr = getAssembly_fromBinary(pDefaultAppDomain, LPBYTE(utils_dll_data), utils_dll_size))
+		if (assembly_ptr = get_assembly_from_binary(pDefaultAppDomain, LPBYTE(utils_dll_data), utils_dll_size))
             return true;
         FR_INFO("[!] C# Get Assembly From Binary Failed");
         return false;
@@ -131,24 +135,18 @@ bool load_csharp_assembly()
     return false;
 }
 
-bool variant_ok(void *variant_ptr)
-{
-    VARIANT *v = (VARIANT *)variant_ptr;
-    return v->vt != VT_EMPTY;
-}
-
 VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name, const wchar_t *wchar_string_arg)
 {
     VARIANT variant;
     VariantInit(&variant);
-    variant.vt = VT_BSTR;
-    variant.bstrVal = SysAllocString(wchar_string_arg);
+    V_VT(&variant) = VT_BSTR;
+    V_BSTR(&variant) = SysAllocString(wchar_string_arg);
     SAFEARRAY* params = SafeArrayCreateVector(VT_VARIANT, 0, 1);
     LONG i = 0;
     SafeArrayPutElement(params, &i, &variant);
     VARIANT v = invoke_csharp_method(type_name, method_name, params);
     SafeArrayDestroy(params);
-    SysFreeString(variant.bstrVal);
+    SysFreeString(V_BSTR(&variant));
     return v;
 }
 
@@ -174,35 +172,41 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
     std::string type_name_s = get_utf8(type_name);
     std::string method_name_s = get_utf8(method_name);
 
-    _TypePtr type_ptr;
+    FR_INFO_FMT("Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
+
+    _TypePtr type_ptr = 0;
     BSTR type_name_b = SysAllocString(type_name);
-    if (type_ptr = assembly_ptr->GetType_2(type_name_b))
-    { /* FR_INFO("[+] GetType"); */ }
+    HRESULT hr = assembly_ptr->raw_GetType_2(type_name_b, &type_ptr);
+    if (type_ptr)
+    {
+        // FR_INFO("[+] GetType");
+    }
 	else
     {
-        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
-        FR_INFO("[!] GetType");
+        FR_INFO_FMT("[!] GetType (0x%X)", hr);
         SysFreeString(type_name_b);
 		return variant;
     }
 
-    _MethodInfoPtr method_ptr;
+    _MethodInfoPtr method_ptr = 0;
     BSTR method_name_b = SysAllocString(method_name);
-    if (method_ptr = type_ptr->GetMethod_2(method_name_b, (BindingFlags)(BindingFlags_Public | BindingFlags_Static)))
-    { /* FR_INFO("[+] GetMethod"); */ }
+    hr = type_ptr->raw_GetMethod_2(method_name_b, (BindingFlags)(BindingFlags_Public | BindingFlags_Static), &method_ptr);
+    if (method_ptr)
+    {
+        // FR_INFO("[+] GetMethod");
+    }
 	else
     {
-        FR_INFO_FMT("[!] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
-        FR_INFO("[!] GetMethod");
+        FR_INFO_FMT("[!] GetMethod (0x%X)", hr);
         SysFreeString(type_name_b);
         SysFreeString(method_name_b);
 		return variant;
     }
 
-    HRESULT hr = method_ptr->raw_Invoke_3(variant, params, &variant);
+    hr = method_ptr->raw_Invoke_3(variant, params, &variant);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] Invoke %s::%s (0x%X)", type_name_s.c_str(), method_name_s.c_str(), hr);
+        FR_INFO_FMT("[!] Invoke (0x%X)", hr);
         SysFreeString(type_name_b);
         SysFreeString(method_name_b);
         return variant;
@@ -210,8 +214,6 @@ VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_nam
 
     SysFreeString(type_name_b);
     SysFreeString(method_name_b);
-
-    FR_INFO_FMT("[+] Invoke %s::%s", type_name_s.c_str(), method_name_s.c_str());
 
     return variant;
 }
