@@ -380,6 +380,10 @@ void update_ui()
                 cfg_hidden_remover_enabled ? enable_hidden_remover_hooks() : disable_hidden_remover_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Text, LOG_ERROR);
+            ImGui::Text("(Detected!)");
+            ImGui::PopStyleColor();
             if (!unmod_hidden_found)
                 ImGui::EndDisabled();
             ImGui::Dummy(ImVec2(.0f, 5.f));
