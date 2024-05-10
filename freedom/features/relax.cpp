@@ -15,12 +15,12 @@ static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click
 
 void calc_od_timing()
 {
-    static const auto rand_range_f = [](float f_min, float f_max) -> float
+    const auto rand_range_f = [](float f_min, float f_max) -> float
     {
         float scale = rand() / (float)RAND_MAX;
         return f_min + scale * (f_max - f_min);
     };
-    static const auto rand_range_i = [](int i_min, int i_max) -> int
+    const auto rand_range_i = [](int i_min, int i_max) -> int
     {
         return rand() % (i_max + 1 - i_min) + i_min;
     };

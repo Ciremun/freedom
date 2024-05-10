@@ -225,7 +225,9 @@ void update_ui()
         const auto inactive_tab = [](const char *tab_name)
         {
             ImGui::BeginDisabled();
+            ImGui::PushStyleColor(ImGuiCol_Text, LOG_ERROR);
             ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
+            ImGui::PopStyleColor();
             ImGui::EndDisabled();
         };
 
@@ -588,7 +590,7 @@ void draw_debug_log()
                 ImGui::PopStyleVar();
                 ImGui::BeginChild("##debug_game", ImVec2(.0f, -30.f));
                 ImGui::Text("Audio Time: %d", audio_time_ptr ? *(int32_t *)audio_time_ptr : 0);
-                static const auto scene_ptr_to_str = [](Scene *s){
+                const auto scene_ptr_to_str = [](Scene *s){
                     if (!s) return "Unknown";
                     Scene scene = *s;
                     switch (scene)

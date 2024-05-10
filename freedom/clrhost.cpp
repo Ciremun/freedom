@@ -28,6 +28,7 @@ struct ClassMethod
     ClassMethodType t;
 };
 
+std::vector<std::future<void>> prepare_method_tasks;
 int prepared_methods_count = -1;
 _AssemblyPtr mscorlib_assembly = 0;
 _AssemblyPtr osu_assembly = 0;
@@ -401,6 +402,8 @@ bool prepare_methods()
     method_info_cls->GetProperty(method_handle_b, (BindingFlags)(BindingFlags_Instance | BindingFlags_Public), &method_handle_prop);
     SysFreeString(method_handle_b);
 
+    prepare_method_tasks.clear();
+    prepare_method_tasks.reserve(70);
     for (LONG i = 0; i < classes_count; ++i)
     {
         _TypePtr class_ = 0;
@@ -461,8 +464,6 @@ bool prepare_methods()
             VARIANT method_handle_value;
             VariantInit(&method_handle_value);
             method_handle_prop->GetValue(method_handle_ptr, method_handle_args, &method_handle_value);
-
-            SAFEARRAY *params = get_params(&method_handle_value);
             for (const auto& cm : classmethods)
             {
                 if (!match_method_name_length(method, cm) && cm.t != ClassMethodType::UpdateVariables)
@@ -471,20 +472,29 @@ bool prepare_methods()
                 if (!verify_classmethod(class_, method, cm))
                     continue;
 
-                hr = prepare_method->Invoke_3(method_handle_value, params, &method_handle_value);
-                if (FAILED(hr))
-                    FR_INFO_FMT("[!] Invoke (0x%X)", hr);
-                else
-                    ++prepared_methods_count;
+                const auto prepare = [](_MethodInfoPtr prepare_method, VARIANT method_handle_value) {
+                    SAFEARRAY *params = get_params(&method_handle_value);
+                    HRESULT hr = prepare_method->Invoke_3(method_handle_value, params, &method_handle_value);
+                    SafeArrayDestroy(params);
+                    if (FAILED(hr))
+                        FR_INFO_FMT("[!] Invoke (0x%X)", hr);
+                    else
+                        ++prepared_methods_count;
+                };
+                prepare_method_tasks.push_back(
+                    std::async(std::launch::async, prepare,
+                               prepare_method, method_handle_value));
                 break;
             }
-            SafeArrayDestroy(params);
         }
         SafeArrayDestroy(methods);
     }
-
     SafeArrayDestroy(classes);
     SafeArrayDestroy(method_handle_args);
+
+    for (const auto &task : prepare_method_tasks)
+        task.wait_for(std::chrono::milliseconds(10 * 1000) / prepare_method_tasks.size());
+
     FR_INFO_FMT("Preparing Methods Took: %lfs", ImGui::GetTime() - s);
     FR_INFO_FMT("Prepared Methods: %d", prepared_methods_count);
     return true;

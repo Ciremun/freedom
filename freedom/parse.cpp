@@ -147,7 +147,7 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     else if (beatmap_data.mods & Mods::HalfTime) od_window *= 1.33f;
 
     // FIXME(Ciremun): refactor
-    static const auto rand_range_f = [](float f_min, float f_max) -> float
+    const auto rand_range_f = [](float f_min, float f_max) -> float
     {
         float scale = rand() / (float)RAND_MAX;
         return f_min + scale * (f_max - f_min);
