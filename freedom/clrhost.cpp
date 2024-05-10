@@ -310,6 +310,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
             SafeArrayDestroy(p);
             return true;
         }
+        SafeArrayDestroy(p);
 
         LONG p_count = ucnt2 - lcnt2 + 1;
         if (p_count != cm.mpc) return false;
