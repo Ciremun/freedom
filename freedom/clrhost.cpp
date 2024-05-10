@@ -164,7 +164,7 @@ static inline SAFEARRAY* get_types(_AssemblyPtr pAssembly, T... args)
 {
     if (pAssembly == 0)
     {
-        FR_INFO("[!] get_types failed, pAssembly is null");
+        FR_ERROR("get_types failed, pAssembly is null");
         return 0;
     }
 
@@ -179,7 +179,7 @@ static inline SAFEARRAY* get_types(_AssemblyPtr pAssembly, T... args)
         if (!type_ptr)
         {
             std::string type_name_s = get_utf8(type_s);
-            FR_INFO_FMT("[!] GetType (%s, 0x%X)", type_name_s.c_str(), hr);
+            FR_ERROR("GetType (%s, 0x%X)", type_name_s.c_str(), hr);
             SafeArrayDestroy(types);
             return 0;
         }
@@ -194,12 +194,12 @@ static inline bool variant_ok(VARIANT variant)
     return V_VT(&variant) != VT_EMPTY;
 }
 
-static inline bool assemlies_loaded(const char *method)
+static inline bool assemblies_loaded(const char *method)
 {
     if (osu_assembly == 0)
-        FR_INFO_FMT("[!] %s failed, osu! assembly is null", method);
+        FR_ERROR("%s failed, osu! assembly is null", method);
     if (mscorlib_assembly == 0)
-        FR_INFO_FMT("[!] %s failed, mscorlib assembly is null", method);
+        FR_ERROR("%s failed, mscorlib assembly is null", method);
     return osu_assembly && mscorlib_assembly;
 }
 
@@ -209,7 +209,7 @@ static inline bool match_class_name_length(_TypePtr c)
     HRESULT hr = c->get_name(&c_name);
     if (!c_name)
     {
-        FR_INFO_FMT("[!] get_name (0x%X)", hr);
+        FR_ERROR("get_name (0x%X)", hr);
         return true;
     }
     UINT c_name_length = SysStringLen(c_name);
@@ -226,7 +226,7 @@ static inline bool match_method_name_length(_MethodInfoPtr m, ClassMethod cm)
     HRESULT hr = m->get_name(&m_name);
     if (!m_name)
     {
-        FR_INFO_FMT("[!] get_name (0x%X)", hr);
+        FR_ERROR("get_name (0x%X)", hr);
         return true;
     }
     UINT m_name_length = SysStringLen(m_name);
@@ -242,7 +242,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
     enum TypeAttributes ca;
     HRESULT hr = c->get_Attributes(&ca);
     if (FAILED(hr))
-        FR_INFO_FMT("[!] get_Attributes (0x%X)", hr);
+        FR_ERROR("get_Attributes (0x%X)", hr);
     else
     {
         if ((ca & TypeAttributes_Abstract) != (cm.ca & TypeAttributes_Abstract)) return false;
@@ -271,7 +271,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
     enum MethodAttributes ma;
     hr = m->get_Attributes(&ma);
     if (FAILED(hr))
-        FR_INFO_FMT("[!] get_Attributes (0x%X)", hr);
+        FR_ERROR("get_Attributes (0x%X)", hr);
     else if (ma != cm.ma) return false;
 
     if (*cm.mrt)
@@ -279,18 +279,18 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
         _TypePtr m_return_type = 0;
         hr = m->get_returnType(&m_return_type);
         if (!m_return_type)
-            FR_INFO_FMT("[!] get_returnType (0x%X)", hr);
+            FR_ERROR("get_returnType (0x%X)", hr);
         VARIANT_BOOL return_types_equal = VARIANT_TRUE;
         hr = m_return_type->Equals_2(*cm.mrt, &return_types_equal);
         if (FAILED(hr))
-            FR_INFO_FMT("[!] Equals_2 (0x%X)", hr);
+            FR_ERROR("Equals_2 (0x%X)", hr);
         else if (return_types_equal == VARIANT_FALSE) return false;
     }
 
     SAFEARRAY *p = 0;
     hr = m->GetParameters(&p);
     if (!p)
-        FR_INFO_FMT("[!] GetParameters (0x%X)", hr);
+        FR_ERROR("GetParameters (0x%X)", hr);
     else
     {
         LONG lcnt2 = 0;
@@ -298,7 +298,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
         hr = SafeArrayGetLBound(p, 1, &lcnt2);
         if (FAILED(hr))
         {
-            FR_INFO_FMT("[!] SafeArrayGetLBound (0x%X)", hr);
+            FR_ERROR("SafeArrayGetLBound (0x%X)", hr);
             SafeArrayDestroy(p);
             return true;
         }
@@ -306,7 +306,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
         hr = SafeArrayGetUBound(p, 1, &ucnt2);
         if (FAILED(hr))
         {
-            FR_INFO_FMT("[!] SafeArrayGetUBound (0x%X)", hr);
+            FR_ERROR("SafeArrayGetUBound (0x%X)", hr);
             SafeArrayDestroy(p);
             return true;
         }
@@ -320,7 +320,7 @@ static bool verify_classmethod(_TypePtr c, _MethodInfoPtr m, ClassMethod cm)
 
 bool prepare_methods()
 {
-    if (!assemlies_loaded("prepare_methods"))
+    if (!assemblies_loaded("prepare_methods"))
         return false;
 
     // NOTE(Ciremun): returns zero on race-condition
@@ -330,13 +330,13 @@ bool prepare_methods()
     HRESULT hr = mscorlib_assembly->GetType_2(system_void_b, &system_void_type);
     SysFreeString(system_void_b);
     if (!system_void_type)
-        FR_INFO_FMT("[!] GetType_2 (0x%X)", hr);
+        FR_ERROR("GetType_2 (0x%X)", hr);
 
     BSTR system_double_b = SysAllocString(L"System.Double");
     hr = mscorlib_assembly->GetType_2(system_double_b, &system_double_type);
     SysFreeString(system_double_b);
     if (!system_double_type)
-        FR_INFO_FMT("[!] GetType_2 (0x%X)", hr);
+        FR_ERROR("GetType_2 (0x%X)", hr);
 
     _TypePtr runtime_helpers_type = 0;
     BSTR runtime_helpers_b = SysAllocString(L"System.Runtime.CompilerServices.RuntimeHelpers");
@@ -344,7 +344,7 @@ bool prepare_methods()
     SysFreeString(runtime_helpers_b);
     if (!runtime_helpers_type)
     {
-        FR_INFO_FMT("[!] GetType_2 (0x%X)", hr);
+        FR_ERROR("GetType_2 (0x%X)", hr);
         return false;
     }
 
@@ -359,7 +359,7 @@ bool prepare_methods()
     SafeArrayDestroy(types);
     if (!prepare_method)
     {
-        FR_INFO_FMT("[!] GetMethod_5 (0x%X)", hr);
+        FR_ERROR("GetMethod_5 (0x%X)", hr);
         return false;
     }
 
@@ -367,7 +367,7 @@ bool prepare_methods()
     hr = osu_assembly->GetTypes(&classes);
     if (!classes)
     {
-        FR_INFO_FMT("[!] GetTypes (0x%X)", hr);
+        FR_ERROR("GetTypes (0x%X)", hr);
         return false;
     }
 
@@ -376,7 +376,7 @@ bool prepare_methods()
     hr = SafeArrayGetLBound(classes, 1, &lcnt);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] SafeArrayGetLBound (0x%X)", hr);
+        FR_ERROR("SafeArrayGetLBound (0x%X)", hr);
         SafeArrayDestroy(classes);
         return false;
     }
@@ -384,7 +384,7 @@ bool prepare_methods()
     hr = SafeArrayGetUBound(classes, 1, &ucnt);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] SafeArrayGetUBound (0x%X)", hr);
+        FR_ERROR("SafeArrayGetUBound (0x%X)", hr);
         SafeArrayDestroy(classes);
         return false;
     }
@@ -410,7 +410,7 @@ bool prepare_methods()
         hr = SafeArrayGetElement(classes, &i, (void *)&class_);
         if (!class_)
         {
-            FR_INFO_FMT("[!] SafeArrayGetElement (%ld, 0x%X)", i, hr);
+            FR_ERROR("SafeArrayGetElement (%ld, 0x%X)", i, hr);
             continue;
         }
 
@@ -422,7 +422,7 @@ bool prepare_methods()
                                                BindingFlags_Instance | BindingFlags_Static), &methods);
         if (!methods)
         {
-            FR_INFO_FMT("[!] GetMethods (0x%X)", hr);
+            FR_ERROR("GetMethods (0x%X)", hr);
             continue;
         }
 
@@ -431,7 +431,7 @@ bool prepare_methods()
         hr = SafeArrayGetLBound(methods, 1, &lcnt2);
         if (FAILED(hr))
         {
-            FR_INFO_FMT("[!] SafeArrayGetLBound (0x%X)", hr);
+            FR_ERROR("SafeArrayGetLBound (0x%X)", hr);
             SafeArrayDestroy(methods);
             continue;
         }
@@ -439,7 +439,7 @@ bool prepare_methods()
         hr = SafeArrayGetUBound(methods, 1, &ucnt2);
         if (FAILED(hr))
         {
-            FR_INFO_FMT("[!] SafeArrayGetUBound (0x%X)", hr);
+            FR_ERROR("SafeArrayGetUBound (0x%X)", hr);
             SafeArrayDestroy(methods);
             continue;
         }
@@ -452,7 +452,7 @@ bool prepare_methods()
             hr = SafeArrayGetElement(methods, &j, (void *)&method);
             if (!method)
             {
-                FR_INFO_FMT("[!] SafeArrayGetElement (%ld, 0x%X)", j, hr);
+                FR_ERROR("SafeArrayGetElement (%ld, 0x%X)", j, hr);
                 continue;
             }
 
@@ -477,7 +477,7 @@ bool prepare_methods()
                     HRESULT hr = prepare_method->Invoke_3(method_handle_value, params, &method_handle_value);
                     SafeArrayDestroy(params);
                     if (FAILED(hr))
-                        FR_INFO_FMT("[!] Invoke (0x%X)", hr);
+                        FR_ERROR("Invoke (0x%X)", hr);
                     else
                         ++prepared_methods_count;
                 };
@@ -495,14 +495,14 @@ bool prepare_methods()
     for (const auto &task : prepare_method_tasks)
         task.wait_for(std::chrono::milliseconds(10 * 1000) / prepare_method_tasks.size());
 
-    FR_INFO_FMT("Preparing Methods Took: %lfs", ImGui::GetTime() - s);
-    FR_INFO_FMT("Prepared Methods: %d", prepared_methods_count);
+    FR_INFO("Preparing Methods Took: %lfs", ImGui::GetTime() - s);
+    FR_INFO("Prepared Methods: %d", prepared_methods_count);
     return true;
 }
 
 intptr_t get_set_presence_ptr()
 {
-    if (!assemlies_loaded("get_set_presence_ptr"))
+    if (!assemblies_loaded("get_set_presence_ptr"))
         return 0;
 
     const wchar_t *type_name = L"DiscordRPC.DiscordRpcClient";
@@ -517,8 +517,8 @@ intptr_t get_set_presence_ptr()
     SysFreeString(type_name_b);
     if (!type_ptr)
     {
-        FR_INFO_FMT("[!] %s::%s", type_name_s.c_str(), method_name_s.c_str());
-        FR_INFO_FMT("[!] GetType (0x%X)", hr);
+        FR_ERROR("%s::%s", type_name_s.c_str(), method_name_s.c_str());
+        FR_ERROR("GetType (0x%X)", hr);
         return 0;
     }
 
@@ -528,8 +528,8 @@ intptr_t get_set_presence_ptr()
     SysFreeString(method_name_b);
     if (!method_ptr)
     {
-        FR_INFO_FMT("[!] %s::%s", type_name_s.c_str(), method_name_s.c_str());
-        FR_INFO_FMT("[!] GetMethod (0x%X)", hr);
+        FR_ERROR("%s::%s", type_name_s.c_str(), method_name_s.c_str());
+        FR_ERROR("GetMethod (0x%X)", hr);
         return 0;
     }
 
@@ -568,7 +568,7 @@ intptr_t get_set_presence_ptr()
     get_func_ptr_method_info->Invoke_3(method_handle_value, get_func_ptr_args, &method_handle_ptr);
     SafeArrayDestroy(get_func_ptr_args);
 
-    FR_INFO_FMT("[+] %s::%s", type_name_s.c_str(), method_name_s.c_str());
+    FR_INFO("[+] %s::%s", type_name_s.c_str(), method_name_s.c_str());
     return variant_ok(method_handle_ptr) ? V_INT(&method_handle_ptr) : 0;
 }
 
@@ -580,7 +580,7 @@ void free_managed_string(intptr_t gc_handle)
     SysFreeString(gchandle_b);
     if (!gchandle_type)
     {
-        FR_INFO_FMT("[!] GetType (0x%X)", hr);
+        FR_ERROR("GetType (0x%X)", hr);
         return;
     }
 
@@ -590,7 +590,7 @@ void free_managed_string(intptr_t gc_handle)
     SysFreeString(free_b);
     if (!free_method)
     {
-        FR_INFO_FMT("[!] GetMethod(\"Free\") (0x%X)", hr);
+        FR_ERROR("GetMethod(\"Free\") (0x%X)", hr);
         return;
     }
 
@@ -601,7 +601,7 @@ void free_managed_string(intptr_t gc_handle)
     SafeArrayDestroy(params);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] Invoke(\"Free\") (0x%X)", hr);
+        FR_ERROR("Invoke(\"Free\") (0x%X)", hr);
         return;
     }
 }
@@ -614,7 +614,7 @@ intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle)
     SysFreeString(gchandle_b);
     if (!gchandle_type)
     {
-        FR_INFO_FMT("[!] GetType (0x%X)", hr);
+        FR_ERROR("GetType (0x%X)", hr);
         return 0;
     }
 
@@ -629,7 +629,7 @@ intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle)
     SafeArrayDestroy(types);
     if (!alloc_method)
     {
-        FR_INFO_FMT("[!] GetMethod(\"Alloc\") (0x%X)", hr);
+        FR_ERROR("GetMethod(\"Alloc\") (0x%X)", hr);
         return 0;
     }
 
@@ -649,7 +649,7 @@ intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle)
     SafeArrayDestroy(params);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] Invoke(\"Alloc\") (0x%X)", hr);
+        FR_ERROR("Invoke(\"Alloc\") (0x%X)", hr);
         return 0;
     }
 
@@ -663,7 +663,7 @@ intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle)
     SysFreeString(addrofpinned_b);
     if (!addr_of_pinned_object_method)
     {
-        FR_INFO_FMT("[!] GetMethod(\"AddrOfPinnedObject\") (0x%X)", hr);
+        FR_ERROR("GetMethod(\"AddrOfPinnedObject\") (0x%X)", hr);
         return 0;
     }
 
@@ -672,7 +672,7 @@ intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle)
     SafeArrayDestroy(get_func_args);
     if (FAILED(hr))
     {
-        FR_INFO_FMT("[!] Invoke(\"AddrOfPinnedObject\") (0x%X)", hr);
+        FR_ERROR("Invoke(\"AddrOfPinnedObject\") (0x%X)", hr);
         return 0;
     }
 
@@ -692,23 +692,23 @@ static inline ICorRuntimeHost* init_clr_runtime_host(LPCWSTR sz_runtimeVersion) 
         return NULL;
     if (FAILED(CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (VOID**)&pMetaHost)))
     {
-        FR_INFO("[!] CLRCreateInstance");
+        FR_ERROR("CLRCreateInstance");
         return NULL;
     }
     if (FAILED(pMetaHost->GetRuntime(sz_runtimeVersion, IID_ICLRRuntimeInfo, (VOID**)&pRuntimeInfo))) {
-        FR_INFO_FMT("[!] GetRuntime failed: %S", sz_runtimeVersion);
+        FR_ERROR("GetRuntime failed: %S", sz_runtimeVersion);
         return NULL;
     }
     if (FAILED(pRuntimeInfo->IsLoadable(&bLoadable)) || !bLoadable) {
-        FR_INFO("[!] IsLoadable");
+        FR_ERROR("IsLoadable");
         return NULL;
     }
     if (FAILED(pRuntimeInfo->GetInterface(CLSID_CorRuntimeHost, IID_ICorRuntimeHost, (VOID**)&pRuntimeHost))) {
-        FR_INFO("[!] GetInterface");
+        FR_ERROR("GetInterface");
         return NULL;
     }
     if (FAILED(pRuntimeHost->Start())) {
-        FR_INFO("[!] Start");
+        FR_ERROR("Start");
         return NULL;
     }
     return pRuntimeHost;
@@ -717,12 +717,12 @@ static inline ICorRuntimeHost* init_clr_runtime_host(LPCWSTR sz_runtimeVersion) 
 static inline _AppDomainPtr get_default_domain(ICorRuntimeHost* pRuntimeHost) {
     IUnknownPtr pAppDomainThunk = NULL;
     if (FAILED(pRuntimeHost->GetDefaultDomain(&pAppDomainThunk))) {
-        FR_INFO("[!] GetDefaultDomain");
+        FR_ERROR("GetDefaultDomain");
         return NULL;
     }
     _AppDomainPtr pDefaultAppDomain = NULL;
     if (FAILED(pAppDomainThunk->QueryInterface(__uuidof(_AppDomain), (LPVOID*)&pDefaultAppDomain))) {
-        FR_INFO("[!] QueryInterface");
+        FR_ERROR("QueryInterface");
         return NULL;
     }
     return pDefaultAppDomain;
@@ -736,7 +736,7 @@ static inline _AssemblyPtr get_assembly(_AppDomainPtr pDefaultAppDomain, const w
     SysFreeString(assembly_b);
     if (!pAssembly)
     {
-        FR_INFO_FMT("[!] Load (0x%X)", hr);
+        FR_ERROR("Load (0x%X)", hr);
         return NULL;
     }
     return pAssembly;
@@ -752,12 +752,12 @@ bool init_clrhost()
     {
         mscorlib_assembly = get_assembly(pDefaultAppDomain, L"mscorlib.dll");
         if (!mscorlib_assembly)
-            FR_INFO("[!] Get mscorlib.dll Assembly Failed");
+            FR_ERROR("Get mscorlib.dll Assembly Failed");
         osu_assembly = get_assembly(pDefaultAppDomain, L"osu!");
         if (!osu_assembly)
-            FR_INFO("[!] Get osu! Assembly Failed");
+            FR_ERROR("Get osu! Assembly Failed");
         return false;
     }
-    FR_INFO("[!] C# Get Default Domain Failed");
+    FR_ERROR("C# Get Default Domain Failed");
     return false;
 }

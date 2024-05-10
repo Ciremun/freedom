@@ -121,7 +121,8 @@ int main(int, char**)
     set_playback_rate_code_start = 1;
 
     for (int i = 0; i < (1 << 8); ++i)
-        debug_log.add("%s %d\n", "Test Log", i);
+        FR_INFO("%s %d\n", "Test Log", i);
+    FR_ERROR("test error");
 
     ImFontConfig config;
     config.OversampleH = config.OversampleV = 1;

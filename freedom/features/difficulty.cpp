@@ -178,12 +178,12 @@ void apply_mods_ar()
         if ((mods & Mods::Nightcore) || (mods & Mods::DoubleTime))
         {
             ar_parameter.calculated_value = compensate_double_time(ar_parameter.value);
-            FR_INFO_FMT("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
+            FR_INFO("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
             return;
         }
     }
     ar_parameter.calculated_value = ar_parameter.value;
-    FR_INFO_FMT("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
+    FR_INFO("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
 }
 
 __declspec(naked) void set_approach_rate()

@@ -111,7 +111,7 @@ void init_ui(IDirect3DDevice9* pDevice)
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
     if (io.IniFilename == 0)
-        { FR_INFO("[!] Couldn't get config path"); }
+        { FR_ERROR("Couldn't get config path"); }
     else
         ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
@@ -747,7 +747,7 @@ void draw_debug_log()
             {
                 ImGui::PopStyleVar();
                 ImGui::BeginChild("##debug_beatmap", ImVec2(.0f, -30.f));
-                ImGui::Text("Current Beatmap:");
+                ImGui::Text("Current Beatmap");
                 ImGui::Text("Hit Objects Count: %zu", current_beatmap.hit_objects.size());
                 ImGui::Text("Hit Object Index: %u", current_beatmap.hit_object_idx);
                 ImGui::Text("Hit Object Radius: %f", current_beatmap.hit_object_radius);

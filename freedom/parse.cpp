@@ -49,21 +49,21 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
 
     if (osu_manager_ptr == 0)
     {
-        FR_INFO("[!] Parse Beatmap: osu_manager_ptr");
+        FR_ERROR("Parse Beatmap: osu_manager_ptr");
         return false;
     }
 
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
     if (osu_manager == 0)
     {
-        FR_INFO("[!] Parse Beatmap: osu_manager");
+        FR_ERROR("Parse Beatmap: osu_manager");
         return false;
     }
 
     bool replay_mode = *(bool *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET);
     if (replay_mode)
     {
-        FR_INFO_FMT("Skipping current beatmap: replay mode");
+        FR_INFO("Skipping current beatmap: replay mode");
         extern bool beatmap_loaded;
         beatmap_loaded = false;
         return false;
@@ -74,21 +74,21 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
     if (hit_manager_ptr == 0)
     {
-        FR_INFO("[!] Parse Beatmap: hit_manager_ptr");
+        FR_ERROR("Parse Beatmap: hit_manager_ptr");
         return false;
     }
 
     uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
     if (hit_objects_list_ptr == 0)
     {
-        FR_INFO("[!] Parse Beatmap: hit_objects_list_ptr");
+        FR_ERROR("Parse Beatmap: hit_objects_list_ptr");
         return false;
     }
 
     uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
     if (hit_objects_list_items_ptr == 0)
     {
-        FR_INFO("[!] Parse Beatmap: hit_objects_list_items_ptr");
+        FR_ERROR("Parse Beatmap: hit_objects_list_items_ptr");
         return false;
     }
 
@@ -101,7 +101,7 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
         uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * i);
         if (hit_object_ptr == 0)
         {
-            FR_INFO("[!] Parse Beatmap: hit_object_ptr");
+            FR_ERROR("Parse Beatmap: hit_object_ptr");
             return false;
         }
 
@@ -128,8 +128,8 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     float game_ratio = game_height / 384.f;
     beatmap_data.scaled_hit_object_radius = beatmap_data.hit_object_radius * game_ratio;
 
-    FR_INFO_FMT("Hit Object Radius: %f", beatmap_data.hit_object_radius);
-    FR_INFO_FMT("Scaled Hit Object Radius: %f", beatmap_data.scaled_hit_object_radius);
+    FR_INFO("Hit Object Radius: %f", beatmap_data.hit_object_radius);
+    FR_INFO("Scaled Hit Object Radius: %f", beatmap_data.scaled_hit_object_radius);
 
     // TODO(Ciremun): refactor
     uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_BEATMAP_OFFSET);
@@ -281,7 +281,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
             static char replay_url[128];
             stbsp_snprintf(replay_url, 127, "/web/osu-getreplay.php?c=%lld&m=0&u=%s&h=%s", replay_id, osu_username, osu_client_id);
 
-            FR_INFO_FMT("Replay URL: %s", replay_url);
+            FR_INFO("Replay URL: %s", replay_url);
 
             static wchar_t replay_url_w[256];
             int bytes_written = MultiByteToWideChar(CP_UTF8, 0, replay_url, 127, replay_url_w, 256);
@@ -326,14 +326,14 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
                 {
                     dwSize = 0;
                     if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
-                    FR_INFO_FMT("Error %u in WinHttpQueryDataAvailable.",
+                    FR_INFO("Error %u in WinHttpQueryDataAvailable.",
                             GetLastError());
 
                     pszOutBuffer = new char[dwSize];
                     ZeroMemory(pszOutBuffer, dwSize);
 
                     if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDownloaded))
-                        FR_INFO_FMT("Error %u in WinHttpReadData.", GetLastError());
+                        FR_INFO("Error %u in WinHttpReadData.", GetLastError());
 
                     for (DWORD i = 0; i < dwDownloaded; ++i)
                         compressed_data_vec.push_back(pszOutBuffer[i]);
@@ -349,7 +349,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
 
             if (!bResults)
             {
-                FR_INFO_FMT("Error %d has occurred.", GetLastError());
+                FR_INFO("Error %d has occurred.", GetLastError());
                 return false;
             }
 
@@ -358,7 +358,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
         }
         else
         {
-            FR_INFO("[!] Replay No Compressed Data Found");
+            FR_ERROR("Replay No Compressed Data Found");
             return false;
         }
     }
@@ -368,13 +368,13 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
         compressed_data = (uint8_t *)(compressed_data_ptr + 0x8);
     }
 
-    FR_INFO_FMT("Replay Compressed Data Size: %zu", compressed_data_size);
+    FR_INFO("Replay Compressed Data Size: %zu", compressed_data_size);
 
     if (compressed_data_size == 0)
         return false;
 
     size_t replay_data_size = *(size_t *)&compressed_data[LZMA_HEADER_SIZE - 8];
-    FR_INFO_FMT("Replay Data Size: %zu", replay_data_size);
+    FR_INFO("Replay Data Size: %zu", replay_data_size);
     static std::vector<uint8_t> replay_data;
     replay_data.clear();
     replay_data.resize(replay_data_size);
@@ -406,7 +406,7 @@ bool parse_replay(uintptr_t selected_replay_ptr, ReplayData &replay)
             break;
         replay_data_ptr += (const char *)&replay_data[next_comma_position] - replay_data_ptr + 1;
     }
-    FR_INFO_FMT("Replay Size: %zu", replay.entries.size());
+    FR_INFO("Replay Size: %zu", replay.entries.size());
 
     replay.ready = true;
     return true;

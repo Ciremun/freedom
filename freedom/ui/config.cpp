@@ -35,7 +35,7 @@ const char *get_imgui_ini_filename(HMODULE hMod)
     DWORD module_path_length = GetModuleFileNameW(hMod, module_path, MAX_PATH * 2);
     if (module_path_length == 0)
     {
-        FR_INFO_FMT("[!] GetModuleFileName (0x%X)", GetLastError());
+        FR_ERROR("GetModuleFileName (0x%X)", GetLastError());
 
         // NOTE(Ciremun): config path from freedom_injector
         extern LPVOID g_config_path;
@@ -69,7 +69,7 @@ const char *get_imgui_ini_filename(HMODULE hMod)
 
     memcpy(module_path_u8 + backslash_index + 1, "config.ini", sizeof("config.ini"));
 
-    FR_INFO_FMT("config.ini path: %s", module_path_u8);
+    FR_INFO("config.ini path: %s", module_path_u8);
 
     return (const char *)&module_path_u8;
 }

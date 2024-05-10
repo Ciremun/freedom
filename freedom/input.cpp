@@ -24,8 +24,8 @@ void init_input()
             }
         }
     }
-    FR_INFO_FMT("Left Click: %c", left_click[0]);
-    FR_INFO_FMT("Right Click: %c", right_click[0]);
+    FR_INFO("Left Click: %c", left_click[0]);
+    FR_INFO("Right Click: %c", right_click[0]);
 
     primary_monitor.x = (float)GetSystemMetrics(SM_CXSCREEN);
     primary_monitor.y = (float)GetSystemMetrics(SM_CYSCREEN);

@@ -28,6 +28,12 @@
 
 typedef HRESULT (__stdcall *twglSwapBuffers)(IDirect3DDevice9* pDevice);
 
+struct CodeStart
+{
+    const char *name;
+    uintptr_t *ptr;
+};
+
 extern uintptr_t beatmap_onload_code_start;
 extern uintptr_t beatmap_onload_offset;
 extern uintptr_t beatmap_onload_hook_jump_back;

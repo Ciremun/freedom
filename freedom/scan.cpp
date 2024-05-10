@@ -57,13 +57,36 @@ uintptr_t client_id_offset = 0;
 uintptr_t username_offset = 0;
 uintptr_t check_timewarp_offset = 0;
 
+CodeStart all_code_starts[] = {
+    { .name = "Parse Beatmap",     .ptr = &parse_beatmap_code_start },
+    { .name = "Beatmap Onload",    .ptr = &beatmap_onload_code_start },
+    { .name = "Current Scene",     .ptr = &current_scene_code_start },
+    { .name = "Selected Beatmap",  .ptr = &selected_song_code_start },
+    { .name = "Audio Time",        .ptr = &audio_time_code_start },
+    { .name = "Osu Manager",       .ptr = &osu_manager_code_start },
+    { .name = "Binding Manager",   .ptr = &binding_manager_code_start },
+    { .name = "Selected Replay",   .ptr = &selected_replay_code_start },
+    { .name = "Osu Client ID",     .ptr = &osu_client_id_code_start },
+    { .name = "Osu Username",      .ptr = &osu_username_code_start },
+    { .name = "Window Manager",    .ptr = &window_manager_code_start },
+    { .name = "Score Multiplier",  .ptr = &score_multiplier_code_start },
+    { .name = "Check Flashlight",  .ptr = &check_flashlight_code_start },
+    { .name = "Update Flashlight", .ptr = &update_flashlight_code_start },
+    { .name = "Update Timing",     .ptr = &update_timing_code_start },
+    { .name = "Set Playback Rate", .ptr = &set_playback_rate_code_start },
+    { .name = "Check Timewarp",    .ptr = &check_timewarp_code_start },
+    { .name = "Selected Mods",     .ptr = &selected_mods_code_start },
+    { .name = "Update Mods",       .ptr = &update_mods_code_start },
+    { .name = "Update Variables",  .ptr = &hom_update_vars_hidden_loc },
+    { .name = "SendInput",         .ptr = &nt_user_send_input_dispatch_table_id_found },
+};
+
 inline bool all_code_starts_found()
 {
-    return parse_beatmap_code_start && beatmap_onload_code_start && current_scene_code_start && selected_song_code_start &&
-           osu_manager_code_start && binding_manager_code_start && selected_replay_code_start &&
-           osu_client_id_code_start && osu_username_code_start && window_manager_code_start && nt_user_send_input_dispatch_table_id_found &&
-           score_multiplier_code_start && update_flashlight_code_start && check_flashlight_code_start && update_timing_code_start && check_timewarp_code_start && set_playback_rate_code_start
-           && hom_update_vars_hidden_loc && selected_mods_code_start && update_mods_code_start;
+    for (const auto &code_start : all_code_starts)
+        if (!*code_start.ptr)
+            return false;
+    return true;
 }
 
 static inline bool some_feature_requires_update_mods_hook()
@@ -93,7 +116,7 @@ static void try_(const char *name, T func)
 {
     __try { func(); }
     __except (filter(GetExceptionCode())) {
-        FR_INFO_FMT("there was an exception in '%s'", name);
+        FR_INFO("there was an exception in '%s'", name);
     }
 }
 
@@ -159,7 +182,7 @@ static void scan_for_code_starts()
                         nt_user_send_input_dispatch_table_id_found = true;
                         if (all_code_starts_found())
                         {
-                            FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
+                            FR_INFO("Memory Scan Took: %lfs", ImGui::GetTime() - s);
                             memory_scan_progress = 1.f;
                             return;
                         }
@@ -201,13 +224,13 @@ static void scan_for_code_starts()
 
             if (all_code_starts_found())
             {
-                FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
+                FR_INFO("Memory Scan Took: %lfs", ImGui::GetTime() - s);
                 memory_scan_progress = 1.f;
                 return;
             }
         }
     }
-    FR_INFO_FMT("Memory Scan Took: %lfs", ImGui::GetTime() - s);
+    FR_INFO("Memory Scan Took: %lfs", ImGui::GetTime() - s);
     memory_scan_progress = 1.f;
 }
 
@@ -376,10 +399,10 @@ static inline void init_nt_user_send_input_patch()
     {
         nt_user_send_input_ptr = (uintptr_t)GetProcAddress(win32u, "NtUserSendInput");
         if (nt_user_send_input_ptr == NULL)
-            FR_INFO("[!] NtUserSendInput is null");
+            FR_ERROR("NtUserSendInput is null");
     }
     else
-        FR_INFO("[!] win32u.dll is null");
+        FR_ERROR("win32u.dll is null");
 }
 
 static inline void init_hooks_wrapper()
@@ -388,6 +411,10 @@ static inline void init_hooks_wrapper()
     try_("init_clrhost", [](){ init_clrhost(); });
     try_("scan_for_code_starts", [](){ scan_for_code_starts(); });
     try_("try_find_hook_offsets", [](){ try_find_hook_offsets(); });
+
+    for (const auto &code_start : all_code_starts)
+        if (!*code_start.ptr)
+            FR_ERROR("'%s' wasn't found", code_start.name);
 
     if (scene_is_game(current_scene_ptr))
         enable_nt_user_send_input_patch();
