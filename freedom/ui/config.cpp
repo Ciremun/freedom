@@ -11,7 +11,7 @@ bool cfg_replay_hardrock = false;
 int cfg_relax_style = 'a'; // alternate
 bool cfg_score_multiplier_enabled = false;
 float cfg_score_multiplier_value = 1.f;
-bool cfg_discord_rich_presence_enabled = false;
+bool cfg_drpc_enabled = false;
 bool cfg_flashlight_enabled = false;
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
@@ -22,12 +22,12 @@ bool cfg_aimbot_lock = false;
 bool cfg_hidden_remover_enabled = false;
 bool cfg_show_debug_log = false;
 
-char cfg_discord_rich_presence_state[512] = {0};
-char cfg_discord_rich_presence_large_text[512] = {0};
-char cfg_discord_rich_presence_small_text[512] = {0};
-wchar_t discord_rich_presence_state_wchar[512] = {0};
-wchar_t discord_rich_presence_large_text_wchar[512] = {0};
-wchar_t discord_rich_presence_small_text_wchar[512] = {0};
+char cfg_drpc_state[512] = {0};
+char cfg_drpc_large_text[512] = {0};
+char cfg_drpc_small_text[512] = {0};
+wchar_t drpc_state_wchar[512] = {0};
+wchar_t drpc_large_text_wchar[512] = {0};
+wchar_t drpc_small_text_wchar[512] = {0};
 
 const char *get_imgui_ini_filename(HMODULE hMod)
 {
@@ -101,10 +101,10 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("replay_keys=%d\n", (int)cfg_replay_keys);
     buf->appendf("sm_lock=%d\n", (int)cfg_score_multiplier_enabled);
     buf->appendf("sm_value=%.2f\n", cfg_score_multiplier_value);
-    buf->appendf("drpc=%d\n", (int)cfg_discord_rich_presence_enabled);
-    buf->appendf("drpc_state=%s\n", cfg_discord_rich_presence_state);
-    buf->appendf("drpc_large=%s\n", cfg_discord_rich_presence_large_text);
-    buf->appendf("drpc_small=%s\n", cfg_discord_rich_presence_small_text);
+    buf->appendf("drpc=%d\n", (int)cfg_drpc_enabled);
+    buf->appendf("drpc_state=%s\n", cfg_drpc_state);
+    buf->appendf("drpc_large=%s\n", cfg_drpc_large_text);
+    buf->appendf("drpc_small=%s\n", cfg_drpc_small_text);
     buf->appendf("fl=%d\n", (int)cfg_flashlight_enabled);
     buf->appendf("hd=%d\n", (int)cfg_hidden_remover_enabled);
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
@@ -117,7 +117,7 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
 static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
-        relax_lock_i, aimbot_lock_i, spins_per_minute_i, discord_rich_presence_enabled_i,
+        relax_lock_i, aimbot_lock_i, spins_per_minute_i, drpc_enabled_i,
         hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
         jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
         show_debug_i;
@@ -143,10 +143,10 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "replay_keys=%d", &replay_keys_i) == 1)             cfg_replay_keys = replay_keys_i;
     else if (sscanf(line, "sm_lock=%d", &score_multiplier_i) == 1)            cfg_score_multiplier_enabled = score_multiplier_i;
     else if (sscanf(line, "sm_value=%f", &score_multiplier_value_f) == 1)     cfg_score_multiplier_value = score_multiplier_value_f;
-    else if (sscanf(line, "drpc=%d", &discord_rich_presence_enabled_i) == 1)  cfg_discord_rich_presence_enabled = discord_rich_presence_enabled_i;
-    else if (sscanf(line, "drpc_state=%511[^\n]", cfg_discord_rich_presence_state) == 1) {}
-    else if (sscanf(line, "drpc_large=%511[^\n]", cfg_discord_rich_presence_large_text) == 1) {}
-    else if (sscanf(line, "drpc_small=%511[^\n]", cfg_discord_rich_presence_small_text) == 1) {}
+    else if (sscanf(line, "drpc=%d", &drpc_enabled_i) == 1)  cfg_drpc_enabled = drpc_enabled_i;
+    else if (sscanf(line, "drpc_state=%511[^\n]", cfg_drpc_state) == 1) {}
+    else if (sscanf(line, "drpc_large=%511[^\n]", cfg_drpc_large_text) == 1) {}
+    else if (sscanf(line, "drpc_small=%511[^\n]", cfg_drpc_small_text) == 1) {}
     else if (sscanf(line, "fl=%d", &flashlight_enabled_i) == 1)               cfg_flashlight_enabled = flashlight_enabled_i;
     else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)           cfg_hidden_remover_enabled = hidden_remover_enabled_i;
     else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)            cfg_timewarp_enabled = timewarp_enabled_i;

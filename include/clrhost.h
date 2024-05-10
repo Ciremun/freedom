@@ -22,10 +22,8 @@
 
 extern int prepared_methods_count;
 
-bool prepare_methods();
 bool init_clrhost();
-
-bool variant_ok(VARIANT variant);
-VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name, const wchar_t *wchar_string_arg);
-VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name);
-VARIANT invoke_csharp_method(const wchar_t *type_name, const wchar_t *method_name, SAFEARRAY* params);
+bool prepare_methods();
+intptr_t get_set_presence_ptr();
+void free_managed_string(intptr_t gc_handle);
+intptr_t allocate_managed_string(const wchar_t *str, intptr_t *gc_handle);

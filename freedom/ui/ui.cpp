@@ -237,7 +237,7 @@ void update_ui()
         selected_replay_offset ? update_tab("Replay", MenuTab::Replay, cfg_replay_enabled) : inactive_tab("Replay");
 
         update_tab("Mods", MenuTab::Mods, cfg_flashlight_enabled || cfg_hidden_remover_enabled || cfg_score_multiplier_enabled);
-        update_tab("Misc", MenuTab::Misc, cfg_discord_rich_presence_enabled);
+        update_tab("Misc", MenuTab::Misc, cfg_drpc_enabled);
         update_tab("About", MenuTab::About);
 
         if (ImGui::Selectable("Debug", false, ImGuiSelectableFlags_DontClosePopups))
@@ -312,7 +312,6 @@ void update_ui()
             ImGui::PopItemWidth();
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-            ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
         }
         if (selected_tab == MenuTab::Timewarp)
         {
@@ -422,36 +421,36 @@ void update_ui()
             ImGui::Text("Discord RPC Settings");
             ImGui::Dummy(ImVec2(.0f, 5.f));
 
-            if (ImGui::Checkbox("Enable", &cfg_discord_rich_presence_enabled))
+            if (ImGui::Checkbox("Enable", &cfg_drpc_enabled))
             {
-                cfg_discord_rich_presence_enabled ? enable_discord_rich_presence_hooks() : disable_discord_rich_presence_hooks();
+                cfg_drpc_enabled ? enable_drpc_hooks() : disable_drpc_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
 
             ImGui::Dummy(ImVec2(.0f, 5.f));
 
-            if (!cfg_discord_rich_presence_enabled)
+            if (!cfg_drpc_enabled)
             {
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                 ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
             }
             ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
-            if (ImGui::InputTextEx("##rpc_state", "State", cfg_discord_rich_presence_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_state", "State", cfg_drpc_state, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                set_discord_rpc_str(discord_rich_presence_state_wchar, cfg_discord_rich_presence_state, &discord_rich_presence_state_string_ptr);
+                set_discord_rpc_str(drpc_state_wchar, cfg_drpc_state, &drpc_state_string_ptr, &drpc_state_string_gc_handle);
             }
-            if (ImGui::InputTextEx("##rpc_large_text", "Large Text", cfg_discord_rich_presence_large_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_large_text", "Large Text", cfg_drpc_large_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                set_discord_rpc_str(discord_rich_presence_large_text_wchar, cfg_discord_rich_presence_large_text, &discord_rich_presence_large_text_string_ptr);
+                set_discord_rpc_str(drpc_large_text_wchar, cfg_drpc_large_text, &drpc_large_text_string_ptr, &drpc_large_text_string_gc_handle);
             }
-            if (ImGui::InputTextEx("##rpc_small_text", "Small Text", cfg_discord_rich_presence_small_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
+            if (ImGui::InputTextEx("##rpc_small_text", "Small Text", cfg_drpc_small_text, 512, ImVec2(0, 0), ImGuiInputTextFlags_None))
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-                set_discord_rpc_str(discord_rich_presence_small_text_wchar, cfg_discord_rich_presence_small_text, &discord_rich_presence_small_text_string_ptr);
+                set_discord_rpc_str(drpc_small_text_wchar, cfg_drpc_small_text, &drpc_small_text_string_ptr, &drpc_small_text_string_gc_handle);
             }
-            if (!cfg_discord_rich_presence_enabled)
+            if (!cfg_drpc_enabled)
             {
                 ImGui::PopStyleColor();
                 ImGui::PopItemFlag();
@@ -662,7 +661,7 @@ void draw_debug_log()
                     colored_if_null("Osu Username", osu_username_code_start);
                     colored_if_null("Window Manager", window_manager_code_start);
                     colored_if_null("Score Multiplier", score_multiplier_code_start);
-                    colored_if_null("Discord RPC", discord_rich_presence_code_start);
+                    colored_if_null("Discord RPC", drpc_code_start);
                     colored_if_null("Check Flashlight", check_flashlight_code_start);
                     colored_if_null("Update Flashlight", update_flashlight_code_start);
                     colored_if_null("Update Timing", update_timing_code_start);
@@ -731,7 +730,7 @@ void draw_debug_log()
                     colored_if_null("AR", ar_hook_jump_back);
                     colored_if_null("CS", cs_hook_jump_back);
                     colored_if_null("OD", od_hook_jump_back);
-                    colored_if_null("Discord RPC", discord_rich_presence_jump_back);
+                    colored_if_null("Discord RPC", drpc_jump_back);
                     colored_if_null("Beatmap Onload", beatmap_onload_hook_jump_back);
                     colored_if_null("Check Timewarp 1", check_timewarp_hook_1_jump_back);
                     colored_if_null("Check Timewarp 2", check_timewarp_hook_2_jump_back);

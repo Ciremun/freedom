@@ -546,7 +546,7 @@ void destroy_hooks_except_swap()
     disable_replay_hooks();
     disable_flashlight_hooks();
     disable_score_multiplier_hooks();
-    disable_discord_rich_presence_hooks();
+    disable_drpc_hooks();
     disable_timewarp_hooks();
     disable_hidden_remover_hooks();
     disable_nt_user_send_input_patch();
