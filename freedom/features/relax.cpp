@@ -1,5 +1,6 @@
 #include "features/relax.h"
 #include "window.h"
+#include <cmath>
 
 float od_window = 5.f;
 float od_window_left_offset = .0f;
@@ -13,33 +14,63 @@ int wait_hitobjects_max = 5;
 
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
+float gaussian_rand()
+{
+    static bool has_spare = false;
+    static double spare;
+
+    if (has_spare)
+    {
+        has_spare = false;
+        return spare;
+    }
+
+    has_spare = true;
+    static double u, v, s;
+    do
+    {
+        u = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+        v = (rand() / ((double)RAND_MAX)) * 2.0 - 1.0;
+        s = u * u + v * v;
+    } while (s >= 1.0 || s == 0.0);
+
+    s = sqrt(-2.0 * log(s) / s);
+    spare = v * s;
+    return u * s;
+}
+
+float sharp_gaussian_rand(float mean, float stddev)
+{
+    // Increase the range the relax bot clicks in by adjusting the standard deviation here
+    float adjusted_stddev = stddev * 3.1f; // Increase range (less = less min max ms delay and more = yea..more min max delay. 2.0-4.4 recommended depending on beatmap)
+    return mean + gaussian_rand() * adjusted_stddev * 0.390f; // Maintain sharpness
+}
+
 void calc_od_timing()
 {
-    const auto rand_range_f = [](float f_min, float f_max) -> float
-    {
-        float scale = rand() / (float)RAND_MAX;
-        return f_min + scale * (f_max - f_min);
-    };
+    const auto sharp_gaussian_rand_range_f = [](float mean, float stddev) -> float
+        {
+            return sharp_gaussian_rand(mean, stddev);
+        };
     const auto rand_range_i = [](int i_min, int i_max) -> int
-    {
-        return rand() % (i_max + 1 - i_min) + i_min;
-    };
+        {
+            return rand() % (i_max + 1 - i_min) + i_min;
+        };
     if (cfg_relax_checks_od && (od_check_ms == .0f))
     {
-        od_check_ms = rand_range_f(od_window_left_offset, od_window_right_offset);
+        od_check_ms = sharp_gaussian_rand_range_f((od_window_left_offset + od_window_right_offset) / 2.0, (od_window_right_offset - od_window_left_offset) / 4.0); // Adjusted stddev
         if (cfg_jumping_window)
         {
             static uint32_t hit_objects_passed = current_beatmap.hit_object_idx;
-            static int wait_hitojects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
-            if (current_beatmap.hit_object_idx - hit_objects_passed >= wait_hitojects_count)
+            static int wait_hitobjects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
+            if (current_beatmap.hit_object_idx - hit_objects_passed >= wait_hitobjects_count)
             {
-                // NOTE(Ciremun): move od window to the left
                 if (rand_range_i(0, 1) >= 1)
-                    jumping_window_offset = rand_range_f(.1337f, od_window - od_window_left_offset);
+                    jumping_window_offset = sharp_gaussian_rand_range_f((od_window + .1337f - od_window_left_offset) / 2.0, (od_window - od_window_left_offset) / 4.0); // Adjusted stddev
                 else
-                    jumping_window_offset = -rand_range_f(.1337f, od_window_right_offset);
+                    jumping_window_offset = -sharp_gaussian_rand_range_f((od_window_right_offset + .1337f) / 2.0, (od_window_right_offset) / 4.0); // Adjusted stddev
                 hit_objects_passed = current_beatmap.hit_object_idx;
-                wait_hitojects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
+                wait_hitobjects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
             }
             od_check_ms += jumping_window_offset;
         }
@@ -49,18 +80,19 @@ void calc_od_timing()
 Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos;
-    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
-    mouse_pos.x = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
-    mouse_pos.y = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
+    uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
+    uintptr_t osu_ruleset_ptr = *(uintptr_t*)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
+    mouse_pos.x = *(float*)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
+    mouse_pos.y = *(float*)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
 
     return mouse_pos;
 }
 
-void update_relax(Circle &circle, const int32_t audio_time)
+void update_relax(Circle& circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
     static double keyup_delay = 0.0;
+    static double last_key_action_time = 0.0; // Track the time of the last key action
 
     if (cfg_relax_lock)
     {
@@ -77,8 +109,11 @@ void update_relax(Circle &circle, const int32_t audio_time)
         {
             if (!circle.clicked)
             {
-                if (cfg_relax_style == 'a')
+                // Only alternates clicks if the time since the last key action is less than 800ms (hence the 0.8)
+                if (cfg_relax_style == 'a' && (ImGui::GetTime() - last_key_action_time) < 0.8)
+                {
                     current_click = current_click == left_click[0] ? right_click[0] : left_click[0];
+                }
 
                 send_keyboard_input(current_click, 0);
                 FR_INFO("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
@@ -97,6 +132,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
                         keyup_delay /= 0.75;
                 }
                 keydown_time = ImGui::GetTime();
+                last_key_action_time = ImGui::GetTime(); // Update the last key action time
                 circle.clicked = true;
                 od_check_ms = .0f;
             }
