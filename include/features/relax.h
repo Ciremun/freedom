@@ -14,3 +14,5 @@ extern int wait_hitobjects_max;
 
 void relax_on_beatmap_load();
 void update_relax(Circle &circle, const int32_t audio_time);
+
+void display_keypress_info();
