@@ -2,6 +2,8 @@
 #include "window.h"
 #include <cmath>
 #include <chrono>
+#include <deque>
+#include <imgui.h> // Include ImGui header for rendering
 
 float od_window = 5.f;
 float od_window_left_offset = .0f;
@@ -15,6 +17,7 @@ static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click
 static float range_shift = 0.0f;
 static std::chrono::time_point<std::chrono::steady_clock> last_shift_time = std::chrono::steady_clock::now();
 static int click_count = 0;
+static std::deque<std::chrono::time_point<std::chrono::steady_clock>> key_press_times;
 
 float gaussian_rand()
 {
@@ -45,10 +48,21 @@ float sharp_gaussian_rand(float mean, float stddev)
 {
     mean += range_shift;
     float adjusted_stddev = stddev * 3.3f;
+
+    auto now = std::chrono::steady_clock::now();
+    while (!key_press_times.empty() && std::chrono::duration_cast<std::chrono::milliseconds>(now - key_press_times.front()).count() >= 500)
+    {
+        key_press_times.pop_front();
+    }
+
+    if (key_press_times.size() > 4) // Also change line 220
+    {
+        adjusted_stddev *= 1.5f;
+    }
+
     return mean + gaussian_rand() * adjusted_stddev * 0.38f;
 }
 
-// Shifts the gaussian range every 9 seconds
 void update_range_shift()
 {
     auto now = std::chrono::steady_clock::now();
@@ -60,7 +74,6 @@ void update_range_shift()
     }
 }
 
-// Determines if an extremity click should be added
 bool should_add_extremity()
 {
     static int last_extremity_click = 0;
@@ -72,16 +85,14 @@ bool should_add_extremity()
     return false;
 }
 
-// Adds a random extremity value to the timing
 float add_extremity(float timing)
 {
-    float base_extremity = 2.1f; //Change this if you want your random extremities more or less outsite the gaussian distribution range
-    float random_offset = ((rand() / (float)RAND_MAX) * 0.8f) - 0.6f; // Randomness added to extremities. 0.8 is the total range of possible range. -0.6 is the value it starts under 2.1f(base extremity), so in this case its from 1.5 to 2.3.
+    float base_extremity = 2.1f;
+    float random_offset = ((rand() / (float)RAND_MAX) * 0.8f) - 0.6f;
     float extremity = 0.5f * od_window * (base_extremity + random_offset);
     return (rand() % 2 == 0) ? timing + extremity : timing - extremity;
 }
 
-// Calculates the OD timing with Gaussian distribution and optional extremity
 void calc_od_timing()
 {
     update_range_shift();
@@ -98,7 +109,7 @@ void calc_od_timing()
     if (cfg_relax_checks_od && (od_check_ms == .0f))
     {
         od_check_ms = sharp_gaussian_rand_range_f((od_window_left_offset + od_window_right_offset) / 2.0, (od_window_right_offset - od_window_left_offset) / 4.0);
-        if (should_add_extremity()) //Adds some spikes outside the gaussian range for human behaivour
+        if (should_add_extremity())
         {
             od_check_ms = add_extremity(od_check_ms);
         }
@@ -153,7 +164,7 @@ void update_relax(Circle& circle, const int32_t audio_time)
         {
             if (!circle.clicked)
             {
-                if (first_click || (ImGui::GetTime() - last_key_action_time) >= 0.3) //Only alternates if last keypress was under 300ms(0.3s)
+                if (first_click || (ImGui::GetTime() - last_key_action_time) >= 0.3)
                 {
                     current_click = right_click[0];
                     first_click = false;
@@ -183,6 +194,8 @@ void update_relax(Circle& circle, const int32_t audio_time)
                 last_key_action_time = ImGui::GetTime();
                 circle.clicked = true;
                 od_check_ms = .0f;
+
+                key_press_times.push_back(std::chrono::steady_clock::now());
             }
         }
     }
@@ -192,6 +205,30 @@ void update_relax(Circle& circle, const int32_t audio_time)
         send_keyboard_input(current_click, KEYEVENTF_KEYUP);
     }
 }
+
+void display_keypress_info()
+{
+    static bool position_initialized = false;
+    auto now = std::chrono::steady_clock::now();
+    while (!key_press_times.empty() && std::chrono::duration_cast<std::chrono::seconds>(now - key_press_times.front()).count() >= 1)
+    {
+        key_press_times.pop_front();
+    }
+
+    if (!position_initialized)
+    {
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 300, 80), ImGuiCond_FirstUseEver); // Set initial position only once
+        position_initialized = true;
+    }
+
+    ImGui::Begin("Key Press Info", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImVec4 color = (key_press_times.size() > 4) ? ImVec4(0, 1, 0, 1) : ImVec4(1, 0, 0, 1);
+    ImGui::TextColored(color, "Key Presses: %d", static_cast<int>(key_press_times.size()));
+
+    ImGui::End();
+}
+
 
 void relax_on_beatmap_load()
 {
