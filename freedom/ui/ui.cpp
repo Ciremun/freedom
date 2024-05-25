@@ -1,6 +1,7 @@
 #include "ui/ui.h"
+#include "features/relax.h"
 
-ImFont *font = 0;
+ImFont* font = 0;
 char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
 
 HHOOK oWndProc;
@@ -10,7 +11,7 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
     if (code > 0)
         return CallNextHookEx(oWndProc, code, wparam, lparam);
 
-    MSG *message = (MSG *)lparam;
+    MSG* message = (MSG*)lparam;
 
     if (wparam == PM_REMOVE)
     {
@@ -28,7 +29,7 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
     }
 
     if ((ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) || ImGui::IsPopupOpen((ImGuiID)0, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
-         && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
+        && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
         message->message = WM_NULL;
         return 1;
@@ -40,7 +41,7 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
 inline void init_imgui_styles()
 {
     ImGui::StyleColorsDark();
-    ImGuiStyle &style = ImGui::GetStyle();
+    ImGuiStyle& style = ImGui::GetStyle();
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
     style.FrameRounding = 2.f;
     style.TabRounding = 2.f;
@@ -81,7 +82,7 @@ inline void init_imgui_styles()
 
 inline void init_imgui_fonts()
 {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     ImFontConfig config;
     config.OversampleH = config.OversampleV = 1;
     config.PixelSnapH = true;
@@ -90,7 +91,7 @@ inline void init_imgui_fonts()
     for (int size = 40; size >= 18; size -= 2)
     {
         config.SizePixels = size;
-        ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
+        ImFont* f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
         if (size == cfg_font_size)
             font = f;
     }
@@ -104,14 +105,16 @@ void init_ui(IDirect3DDevice9* pDevice)
     IMGUI_CHECKVERSION();
 #endif // FR_DEBUG
     ImGuiContext* ctx = ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
 
     ctx->SettingsHandlers.clear();
 
     set_imgui_ini_handler();
     io.IniFilename = get_imgui_ini_filename(g_module);
     if (io.IniFilename == 0)
-        { FR_ERROR("Couldn't get config path"); }
+    {
+        FR_ERROR("Couldn't get config path");
+    }
     else
         ImGui::LoadIniSettingsFromDisk(io.IniFilename);
 
@@ -122,17 +125,17 @@ void init_ui(IDirect3DDevice9* pDevice)
     pDevice ? ImGui_ImplDX9_Init(pDevice) : ImGui_ImplOpenGL3_Init();
 }
 
-static void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
+static void colored_if_null(const char* label, uintptr_t ptr, bool draw_label = true)
 {
     uintptr_t found = ptr;
     if (!found)
         ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
 
-    char id_str[64] = {0};
+    char id_str[64] = { 0 };
     IM_ASSERT(strlen(label) < IM_ARRAYSIZE(id_str));
     ImFormatString(id_str, IM_ARRAYSIZE(id_str), "##%s", label);
 
-    char ptr_str[32] = {0};
+    char ptr_str[32] = { 0 };
     ImFormatString(ptr_str, IM_ARRAYSIZE(ptr_str), "%08X", ptr);
 
     if (draw_label)
@@ -160,6 +163,11 @@ static inline bool SliderFloat(const char* label, float* v, float v_min, float v
 
 void update_ui()
 {
+    if (cfg_display_keypress_info_enabled)
+    {
+        display_keypress_info();
+    }
+
     if (!cfg_mod_menu_visible)
         return;
 
@@ -180,7 +188,7 @@ void update_ui()
                     if (internal_memory_read(g_process, song_str, &song_str_length))
                     {
                         song_str += 0x4;
-                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t *)song_str, song_str_length, song_name_u8, 255, 0, 0);
+                        int bytes_written = WideCharToMultiByte(CP_UTF8, 0, (wchar_t*)song_str, song_str_length, song_name_u8, 255, 0, 0);
                         song_name_u8[bytes_written] = '\0';
                     }
                 }
@@ -198,7 +206,7 @@ void update_ui()
 
     if (memory_scan_progress < .99f)
     {
-        static char overlay_buf[32] = {0};
+        static char overlay_buf[32] = { 0 };
         ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), "Memory Scan: %.0f%%", memory_scan_progress * 100 + 0.01f);
         ImGui::ProgressBar(memory_scan_progress, ImVec2(ImGui::GetContentRegionAvail().x, .0f), overlay_buf);
     }
@@ -208,32 +216,32 @@ void update_ui()
     {
         static MenuTab selected_tab = MenuTab::Difficulty;
 
-        const auto update_tab = [](const char *tab_name, MenuTab tab_type, bool highlight = false)
-        {
-            bool is_selected = selected_tab == tab_type;
-            if (!is_selected && highlight)
-                ImGui::PushStyleColor(ImGuiCol_Text, SILVER);
-            if (ImGui::Selectable(tab_name, is_selected, ImGuiSelectableFlags_DontClosePopups))
+        const auto update_tab = [](const char* tab_name, MenuTab tab_type, bool highlight = false)
             {
-                selected_tab = tab_type;
-                ImGui::SetNextWindowFocus();
-            }
-            if (!is_selected && highlight)
-                ImGui::PopStyleColor();
-        };
+                bool is_selected = selected_tab == tab_type;
+                if (!is_selected && highlight)
+                    ImGui::PushStyleColor(ImGuiCol_Text, SILVER);
+                if (ImGui::Selectable(tab_name, is_selected, ImGuiSelectableFlags_DontClosePopups))
+                {
+                    selected_tab = tab_type;
+                    ImGui::SetNextWindowFocus();
+                }
+                if (!is_selected && highlight)
+                    ImGui::PopStyleColor();
+            };
 
-        const auto inactive_tab = [](const char *tab_name)
-        {
-            ImGui::BeginDisabled();
-            ImGui::PushStyleColor(ImGuiCol_Text, LOG_ERROR);
-            ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
-            ImGui::PopStyleColor();
-            ImGui::EndDisabled();
-        };
+        const auto inactive_tab = [](const char* tab_name)
+            {
+                ImGui::BeginDisabled();
+                ImGui::PushStyleColor(ImGuiCol_Text, LOG_ERROR);
+                ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
+                ImGui::PopStyleColor();
+                ImGui::EndDisabled();
+            };
 
         update_tab("Difficulty", MenuTab::Difficulty, ar_parameter.lock || cs_parameter.lock || od_parameter.lock);
 
-        beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax, cfg_relax_lock)  : inactive_tab("Relax");
+        beatmap_onload_offset ? update_tab("Relax", MenuTab::Relax, cfg_relax_lock) : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot, cfg_aimbot_lock) : inactive_tab("Aimbot");
         set_playback_rate_code_start ? update_tab("Timewarp", MenuTab::Timewarp, cfg_timewarp_enabled) : inactive_tab("Timewarp");
         selected_replay_offset ? update_tab("Replay", MenuTab::Replay, cfg_replay_enabled) : inactive_tab("Replay");
@@ -270,7 +278,7 @@ void update_ui()
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::PushItemWidth(ImGui::CalcTextSize("X").x * 1.85f);
-            ImGui::InputText("Left Click",  left_click,  2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
+            ImGui::InputText("Left Click", left_click, 2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::InputText("Right Click", right_click, 2, ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(.0f, 5.f));
@@ -285,17 +293,32 @@ void update_ui()
                 FR_INFO("Alternate Mode");
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+
             ImGui::Dummy(ImVec2(.0f, 5.f));
-            if (ImGui::Checkbox("Variable Unstable Rate", &cfg_relax_checks_od))
+
+            if (ImGui::Checkbox("Variable Unstable Rate (Very legit)", &cfg_relax_checks_od))
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+
             ImGui::Dummy(ImVec2(.0f, 5.f));
+
             bool relax_checks_od = cfg_relax_checks_od;
             if (!relax_checks_od)
                 ImGui::BeginDisabled();
             if (ImGui::Checkbox("Jumping Unstable Rate Window", &cfg_jumping_window))
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+
             if (!relax_checks_od)
                 ImGui::EndDisabled();
+
+            ImGui::Dummy(ImVec2(.0f, 5.f));
+
+            bool display_keypress_info_enabled = cfg_display_keypress_info_enabled;
+            if (ImGui::Checkbox("Past 500ms Key Counter", &cfg_display_keypress_info_enabled))
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("When 5 or more hits occurred in the past 500ms then the gaussian distribution will widen by 40 percent.");
+
         }
         if (selected_tab == MenuTab::Aimbot)
         {
