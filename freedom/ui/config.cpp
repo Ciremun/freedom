@@ -9,6 +9,7 @@ bool cfg_replay_aim = true;
 bool cfg_replay_keys = true;
 bool cfg_replay_hardrock = false;
 int cfg_relax_style = 'a'; // alternate
+bool cfg_display_keypress_info_enabled = false;
 bool cfg_score_multiplier_enabled = false;
 float cfg_score_multiplier_value = 1.f;
 bool cfg_drpc_enabled = false;
@@ -94,6 +95,7 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("relax_style=%c\n", (char)cfg_relax_style);
     buf->appendf("relax_checks_od=%d\n", (int)cfg_relax_checks_od);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
+    buf->appendf("display_keypress_info_enabled=%d\n", (int)cfg_display_keypress_info_enabled);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
     buf->appendf("fraction_modifier=%.2f\n", cfg_fraction_modifier);
     buf->appendf("replay=%d\n", (int)cfg_replay_enabled);
@@ -117,7 +119,7 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
 static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void *, const char *line)
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
-        relax_lock_i, aimbot_lock_i, spins_per_minute_i, drpc_enabled_i,
+        relax_lock_i, display_keypress_info_enabled_i, aimbot_lock_i, spins_per_minute_i, drpc_enabled_i,
         hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
         jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
         show_debug_i;
@@ -133,6 +135,7 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "visible=%d", &mod_menu_visible_i) == 1)            cfg_mod_menu_visible = mod_menu_visible_i;
     else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                 cfg_font_size = font_size_i;
     else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                    cfg_relax_lock = relax_lock_i;
+    else if (sscanf(line, "display_keypress_info_enabled=%d", &display_keypress_info_enabled_i) == 1) cfg_display_keypress_info_enabled = display_keypress_info_enabled_i;
     else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)             cfg_relax_style = (int)relax_style_c;
     else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)     cfg_relax_checks_od = relax_checks_od_i;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                  cfg_aimbot_lock = aimbot_lock_i;
