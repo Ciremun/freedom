@@ -18,6 +18,7 @@ extern bool cfg_replay_keys;
 extern bool cfg_replay_hardrock;
 extern int cfg_relax_style;
 extern bool cfg_relax_lock;
+extern bool cfg_display_keypress_info_enabled;
 extern bool cfg_aimbot_lock;
 extern bool cfg_relax_checks_od;
 extern bool cfg_jumping_window;
