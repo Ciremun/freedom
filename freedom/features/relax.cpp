@@ -77,7 +77,7 @@ void update_range_shift()
 bool should_add_extremity()
 {
     static int last_extremity_click = 0;
-    if (click_count - last_extremity_click >= (rand() % 41 + 15))
+    if (click_count - last_extremity_click >= (rand() % 41 + 11))
     {
         last_extremity_click = click_count;
         return true;
