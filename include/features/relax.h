@@ -2,12 +2,11 @@
 
 #include "ui/config.h"
 
+extern float base_stddev;
 extern float od_window;
 extern float od_window_left_offset;
 extern float od_window_right_offset;
 extern float od_check_ms;
-
-extern float jumping_window_offset;
 
 extern int wait_hitobjects_min;
 extern int wait_hitobjects_max;
