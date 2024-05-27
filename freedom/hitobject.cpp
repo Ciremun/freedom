@@ -35,11 +35,11 @@ void process_hitobject()
         {
             relax_on_beatmap_load();
             aimbot_on_beatmap_load();
-            replay_on_beatmap_load();
-            unmod_flashlight_on_beatmap_load();
-            unmod_hidden_on_beatmap_load();
-            beatmap_loaded = false;
         }
+        replay_on_beatmap_load();
+        unmod_flashlight_on_beatmap_load();
+        unmod_hidden_on_beatmap_load();
+        beatmap_loaded = false;
     }
 
     if (mods_updated)
