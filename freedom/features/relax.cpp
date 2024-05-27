@@ -1,5 +1,5 @@
 #include "features/relax.h"
-#include "window.h"
+#include "ui/config.h"
 #include <cmath>
 #include <chrono>
 #include <deque>
@@ -9,7 +9,6 @@ float od_window = 5.f;
 float od_window_left_offset = .0f;
 float od_window_right_offset = .0f;
 float od_check_ms = .0f;
-float jumping_window_offset = .0f;
 int wait_hitobjects_min = 2;
 int wait_hitobjects_max = 5;
 
@@ -47,7 +46,7 @@ float gaussian_rand()
 float sharp_gaussian_rand(float mean, float stddev)
 {
     mean += range_shift;
-    float adjusted_stddev = stddev * 3.3f;
+    float adjusted_stddev = stddev * cfg_base_stddev;
 
     auto now = std::chrono::steady_clock::now();
     while (!key_press_times.empty() && std::chrono::duration_cast<std::chrono::milliseconds>(now - key_press_times.front()).count() >= 500)
@@ -55,7 +54,7 @@ float sharp_gaussian_rand(float mean, float stddev)
         key_press_times.pop_front();
     }
 
-    if (key_press_times.size() > 4) // Also change line 220
+    if (key_press_times.size() > 4)
     {
         adjusted_stddev *= 1.5f;
     }
@@ -77,7 +76,7 @@ void update_range_shift()
 bool should_add_extremity()
 {
     static int last_extremity_click = 0;
-    if (click_count - last_extremity_click >= (rand() % 41 + 11))
+    if (click_count - last_extremity_click >= (rand() % cfg_extremity_rand_range + cfg_extremity_shift))
     {
         last_extremity_click = click_count;
         return true;
@@ -101,10 +100,6 @@ void calc_od_timing()
         {
             return sharp_gaussian_rand(mean, stddev);
         };
-    const auto rand_range_i = [](int i_min, int i_max) -> int
-        {
-            return rand() % (i_max + 1 - i_min) + i_min;
-        };
 
     if (cfg_relax_checks_od && (od_check_ms == .0f))
     {
@@ -112,21 +107,6 @@ void calc_od_timing()
         if (should_add_extremity())
         {
             od_check_ms = add_extremity(od_check_ms);
-        }
-        if (cfg_jumping_window)
-        {
-            static uint32_t hit_objects_passed = current_beatmap.hit_object_idx;
-            static int wait_hitobjects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
-            if (current_beatmap.hit_object_idx - hit_objects_passed >= wait_hitobjects_count)
-            {
-                if (rand_range_i(0, 1) >= 1)
-                    jumping_window_offset = sharp_gaussian_rand_range_f((od_window + .1337f - od_window_left_offset) / 2.0, (od_window - od_window_left_offset) / 4.0);
-                else
-                    jumping_window_offset = -sharp_gaussian_rand_range_f((od_window_right_offset + .1337f) / 2.0, (od_window_right_offset) / 4.0);
-                hit_objects_passed = current_beatmap.hit_object_idx;
-                wait_hitobjects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
-            }
-            od_check_ms += jumping_window_offset;
         }
         click_count++;
     }
@@ -228,7 +208,6 @@ void display_keypress_info()
 
     ImGui::End();
 }
-
 
 void relax_on_beatmap_load()
 {
