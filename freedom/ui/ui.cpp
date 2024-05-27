@@ -296,29 +296,66 @@ void update_ui()
 
             ImGui::Dummy(ImVec2(.0f, 5.f));
 
-            if (ImGui::Checkbox("Variable Unstable Rate (Very legit)", &cfg_relax_checks_od))
+            if (ImGui::Checkbox("Past 500ms Key Counter", &cfg_display_keypress_info_enabled))
+            {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                ImGui::SetTooltip("Just enables the past 500ms click counter.\nRed: inactive \nGreen: active");
+            }
 
             ImGui::Dummy(ImVec2(.0f, 5.f));
+
+            if (ImGui::Checkbox("Legit Unstable Rate", &cfg_relax_checks_od))
+            {
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                ImGui::SetTooltip("-Gaussian Distribution(sharpened)\n  '->Widens by 50percent if >4 clicks in past 500ms\n-Random Extremities\n-Shifts Range");
+            }
 
             bool relax_checks_od = cfg_relax_checks_od;
-            if (!relax_checks_od)
-                ImGui::BeginDisabled();
-            if (ImGui::Checkbox("Jumping Unstable Rate Window", &cfg_jumping_window))
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
 
-            if (!relax_checks_od)
-                ImGui::EndDisabled();
+            if (relax_checks_od)
+            {
+                ImGui::Dummy(ImVec2(.0f, 5.f));
+                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
+                if (ImGui::SliderFloat("Hit range", &cfg_base_stddev, 1.0f, 10.0f, "%.3f"))
+                {
+                    ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                }
+                ImGui::PopItemWidth();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                {
+                    ImGui::SetTooltip("Adjust the gaussian distribution range.");
+                }
 
-            ImGui::Dummy(ImVec2(.0f, 5.f));
+                ImGui::Dummy(ImVec2(.0f, 5.f));
+                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
+                if (ImGui::SliderInt("Random Extremity Range", &cfg_extremity_rand_range, 1, 100, "%d"))
+                {
+                    ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                }
+                ImGui::PopItemWidth();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                {
+                    ImGui::SetTooltip("Counts up from 0 to X and will stop at a random number. Then starts over.");
+                }
 
-            bool display_keypress_info_enabled = cfg_display_keypress_info_enabled;
-            if (ImGui::Checkbox("Past 500ms Key Counter", &cfg_display_keypress_info_enabled))
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-                ImGui::SetTooltip("When 5 or more hits occurred in the past 500ms then the gaussian distribution will widen by 40 percent.");
-
+                ImGui::Dummy(ImVec2(.0f, 5.f));
+                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
+                if (ImGui::SliderInt("Extremity Shift", &cfg_extremity_shift, 1, 100, "%d"))
+                {
+                    ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+                }
+                ImGui::PopItemWidth();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                {
+                    ImGui::SetTooltip("^Random Extremity Range^ will start after X clicks.");
+                }
+            }
         }
         if (selected_tab == MenuTab::Aimbot)
         {
