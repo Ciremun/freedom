@@ -17,7 +17,9 @@ bool cfg_flashlight_enabled = false;
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
 bool cfg_relax_checks_od = true;
-bool cfg_jumping_window = false;
+float cfg_base_stddev = 3.3f; //base stddev
+int cfg_extremity_rand_range = 41;  // Default value for the random range
+int cfg_extremity_shift = 11;       // Default value for the shift
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
 bool cfg_hidden_remover_enabled = false;
@@ -111,7 +113,9 @@ static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *hand
     buf->appendf("hd=%d\n", (int)cfg_hidden_remover_enabled);
     buf->appendf("tw_lock=%d\n", (int)cfg_timewarp_enabled);
     buf->appendf("tw_value=%.1lf\n", cfg_timewarp_playback_rate);
-    buf->appendf("jump_window=%d\n", (int)cfg_jumping_window);
+    buf->appendf("base_stddev=%.2f\n", cfg_base_stddev);  // New line to write base_stddev
+    buf->appendf("extremity_rand_range=%d\n", cfg_extremity_rand_range);  // New line to write range
+    buf->appendf("extremity_shift=%d\n", cfg_extremity_shift);            // New line to write shift
     buf->appendf("show_debug=%d\n", (int)cfg_show_debug_log);
     buf->append("\n");
 }
@@ -121,9 +125,9 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, display_keypress_info_enabled_i, aimbot_lock_i, spins_per_minute_i, drpc_enabled_i,
         hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
-        jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
-        show_debug_i;
-    float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
+        replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
+        show_debug_i, extremity_rand_range_i, extremity_shift_i;
+    float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f, base_stddev_f;
     double timewarp_playback_rate_d;
     char relax_style_c;
     if (sscanf(line, "ar_lock=%d", &ar_lock_i) == 1)                          ar_parameter.lock = ar_lock_i;
@@ -154,7 +158,10 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "hd=%d", &hidden_remover_enabled_i) == 1)           cfg_hidden_remover_enabled = hidden_remover_enabled_i;
     else if (sscanf(line, "tw_lock=%d", &timewarp_enabled_i) == 1)            cfg_timewarp_enabled = timewarp_enabled_i;
     else if (sscanf(line, "tw_value=%lf", &timewarp_playback_rate_d) == 1)    cfg_timewarp_playback_rate = timewarp_playback_rate_d;
-    else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)             cfg_jumping_window = jump_window_i;
+    else if (sscanf(line, "base_stddev=%f", &base_stddev_f) == 1)             cfg_base_stddev = base_stddev_f;  // New line to read base_stddev
+    else if (sscanf(line, "extremity_rand_range=%d", &extremity_rand_range_i) == 1)  cfg_extremity_rand_range = extremity_rand_range_i;  // New line to write range
+    else if (sscanf(line, "extremity_shift=%d", &extremity_shift_i) == 1)            cfg_extremity_shift = extremity_shift_i;            // New line to write shift
+
     else if (sscanf(line, "show_debug=%d", &show_debug_i) == 1)               cfg_show_debug_log = show_debug_i;
 }
 
