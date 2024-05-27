@@ -94,13 +94,6 @@ __declspec(naked) void opengl_update()
         g_process = GetCurrentProcess();
         g_hwnd = WindowFromDC(wglGetCurrentDC());
 
-#ifdef FR_LOG_TO_CONSOLE
-        AllocConsole();
-        FILE *f;
-        freopen_s(&f, "CONOUT$", "w", stdout);
-        freopen_s(&f, "CONOUT$", "w", stderr);
-#endif // FR_LOG_TO_CONSOLE
-
         init_ui();
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));
     }
@@ -177,6 +170,13 @@ static inline bool GetD3D9Device(void **pTable, size_t Size)
 DWORD WINAPI freedom_main(HMODULE hModule)
 {
     g_module = hModule;
+
+#ifdef FR_LOG_TO_CONSOLE
+    AllocConsole();
+    FILE *f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
+    freopen_s(&f, "CONOUT$", "w", stderr);
+#endif // FR_LOG_TO_CONSOLE
 
     SwapBuffersHook = Hook<Trampoline32>("wglSwapBuffers", "opengl32.dll", (BYTE *)opengl_update, (BYTE *)&wglSwapBuffersGateway, 5);
     SwapBuffersHook.free_gateway = false;
