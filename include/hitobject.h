@@ -20,7 +20,6 @@ extern float od_window_left_offset;
 extern float od_window_right_offset;
 
 extern float od_window;
-extern float jumping_window_offset;
 
 extern int wait_hitobjects_min;
 extern int wait_hitobjects_max;
