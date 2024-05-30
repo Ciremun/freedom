@@ -7,7 +7,7 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 > [!WARNING]  
 > Status: Detected. Use at your own risk.  
 
-![preview]([https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png](https://private-user-images.githubusercontent.com/170682057/335056487-093dd9ac-4974-44b7-a9c2-645bb9e7d54c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTcwNDkwMTAsIm5iZiI6MTcxNzA0ODcxMCwicGF0aCI6Ii8xNzA2ODIwNTcvMzM1MDU2NDg3LTA5M2RkOWFjLTQ5NzQtNDRiNy1hOWMyLTY0NWJiOWU3ZDU0Yy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTMwJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUzMFQwNTU4MzBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ZmFkYjA4ZDNlYWYyYTllZWU1MjJjNmY3YzRiOTMwZDNmY2I1MjUyMTZmMjE2YjNmYWJiOTVmMzI0YmM5MGRlJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.F7d6Bqvnx8r2ORJgLeTfCi4X5VcZqZ6e0kV2Y2UCbwo))  
+![preview]([https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png])  
 
 ## Download
 
