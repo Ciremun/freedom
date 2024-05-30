@@ -7,7 +7,7 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 > [!WARNING]  
 > Status: Detected. Use at your own risk.  
 
-![preview]([https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png])  
+![preview](https://i.imgur.com/POkwD8J.jpeg)  
 
 ## Download
 
