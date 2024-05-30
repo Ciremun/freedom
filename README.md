@@ -12,7 +12,7 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 ## Download
 
 [GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.  
-[Releases](https://github.com/Ciremun/freedom/releases/latest) - probably outdated build.  
+[Releases](https://github.com/KetamineAddict/freedom/releases) - probably outdated build.  
 
 ## Usage
 
