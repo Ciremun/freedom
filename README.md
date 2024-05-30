@@ -11,8 +11,8 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 
 ## Download
 
-[GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.  
-[Releases](https://github.com/KetamineAddict/freedom/releases) - probably outdated build.  
+[Releases](https://github.com/KetamineAddict/freedom/releases) - I will always post my lastest stable build here. 
+The source itself doesnt get updated frequently :D
 
 ## Usage
 
@@ -98,7 +98,7 @@ rebuild and inject freedom with debug symbols and console log:
 | all         | build standalone and internal       |
 | run         | run osu and inject / run standalone |
 
-## Thank
+## Thanks:
 
 [Dear ImGui](https://github.com/ocornut/imgui)  
 [stb](https://github.com/nothings/stb)  
