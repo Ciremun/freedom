@@ -2,18 +2,6 @@
 
 float elapsed_lerp = 0;
 
-static inline Vector2<float> mouse_position()
-{
-    Vector2<float> mouse_pos(.0f, .0f);
-    uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
-    if (!osu_manager) return mouse_pos;
-    uintptr_t osu_ruleset_ptr = *(uintptr_t*)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
-    if (!osu_ruleset_ptr) return mouse_pos;
-    mouse_pos.x = *(float*)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
-    mouse_pos.y = *(float*)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
-    return mouse_pos;
-}
-
 static inline float lerp(float a, float b, float t)
 {
     return a + t * (b - a);

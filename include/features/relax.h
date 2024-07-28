@@ -1,5 +1,7 @@
 #pragma once
 
+#include "input.h"
+
 #include "ui/config.h"
 
 extern float od_window;

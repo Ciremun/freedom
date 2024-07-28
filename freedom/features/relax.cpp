@@ -46,17 +46,6 @@ void calc_od_timing()
     }
 }
 
-Vector2<float> mouse_position()
-{
-    Vector2<float> mouse_pos;
-    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
-    mouse_pos.x = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
-    mouse_pos.y = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
-
-    return mouse_pos;
-}
-
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
@@ -68,9 +57,9 @@ void update_relax(Circle &circle, const int32_t audio_time)
 
         auto current_time = audio_time + od_check_ms;
         auto valid_timing = current_time >= circle.start_time;
-        auto mouse_pos = mouse_position();
-        Vector2 screen_pos = playfield_to_screen(circle.position);
-        auto scalar_dist = sqrt((mouse_pos.x - screen_pos.x) * (mouse_pos.x - screen_pos.x) + (mouse_pos.y - screen_pos.y) * (mouse_pos.y - screen_pos.y));
+        // auto mouse_pos = mouse_position();
+        // Vector2 screen_pos = playfield_to_screen(circle.position);
+        // auto scalar_dist = sqrt((mouse_pos.x - screen_pos.x) * (mouse_pos.x - screen_pos.x) + (mouse_pos.y - screen_pos.y) * (mouse_pos.y - screen_pos.y));
         // auto valid_position = scalar_dist <= current_beatmap.scaled_hit_object_radius;
 
         if (valid_timing)
