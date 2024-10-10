@@ -78,7 +78,7 @@ CodeStart all_code_starts[] = {
     { .name = "Selected Mods",     .ptr = &selected_mods_code_start },
     { .name = "Update Mods",       .ptr = &update_mods_code_start },
     { .name = "Update Variables",  .ptr = &hom_update_vars_hidden_loc },
-    { .name = "SendInput",         .ptr = &nt_user_send_input_dispatch_table_id_found },
+    { .name = "SendInputPatch",    .ptr = &nt_user_send_input_dispatch_table_id_found },
 };
 
 inline bool all_code_starts_found()

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "imgui.h"
 
 #define ITEM_DISABLED ImVec4(0.50f, 0.50f, 0.50f, 1.00f)
