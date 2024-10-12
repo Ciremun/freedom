@@ -311,6 +311,7 @@ void update_ui()
             ImGui::Dummy(ImVec2(.0f, .5f));
             ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
             ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 600, "Spins Per Minute: %d");
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Set To Zero To Disable");
             ImGui::PopItemWidth();
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);

@@ -51,7 +51,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         Vector2 slider_ball(slider_ball_x, slider_ball_y);
         move_mouse_to_target(slider_ball, cursor_pos);
     }
-    else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time)
+    else if (circle.type == HitObjectType::Spinner && cfg_spins_per_minute && audio_time >= circle.start_time)
     {
         auto& center = circle.position;
         constexpr float radius = 60.0f;
