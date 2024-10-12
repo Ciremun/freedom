@@ -76,7 +76,7 @@ inline void init_imgui_styles()
     style.Colors[ImGuiCol_ResizeGripActive] = BLACK_TRANSPARENT;
     style.Colors[ImGuiCol_Tab] = PURPLE;
     style.Colors[ImGuiCol_TabHovered] = MAGENTA;
-    style.Colors[ImGuiCol_TabActive] = MAGENTA;
+    style.Colors[ImGuiCol_TabSelected] = MAGENTA;
 }
 
 inline void init_imgui_fonts()
@@ -213,7 +213,7 @@ void update_ui()
             bool is_selected = selected_tab == tab_type;
             if (!is_selected && highlight)
                 ImGui::PushStyleColor(ImGuiCol_Text, SILVER);
-            if (ImGui::Selectable(tab_name, is_selected, ImGuiSelectableFlags_DontClosePopups))
+            if (ImGui::Selectable(tab_name, is_selected, ImGuiSelectableFlags_NoAutoClosePopups))
             {
                 selected_tab = tab_type;
                 ImGui::SetNextWindowFocus();
@@ -226,7 +226,7 @@ void update_ui()
         {
             ImGui::BeginDisabled();
             ImGui::PushStyleColor(ImGuiCol_Text, LOG_ERROR);
-            ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
+            ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_NoAutoClosePopups);
             ImGui::PopStyleColor();
             ImGui::EndDisabled();
         };
@@ -242,7 +242,7 @@ void update_ui()
         update_tab("Misc", MenuTab::Misc, cfg_drpc_enabled);
         update_tab("About", MenuTab::About);
 
-        if (ImGui::Selectable("Debug", false, ImGuiSelectableFlags_DontClosePopups))
+        if (ImGui::Selectable("Debug", false, ImGuiSelectableFlags_NoAutoClosePopups))
         {
             cfg_show_debug_log = true;
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);

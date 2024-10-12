@@ -152,6 +152,9 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        if (ImGui::IsKeyPressed(ImGuiKey_F11, false))
+            cfg_mod_menu_visible = !cfg_mod_menu_visible;
+
         if (memory_scan_progress < 1.f)
         {
             memory_scan_progress += .15f * ImGui::GetIO().DeltaTime;
