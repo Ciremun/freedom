@@ -686,17 +686,17 @@ static inline ICorRuntimeHost* init_clr_runtime_host(LPCWSTR sz_runtimeVersion) 
     ICLRMetaHost* pMetaHost = NULL;
     BOOL bLoadable;
     HMODULE hMscoree = GetModuleHandleA("mscoree.dll");
-    if (hMscoree == 0)
-    {
+    if (hMscoree == 0) {
         FR_ERROR("hMscoree");
         return NULL;
     }
     CLRCreateInstanceFnPtr CLRCreateInstance = (CLRCreateInstanceFnPtr)GetProcAddress(hMscoree, "CLRCreateInstance");
-    if (!CLRCreateInstance)
+    if (!CLRCreateInstance) {
+        FR_ERROR("CLRCreateInstance ptr");
         return NULL;
-    if (FAILED(CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (VOID**)&pMetaHost)))
-    {
-        FR_ERROR("CLRCreateInstance");
+    }
+    if (FAILED(CLRCreateInstance(CLSID_CLRMetaHost, IID_ICLRMetaHost, (VOID**)&pMetaHost))) {
+        FR_ERROR("CLRCreateInstance call");
         return NULL;
     }
     if (FAILED(pMetaHost->GetRuntime(sz_runtimeVersion, IID_ICLRRuntimeInfo, (VOID**)&pRuntimeInfo))) {
