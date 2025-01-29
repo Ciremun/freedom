@@ -687,7 +687,10 @@ static inline ICorRuntimeHost* init_clr_runtime_host(LPCWSTR sz_runtimeVersion) 
     BOOL bLoadable;
     HMODULE hMscoree = GetModuleHandleA("mscoree.dll");
     if (hMscoree == 0)
+    {
+        FR_ERROR("hMscoree");
         return NULL;
+    }
     CLRCreateInstanceFnPtr CLRCreateInstance = (CLRCreateInstanceFnPtr)GetProcAddress(hMscoree, "CLRCreateInstance");
     if (!CLRCreateInstance)
         return NULL;
