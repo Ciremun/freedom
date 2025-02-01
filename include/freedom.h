@@ -2,8 +2,6 @@
 
 #include <windows.h>
 
-#include "parse.h"
-
 #include <thread>
 
 #define STR_HELPER(x) #x

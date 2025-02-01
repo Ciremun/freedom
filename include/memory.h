@@ -1,12 +1,12 @@
 #pragma once
 
 #include <windows.h>
+#include <tlhelp32.h>
 #include <psapi.h>
 
 #include <stdint.h>
 
-#include "ui/debug_log.h"
-
+uintptr_t GetModuleBaseAddress(const wchar_t* modName);
 void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);
 
 template <typename T>

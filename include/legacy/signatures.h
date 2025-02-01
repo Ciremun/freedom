@@ -1,9 +1,12 @@
 #pragma once
 
-#include <stdint.h>
-
 #include "pattern.h"
 
+//
+// osu!legacy
+//
+
+// 8-byte aligned function prologues
 constexpr auto parse_beatmap_func_sig       { pattern::build<"55 8B EC 57 56 53 81 EC 58 01 00 00 8B F1 8D BD B8 FE FF FF B9 4E 00 00 00 33 C0 F3 AB 8B CE 89 8D B0 FE FF FF"> };
 constexpr auto current_scene_func_sig       { pattern::build<"55 8B EC 57 56 53 50 8B D9 83 3D"> };
 constexpr auto beatmap_onload_func_sig      { pattern::build<"55 8B EC 57 56 53 83 EC 44 8B F1 B9"> };
@@ -21,6 +24,7 @@ constexpr auto check_flashlight_func_sig    { pattern::build<"55 8B EC 57 56 53 
 constexpr auto selected_mods_func_sig       { pattern::build<"55 8B EC 57 56 53 8B F1 A1 . . . . 25 . . . . 85 C0"> };
 constexpr auto update_mods_func_sig         { pattern::build<"55 8B EC 57 56 83 EC 40 8B F1 8D 7D B8 B9 0F 00 00 00 33 C0 F3 AB 8B CE 89 4D BC 8B 45 BC 80 78 24 00"> };
 
+// unaligned bytes located inside of a function
 constexpr auto approach_rate_sig            { pattern::build<"8B 85 B0 FE FF FF D9 58 2C"> };
 constexpr auto approach_rate_sig_2          { pattern::build<"8B 85 B0 FE FF FF D9 40 38 D9 58 2C"> };
 constexpr auto circle_size_sig              { pattern::build<"8B 85 B0 FE FF FF D9 58 30"> };

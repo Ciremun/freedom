@@ -5,8 +5,10 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "scan.h"
+#include "freedom.h"
 #include "memory.h"
+
+#include "ui/debug_log.h"
 
 extern int cfg_font_size;
 extern int cfg_spins_per_minute;
