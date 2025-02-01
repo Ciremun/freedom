@@ -23,9 +23,9 @@ HMODULE g_module = NULL;
 LPVOID g_config_path = NULL;
 
 bool init = false;
-ID3D11Device* p_device = NULL;
-ID3D11DeviceContext* p_context = NULL;
-ID3D11RenderTargetView* mainRenderTargetView = NULL;
+ID3D11Device* pDevice = NULL;
+ID3D11DeviceContext* pContext = NULL;
+ID3D11RenderTargetView* pRenderTargetView = NULL;
 
 Present oPresent;
 Present pPresent;
@@ -161,42 +161,39 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
-HRESULT __stdcall hkPresent(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags) {
+HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
     if (!init)
     {
-        if (FAILED(p_swap_chain->GetDevice(__uuidof(ID3D11Device), (void**)&p_device)))
-            return oPresent(p_swap_chain, sync_interval, flags);
-        p_device->GetImmediateContext(&p_context);
+        if (FAILED(pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)&pDevice)))
+            return oPresent(pSwapChain, SyncInterval, Flags);
+        pDevice->GetImmediateContext(&pContext);
         DXGI_SWAP_CHAIN_DESC sd;
-        p_swap_chain->GetDesc(&sd);
+        pSwapChain->GetDesc(&sd);
         g_hwnd = sd.OutputWindow;
         ID3D11Texture2D* pBackBuffer;
-        p_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
-        p_device->CreateRenderTargetView(pBackBuffer, NULL, &mainRenderTargetView);
+        pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+        pDevice->CreateRenderTargetView(pBackBuffer, NULL, &pRenderTargetView);
         pBackBuffer->Release();
         oWndProc = (WNDPROC)SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
         g_process = GetCurrentProcess();
-        init_ui(p_device, p_context);
+        init_ui(pDevice, pContext);
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));
         init = true;
     }
     ImGui_ImplDX11_NewFrame();
     imgui_new_frame();
-    p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+    pContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-    return oPresent(p_swap_chain, sync_interval, flags);
+    return oPresent(pSwapChain, SyncInterval, Flags);
 }
 
 HRESULT __stdcall hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
 {
-    if (!p_context || !p_device)
-        return oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-
-    if (mainRenderTargetView)
+    if (pRenderTargetView)
     {
-        p_context->OMSetRenderTargets(0, 0, 0);
-        mainRenderTargetView->Release();
-        mainRenderTargetView = nullptr;
+        pContext->OMSetRenderTargets(0, 0, 0);
+        pRenderTargetView->Release();
+        pRenderTargetView = nullptr;
     }
 
     HRESULT hr = oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
@@ -204,9 +201,9 @@ HRESULT __stdcall hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, 
     {
         ID3D11Texture2D* pBuffer = nullptr;
         pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBuffer);
-        p_device->CreateRenderTargetView(pBuffer, NULL, &mainRenderTargetView);
+        pDevice->CreateRenderTargetView(pBuffer, NULL, &pRenderTargetView);
         pBuffer->Release();
-        p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+        pContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
         D3D11_VIEWPORT vp{};
         vp.Width = static_cast<FLOAT>(Width);
         vp.Height = static_cast<FLOAT>(Height);
@@ -214,7 +211,7 @@ HRESULT __stdcall hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, 
         vp.MaxDepth = 1.0f;
         vp.TopLeftX = 0;
         vp.TopLeftY = 0;
-        p_context->RSSetViewports(1, &vp);
+        pContext->RSSetViewports(1, &vp);
     }
 
     return hr;
@@ -274,9 +271,9 @@ DWORD WINAPI freedom_main(HMODULE hModule)
     // ImGui_ImplWin32_Shutdown();
     // ImGui::DestroyContext();
 
-    // if (mainRenderTargetView) { mainRenderTargetView->Release(); mainRenderTargetView = NULL; }
-    // if (p_context) { p_context->Release(); p_context = NULL; }
-    // if (p_device) { p_device->Release(); p_device = NULL; }
+    // if (pRenderTargetView) { pRenderTargetView->Release(); pRenderTargetView = NULL; }
+    // if (pContext) { pContext->Release(); pContext = NULL; }
+    // if (pDevice) { pDevice->Release(); pDevice = NULL; }
     // SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
 
 // #ifdef FR_LOG_TO_CONSOLE
