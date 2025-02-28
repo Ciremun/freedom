@@ -11,7 +11,7 @@
 #define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor\\imgui", "-Ivendor\\imgui\\backends", "-Ivendor\\minhook\\include"
 
 #ifdef _MSC_VER
-#define COMMON_CXXFLAGS "-nologo", "-EHsc", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
+#define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
 #define RELEASE_CXXFLAGS COMMON_CXXFLAGS, "-DNDEBUG", INCLUDE_CXXFLAGS, "-w", "-O2", "-MT", "-GL"
 #define DEBUG_CXXFLAGS COMMON_CXXFLAGS, INCLUDE_CXXFLAGS, "-W4", "-Od", "-Z7", "-MTd", "-FS"
 static const char *default_cxx = "cl.exe";
@@ -65,8 +65,6 @@ static bool build_legacy(Cmd *cmd)
 static bool build()
 {
     Cmd cmd = {0};
-    nob_log(INFO, "lazer: %d", *lazer);
-    nob_log(INFO, "legacy: %d", *legacy);
     if (*lazer && *legacy)
         return build_lazer(&cmd) && build_legacy(&cmd);
     if (*lazer)
@@ -133,7 +131,6 @@ int main(int argc, char **argv)
 
     Nob_String_Builder file = {0};
     if (read_entire_file(".git/refs/heads/master", &file)) {
-        nob_log(INFO, "git commit hash: %s", file.items);
         memcpy(git_commit_hash, file.items, 7);
     }
 
