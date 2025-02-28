@@ -21,9 +21,9 @@ static bool run_executable(const char *executable)
 {
     Cmd cmd = {0};
 #ifdef _WIN32
-    cmd_append(&cmd, nob_temp_sprintf(".\\%s.exe", executable));
+    cmd_append(&cmd, temp_sprintf(".\\%s.exe", executable));
 #else
-    cmd_append(&cmd, nob_temp_sprintf("./%s", executable));
+    cmd_append(&cmd, temp_sprintf("./%s", executable));
 #endif // _WIN32
     return cmd_run_sync(cmd);
 }
