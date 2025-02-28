@@ -7,8 +7,8 @@
 #define NOB_STRIP_PREFIX
 #include "nob.h"
 
-#define LAZER_SOURCES "freedom\\lazer\\entrypoint\\dll_main.cpp", "freedom\\lazer\\scan.cpp", "freedom\\memory.cpp", "freedom\\ui\\*.cpp", "vendor\\imgui\\*.cpp", "vendor\\imgui\\backends\\*.cpp"
-#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor\\imgui", "-Ivendor\\imgui\\backends", "-Ivendor\\minhook\\include"
+#define LAZER_SOURCES "freedom/lazer/entrypoint/dll_main.cpp", "freedom/lazer/scan.cpp", "freedom/memory.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp"
+#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/backends", "-Ivendor/minhook/include"
 
 #ifdef _MSC_VER
 #define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
@@ -49,9 +49,9 @@ static bool build_lazer(Cmd *cmd)
 #ifdef _MSC_VER
     cmd_append(cmd, "-MP");
     if (!*debug)
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-LTCG", "-MACHINE:x64", "vendor\\minhook\\lib\\libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
     else
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-DEBUG", "-MACHINE:x64", "vendor\\minhook\\lib\\libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-DEBUG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
 #endif // _MSC_VER
     return cmd_run_sync_and_reset(cmd);
 }
