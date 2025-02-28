@@ -61,9 +61,6 @@ static bool build_injector(Cmd *cmd, const char *filename)
 
 static bool build_lazer(Cmd *cmd)
 {
-#if defined(_WIN32) && !defined(_WIN64)
-    UNREACHABLE("freedom-lazer: x64 target platform required");
-#endif // defined(_WIN32) && !defined(_WIN64)
     build_injector(cmd, "injector-lazer");
     nob_log(INFO, "BUILD: freedom-lazer");
     cmd_append(cmd, cxx);
@@ -92,7 +89,6 @@ static bool build_lazer(Cmd *cmd)
 
 static bool build_legacy(Cmd *cmd)
 {
-    (void)cmd;
     build_injector(cmd, "injector-legacy");
     nob_log(INFO, "BUILD: freedom-legacy");
     UNREACHABLE("freedom-legacy: Not Implemented");
@@ -183,6 +179,8 @@ int main(int argc, char **argv)
             run_executable("injector-lazer");
         if (*legacy)
             run_executable("injector-legacy");
+        if (*standalone)
+            run_executable("freedom-standalone");
     }
 
     return 0;
