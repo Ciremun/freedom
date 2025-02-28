@@ -5,7 +5,7 @@ Internal osu! mod, realtime difficulty changer for any beatmap, works online.
 ![Mode](https://img.shields.io/badge/Mode%20--%20osu!-E3619B?style=for-the-badge&logo=osu&logoColor=white)
 
 > [!WARNING]  
-> Status: Detected. Use at your own risk.  
+> Status: Unknown. Use at your own risk.  
 
 ![preview](https://user-images.githubusercontent.com/38132413/199610571-ea5dc5df-5b5e-40d1-89b7-3b9c6955c4e0.png)  
 
@@ -54,12 +54,11 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 - Mods:
     * Score Multiplier Changer
     * Unmod Flashlight
-    * Unmod Hidden (**Detected**)
+    * Unmod Hidden
 
 - Misc:
-    * Set Font Size
+    * Set UI Font Size
     * Set Discord RPC Status Text
-    * Unload DLL
 
 ## Build
 
@@ -71,36 +70,20 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 ![installer_preview](https://user-images.githubusercontent.com/38132413/199610177-89f05acc-c1ff-4656-9839-2abf66ffd126.png)  
 
-### Execute nobuild
+### Compile and run build
 
-    cmd.exe
-    nobuild.exe
+    cl.exe nob.c && .\nob.exe
 
-Alternatively, bootstrap nobuild
+### Build options
 
-    cmd.exe
-    vcvarsall x86
-    cl nobuild.c && nobuild.exe
+clean debug build with console log, run osu! and inject
 
-### Optional nobuild flags
-
-rebuild and inject freedom with debug symbols and console log:
-
-    nobuild.exe rebuild debug console run
-
-|    Flag     |          Description                |
-|:-----------:|:-----------------------------------:|
-|             | Freedom only                        |
-| rebuild     | update headers / rebuild all        |
-| debug       | symbols, disable optimizations      |
-| console     | print logs to console               |
-| standalone  | build standalone only               |
-| all         | build standalone and internal       |
-| run         | run osu and inject / run standalone |
+    nob.exe -rebuild -debug -console -run
 
 ## Thank
 
 [Dear ImGui](https://github.com/ocornut/imgui)  
 [stb](https://github.com/nothings/stb)  
+[nob.h](https://github.com/tsoding/nob.h)  
 [nobuild](https://github.com/tsoding/nobuild)  
 [pattern.h](https://github.com/Ciremun/freedom/blob/6c0ebbc374dc34ff8925b1758d01ed5911e9fc47/vendor/pattern.h)  
