@@ -134,11 +134,11 @@ int main(int argc, char **argv)
 
     lazer = flag_bool("lazer", false, "build freedom-lazer");
     legacy = flag_bool("legacy", false, "build freedom-legacy");
-    standalone = flag_bool("standalone", false, "build standalone ui demo");
+    standalone = flag_bool("standalone", false, "build freedom-standalone (ui demo)");
     rebuild = flag_bool("rebuild", false, "clean build / update headers");
     debug = flag_bool("debug", false, "symbols, disable optimizations");
     console = flag_bool("console", false, "use console log at runtime");
-    run = flag_bool("run", false, "run osu and inject / run standalone ui demo");
+    run = flag_bool("run", false, "run osu and inject / run freedom-standalone");
     help = flag_bool("help", false, "print help and exit");
 
     if (!flag_parse(argc, argv)) {
