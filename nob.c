@@ -72,8 +72,13 @@ int main(int argc, char **argv)
         cxx = default_cxx;
     nob_log(INFO, "CXX: %s", cxx);
 
-    fprintf(stdout, "lazer: %d\n", *lazer);
-    fprintf(stdout, "legacy: %d\n", *legacy);
+    nob_log(INFO, "lazer: %d", *lazer);
+    nob_log(INFO, "legacy: %d", *legacy);
+
+    Nob_String_Builder file = {0};
+    if (read_entire_file(".git/refs/heads/master", &file)) {
+        nob_log(INFO, "git commit hash: %s", file.items);
+    }
 
     return 0;
 }
