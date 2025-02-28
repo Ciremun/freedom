@@ -693,7 +693,11 @@ int wmain(int argc, wchar_t **argv, wchar_t **envp)
 
     auto process_name_s = mks("osu!.exe");
     auto process_name_w = std::wstring(process_name_s.begin(), process_name_s.end());
-    auto dll_name_s = mks("freedom.dll");
+#ifdef _WIN64
+    auto dll_name_s = mks("freedom-lazer.dll");
+#else
+    auto dll_name_s = mks("freedom-legacy.dll");
+#endif // _WIN64
     auto dll_name_w = std::wstring(dll_name_s.begin(), dll_name_s.end());
 
     const wchar_t *process_name = argc > 1 ? argv[1] : process_name_w.c_str();
