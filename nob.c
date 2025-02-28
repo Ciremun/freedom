@@ -32,8 +32,40 @@ static bool *help = 0;
 static const char *cxx = 0;
 static char git_commit_hash[16] = {0};
 
+static bool build_injector(Cmd *cmd, const char *filename)
+{
+    nob_log(INFO, temp_sprintf("BUILD: %s", filename));
+#ifdef _WIN32
+    filename = temp_sprintf("%s.exe", filename);
+#endif // _WIN32
+    if (!file_exists(filename) || *rebuild || needs_rebuild1("injector.cpp", filename))
+    {
+        cmd_append(cmd, cxx);
+        if (!*debug)
+            cmd_append(cmd, RELEASE_CXXFLAGS);
+        else
+            cmd_append(cmd, DEBUG_CXXFLAGS);
+        cmd_append(cmd, "injector.cpp");
+#ifdef _MSC_VER
+        if (!*debug)
+            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-LTCG");
+        else
+            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-DEBUG");
+#else
+        UNREACHABLE("build_injector: Not Implemented");
+#endif // _MSC_VER
+        return cmd_run_sync_and_reset(cmd);
+    }
+    return false;
+}
+
 static bool build_lazer(Cmd *cmd)
 {
+#if defined(_WIN32) && !defined(_WIN64)
+    UNREACHABLE("freedom-lazer: x64 target platform required");
+#endif // defined(_WIN32) && !defined(_WIN64)
+    build_injector(cmd, "injector-lazer");
+    nob_log(INFO, "BUILD: freedom-lazer");
     cmd_append(cmd, cxx);
     if (*git_commit_hash)
         cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
@@ -49,9 +81,11 @@ static bool build_lazer(Cmd *cmd)
 #ifdef _MSC_VER
     cmd_append(cmd, "-MP");
     if (!*debug)
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
     else
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom_lazer.dll", "-DEBUG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-DEBUG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
+#else
+    UNREACHABLE("freedom-lazer: Not Implemented");
 #endif // _MSC_VER
     return cmd_run_sync_and_reset(cmd);
 }
@@ -59,7 +93,9 @@ static bool build_lazer(Cmd *cmd)
 static bool build_legacy(Cmd *cmd)
 {
     (void)cmd;
-    UNREACHABLE("build_legacy: Not Implemented");
+    build_injector(cmd, "injector-legacy");
+    nob_log(INFO, "BUILD: freedom-legacy");
+    UNREACHABLE("freedom-legacy: Not Implemented");
 }
 
 static bool build()
@@ -121,8 +157,14 @@ int main(int argc, char **argv)
     }
 
     if (!*lazer && !*legacy) {
+#if defined(_WIN64)
+        *lazer = true;
+#elif defined(_WIN32)
+        *legacy = true;
+#else
         *lazer = true;
         *legacy = true;
+#endif // defined(_WIN64)
     }
 
     if (!(cxx = getenv("CXX")))
@@ -135,6 +177,13 @@ int main(int argc, char **argv)
     }
 
     build();
+
+    if (*run) {
+        if (*lazer)
+            run_executable("injector-lazer");
+        if (*legacy)
+            run_executable("injector-legacy");
+    }
 
     return 0;
 }
