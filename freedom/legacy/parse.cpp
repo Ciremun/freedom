@@ -1,7 +1,7 @@
 #define LZMA_IMPLEMENTATION
 #include "lzma.h"
 
-#include "parse.h"
+#include "legacy/parse.h"
 
 ReplayEntryData& ReplayData::current_entry()
 {

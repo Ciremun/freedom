@@ -1,4 +1,4 @@
-#include "input.h"
+#include "legacy/input.h"
 
 uintptr_t binding_manager_code_start = 0;
 uintptr_t binding_manager_ptr = 0;

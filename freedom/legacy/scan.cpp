@@ -1,4 +1,4 @@
-#include "scan.h"
+#include "legacy/scan.h"
 
 #define PATTERN_SCAN(out, signature, start) if (!out) out = pattern::find<signature>({ start, signature.size() })
 

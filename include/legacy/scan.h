@@ -8,21 +8,21 @@
 
 #include <vector>
 
-#include "hook.h"
-#include "signatures.h"
-#include "hitobject.h"
+#include "legacy/hook.h"
+#include "legacy/signatures.h"
+#include "legacy/hitobject.h"
 #include "memory.h"
-#include "clrhost.h"
+#include "legacy/clrhost.h"
 
-#include "features/relax.h"
-#include "features/aimbot.h"
-#include "features/difficulty.h"
-#include "features/discord_rpc.h"
-#include "features/replay.h"
-#include "features/score_multiplier.h"
-#include "features/unmod_flashlight.h"
-#include "features/timewarp.h"
-#include "features/hidden_remover.h"
+#include "legacy/features/relax.h"
+#include "legacy/features/aimbot.h"
+#include "legacy/features/difficulty.h"
+#include "legacy/features/discord_rpc.h"
+#include "legacy/features/replay.h"
+#include "legacy/features/score_multiplier.h"
+#include "legacy/features/unmod_flashlight.h"
+#include "legacy/features/timewarp.h"
+#include "legacy/features/hidden_remover.h"
 
 #include "imgui.h"
 

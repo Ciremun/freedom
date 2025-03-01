@@ -5,6 +5,8 @@
 #include <d3d9.h>
 #include <d3d11.h>
 
+#include "legacy/scan.h"
+
 #include "ui/font.h"
 #include "ui/config.h"
 #include "ui/debug_log.h"
@@ -35,8 +37,12 @@ enum class MenuTab
 extern char song_name_u8[256];
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#ifndef FR_LAZER
+void init_ui();
+void init_ui(IDirect3DDevice9* pDevice);
+#else
 void init_ui(ID3D11Device* p_device, ID3D11DeviceContext* p_context);
-void init_ui(IDirect3DDevice9* pDevice = 0);
+#endif // FR_LAZER
 void init_imgui_styles();
 void init_imgui_fonts();
 void update_ui();

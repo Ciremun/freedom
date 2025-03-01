@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input.h"
+#include "legacy/input.h"
 
 #include "ui/config.h"
 

@@ -3,10 +3,10 @@
 
 #include <d3d9.h>
 
-#include "scan.h"
-#include "parse.h"
-#include "input.h"
-#include "hitobject.h"
+#include "legacy/scan.h"
+#include "legacy/parse.h"
+#include "legacy/input.h"
+#include "legacy/hitobject.h"
 
 #include "ui/ui.h"
 

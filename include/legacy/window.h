@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "memory.h"
-#include "vector.h"
+#include "legacy/vector.h"
 #include "freedom.h"
 
 extern uintptr_t window_manager_code_start;

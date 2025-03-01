@@ -1,4 +1,4 @@
-#include "hitobject.h"
+#include "legacy/hitobject.h"
 
 BeatmapData current_beatmap;
 ReplayData current_replay;

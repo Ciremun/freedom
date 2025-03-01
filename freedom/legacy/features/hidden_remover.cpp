@@ -1,4 +1,4 @@
-#include "features/hidden_remover.h"
+#include "legacy/features/hidden_remover.h"
 
 Hook<Trampoline32> HiddenHook;
 tHiddenHook o_hom_update_vars_hidden;

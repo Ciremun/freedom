@@ -1,4 +1,4 @@
-#include "features/unmod_flashlight.h"
+#include "legacy/features/unmod_flashlight.h"
 
 uintptr_t update_flashlight_code_start = 0;
 uint8_t update_flashlight_original_byte = update_flashlight_func_sig[0].m_value;

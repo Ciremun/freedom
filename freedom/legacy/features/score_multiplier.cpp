@@ -1,4 +1,4 @@
-#include "features/score_multiplier.h"
+#include "legacy/features/score_multiplier.h"
 
 uintptr_t score_multiplier_code_start = 0;
 uintptr_t score_multiplier_offset = 0;

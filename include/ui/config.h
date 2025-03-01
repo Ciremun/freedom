@@ -8,6 +8,7 @@
 #include "freedom.h"
 #include "memory.h"
 
+#include "legacy/scan.h"
 #include "ui/debug_log.h"
 
 extern int cfg_font_size;

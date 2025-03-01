@@ -9,9 +9,10 @@
 #include <math.h>
 
 #include "memory.h"
-#include "vector.h"
-#include "window.h"
-#include "struct_offsets.h"
+#include "legacy/vector.h"
+#include "legacy/window.h"
+#include "legacy/struct_offsets.h"
+#include "ui/debug_log.h"
 
 #include "stb_sprintf.h"
 

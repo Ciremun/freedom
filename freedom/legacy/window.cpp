@@ -1,4 +1,4 @@
-#include "window.h"
+#include "legacy/window.h"
 
 uintptr_t window_manager_code_start = 0;
 uintptr_t window_manager_offset = 0;

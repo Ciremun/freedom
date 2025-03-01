@@ -1,5 +1,5 @@
-#include "features/relax.h"
-#include "window.h"
+#include "legacy/features/relax.h"
+#include "legacy/window.h"
 
 float od_window = 5.f;
 float od_window_left_offset = .0f;

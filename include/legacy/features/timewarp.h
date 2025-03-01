@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hook.h"
+#include "legacy/hook.h"
 
 #include "ui/config.h"
 

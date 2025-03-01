@@ -2,7 +2,10 @@
 
 #include <stdint.h>
 
-#include "hook.h"
+#include "legacy/hook.h"
+#include "legacy/scan.h"
+#include "legacy/signatures.h"
+#include "legacy/struct_offsets.h"
 
 #include "ui/config.h"
 

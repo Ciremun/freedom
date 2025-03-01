@@ -1,4 +1,4 @@
-#include "features/replay.h"
+#include "legacy/features/replay.h"
 
 uintptr_t selected_replay_code_start = 0;
 uintptr_t selected_replay_offset = 0;

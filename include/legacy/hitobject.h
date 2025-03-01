@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-#include "parse.h"
-#include "window.h"
+#include "legacy/parse.h"
+#include "legacy/window.h"
 #include "memory.h"
-#include "input.h"
-#include "struct_offsets.h"
+#include "legacy/input.h"
+#include "legacy/struct_offsets.h"
 
 #include "ui/config.h"
 

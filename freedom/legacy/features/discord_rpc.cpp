@@ -1,4 +1,4 @@
-#include "features/discord_rpc.h"
+#include "legacy/features/discord_rpc.h"
 
 intptr_t drpc_code_start = 0;
 intptr_t drpc_jump_back = 0;

@@ -1,4 +1,4 @@
-#include "features/difficulty.h"
+#include "legacy/features/difficulty.h"
 
 Parameter ar_parameter = {
     true,                   // lock

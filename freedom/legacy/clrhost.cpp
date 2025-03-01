@@ -1,4 +1,4 @@
-#include "clrhost.h"
+#include "legacy/clrhost.h"
 
 #import "mscorlib.tlb" auto_rename, raw_interfaces_only
 using namespace mscorlib;

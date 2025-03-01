@@ -1,4 +1,4 @@
-#include "hook.h"
+#include "legacy/hook.h"
 
 bool detour_32(BYTE *src, BYTE *dst, const uintptr_t len)
 {

@@ -2,10 +2,10 @@
 
 #include <windows.h>
 
-#include "window.h"
+#include "legacy/window.h"
 #include "freedom.h"
-#include "scan.h"
-#include "vector.h"
+#include "legacy/scan.h"
+#include "legacy/vector.h"
 
 extern uintptr_t binding_manager_code_start;
 extern uintptr_t binding_manager_ptr;

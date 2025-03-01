@@ -25,7 +25,7 @@ inline bool all_code_starts_found()
 static void scan_for_code_starts()
 {
     int alignment = 16;
-    _MEMORY_BASIC_INFORMATION mbi;    
+    _MEMORY_BASIC_INFORMATION mbi;
     for (uint8_t *p = (uint8_t *)0x700000000000; VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
     {
         if (mbi.State != MEM_COMMIT)

@@ -1,4 +1,4 @@
-#include "features/aimbot.h"
+#include "legacy/features/aimbot.h"
 
 float elapsed_lerp = 0;
 

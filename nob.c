@@ -7,8 +7,14 @@
 #define NOB_STRIP_PREFIX
 #include "nob.h"
 
-#define LAZER_SOURCES "freedom/lazer/entrypoint/dll_main.cpp", "freedom/lazer/scan.cpp", "freedom/memory.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp"
-#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/backends", "-Ivendor/minhook/include"
+#define LAZER_SOURCES "freedom/lazer/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/lazer/*.cpp", "freedom/ui/*.cpp", \
+                      "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp", "vendor/imgui/backends/lazer/*.cpp"
+
+#define LEGACY_SOURCES "freedom/legacy/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", "freedom/ui/*.cpp", \
+                       "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp", "vendor/imgui/backends/legacy/*.cpp"
+
+
+#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/backends", "-Ivendor/imgui/backends/lazer", "-Ivendor/imgui/backends/legacy", "-Ivendor/minhook/include"
 
 #ifdef _MSC_VER
 #define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
@@ -34,12 +40,12 @@ static char git_commit_hash[16] = {0};
 
 static bool build_injector(Cmd *cmd, const char *filename)
 {
-    nob_log(INFO, temp_sprintf("BUILD: %s", filename));
 #ifdef _WIN32
     filename = temp_sprintf("%s.exe", filename);
 #endif // _WIN32
-    if (!file_exists(filename) || *rebuild || needs_rebuild1("injector.cpp", filename))
+    if (!file_exists(filename) || *rebuild || needs_rebuild1(filename, "injector.cpp"))
     {
+        nob_log(INFO, temp_sprintf("BUILD: %s", filename));
         cmd_append(cmd, cxx);
         if (!*debug)
             cmd_append(cmd, RELEASE_CXXFLAGS);
@@ -64,12 +70,10 @@ static bool build_lazer(Cmd *cmd)
     build_injector(cmd, "injector-lazer");
     nob_log(INFO, "BUILD: freedom-lazer");
     cmd_append(cmd, cxx);
-    if (*git_commit_hash)
-        cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
-    if (*console)
-        cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
-    if (*debug)
-        cmd_append(cmd, "-DFR_DEBUG");
+    if (*git_commit_hash) cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
+    if (*console) cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
+    if (*debug) cmd_append(cmd, "-DFR_DEBUG");
+    if (*lazer) cmd_append(cmd, "-DFR_LAZER");
     if (!*debug)
         cmd_append(cmd, RELEASE_CXXFLAGS);
     else
@@ -91,7 +95,26 @@ static bool build_legacy(Cmd *cmd)
 {
     build_injector(cmd, "injector-legacy");
     nob_log(INFO, "BUILD: freedom-legacy");
+    cmd_append(cmd, cxx);
+    if (*git_commit_hash) cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
+    if (*console) cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
+    if (*debug) cmd_append(cmd, "-DFR_DEBUG");
+    if (*lazer) cmd_append(cmd, "-DFR_LAZER");
+    if (!*debug)
+        cmd_append(cmd, RELEASE_CXXFLAGS);
+    else
+        cmd_append(cmd, DEBUG_CXXFLAGS);
+    cmd_append(cmd, LEGACY_SOURCES);
+#ifdef _MSC_VER
+    // cmd_append(cmd, "-MP");
+    if (!*debug)
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-legacy.dll", "-LTCG", "-MACHINE:x86");
+    else
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-legacy.dll", "-DEBUG", "-MACHINE:x86");
+#else
     UNREACHABLE("freedom-legacy: Not Implemented");
+#endif // _MSC_VER
+    return cmd_run_sync_and_reset(cmd);
 }
 
 static bool build()
@@ -165,7 +188,6 @@ int main(int argc, char **argv)
 
     if (!(cxx = getenv("CXX")))
         cxx = default_cxx;
-    nob_log(INFO, "CXX: %s", cxx);
 
     Nob_String_Builder file = {0};
     if (read_entire_file(".git/refs/heads/master", &file)) {

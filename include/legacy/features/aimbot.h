@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vector.h"
-#include "input.h"
+#include "legacy/vector.h"
+#include "legacy/input.h"
 
 #include "ui/config.h"
 
