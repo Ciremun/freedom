@@ -7,14 +7,13 @@
 #define NOB_STRIP_PREFIX
 #include "nob.h"
 
-#define LAZER_SOURCES "freedom/lazer/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/lazer/*.cpp", "freedom/ui/*.cpp", \
-                      "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp", "vendor/imgui/backends/lazer/*.cpp"
+#define LAZER_SOURCES  "freedom/lazer/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/lazer/*.cpp", \
+                       "freedom/lazer/features/*.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/lazer/*.cpp"
 
-#define LEGACY_SOURCES "freedom/legacy/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", "freedom/ui/*.cpp", \
-                       "vendor/imgui/*.cpp", "vendor/imgui/backends/*.cpp", "vendor/imgui/backends/legacy/*.cpp"
+#define LEGACY_SOURCES "freedom/legacy/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/legacy/*.cpp", \
+                       "freedom/legacy/features/*.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/legacy/*.cpp"
 
-
-#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/backends", "-Ivendor/imgui/backends/lazer", "-Ivendor/imgui/backends/legacy", "-Ivendor/minhook/include"
+#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/lazer", "-Ivendor/imgui/legacy", "-Ivendor/minhook/include"
 
 #ifdef _MSC_VER
 #define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
