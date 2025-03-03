@@ -1,38 +1,38 @@
 #include "legacy/features/difficulty.h"
 
-Parameter ar_parameter = {
+DifficultySetting ar_setting = {
     true,                   // lock
     10.0f,                  // value
     10.0f,                  // calculated_value
     OSU_BEATMAP_AR_OFFSET,  // offset
-    "AR: %.1f",             // slider_fmt
-    "AR Offsets Not Found", // error_message
+    "AR: %.1f",             // fmt
+    "AR Offsets Not Found", // error
     enable_ar_hooks,        // enable
     disable_ar_hooks,       // disable
     apply_mods_ar,          // apply_mods
     // bool found = false
 };
 
-Parameter cs_parameter = {
+DifficultySetting cs_setting = {
     false,                  // lock
     4.0f,                   // value
     4.0f,                   // calculated_value
     OSU_BEATMAP_CS_OFFSET,  // offset
-    "CS: %.1f",             // slider_fmt
-    "CS Offsets Not Found", // error_message
+    "CS: %.1f",             // fmt
+    "CS Offsets Not Found", // error
     enable_cs_hooks,        // enable
     disable_cs_hooks,       // disable
     apply_mods_cs,          // apply_mods
     // bool found = false
 };
 
-Parameter od_parameter = {
+DifficultySetting od_setting = {
     false,                  // lock
     8.0f,                   // value
     8.0f,                   // calculated_value
     OSU_BEATMAP_OD_OFFSET,  // offset
-    "OD: %.1f",             // slider_fmt
-    "OD Offsets Not Found", // error_message
+    "OD: %.1f",             // fmt
+    "OD Offsets Not Found", // error
     enable_od_hooks,        // enable
     disable_od_hooks,       // disable
     apply_mods_od,          // apply_mods
@@ -78,38 +78,38 @@ static inline float compensate_double_time(float ar)
 
 void init_difficulty()
 {
-    if (ar_parameter.found)
+    if (ar_setting.found)
     {
         ApproachRateHook1 = Hook<Detour32>(approach_rate_offsets[0], (BYTE *)set_approach_rate, 9);
         ApproachRateHook2 = Hook<Detour32>(approach_rate_offsets[1], (BYTE *)set_approach_rate, 9);
         ApproachRateHook3 = Hook<Detour32>(approach_rate_offsets[2], (BYTE *)set_approach_rate_2, 12);
-        if (ar_parameter.lock)
+        if (ar_setting.enabled)
         {
             enable_ar_hooks();
-            ar_parameter.apply_mods();
+            ar_setting.apply_mods();
         }
     }
 
-    if (cs_parameter.found)
+    if (cs_setting.found)
     {
         CircleSizeHook1 = Hook<Detour32>(circle_size_offsets[0], (BYTE *)set_circle_size, 9);
         CircleSizeHook2 = Hook<Detour32>(circle_size_offsets[1], (BYTE *)set_circle_size, 9);
         CircleSizeHook3 = Hook<Detour32>(circle_size_offsets[2], (BYTE *)set_circle_size, 9);
-        if (cs_parameter.lock)
+        if (cs_setting.enabled)
         {
             enable_cs_hooks();
-            cs_parameter.apply_mods();
+            cs_setting.apply_mods();
         }
     }
 
-    if (od_parameter.found)
+    if (od_setting.found)
     {
         OverallDifficultyHook1 = Hook<Detour32>(overall_difficulty_offsets[0], (BYTE *)set_overall_difficulty, 9);
         OverallDifficultyHook2 = Hook<Detour32>(overall_difficulty_offsets[1], (BYTE *)set_overall_difficulty, 9);
-        if (od_parameter.lock)
+        if (od_setting.enabled)
         {
             enable_od_hooks();
-            od_parameter.apply_mods();
+            od_setting.apply_mods();
         }
     }
 }
@@ -130,7 +130,7 @@ void disable_od_hooks()
 
 void apply_mods_od()
 {
-    od_parameter.calculated_value = od_parameter.value;
+    od_setting.calculated_value = od_setting.value;
 }
 
 void enable_cs_hooks()
@@ -151,7 +151,7 @@ void disable_cs_hooks()
 
 void apply_mods_cs()
 {
-    cs_parameter.calculated_value = cs_parameter.value;
+    cs_setting.calculated_value = cs_setting.value;
 }
 
 void enable_ar_hooks()
@@ -177,13 +177,13 @@ void apply_mods_ar()
         Mods mods = *selected_mods_ptr;
         if ((mods & Mods::Nightcore) || (mods & Mods::DoubleTime))
         {
-            ar_parameter.calculated_value = compensate_double_time(ar_parameter.value);
-            FR_INFO("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
+            ar_setting.calculated_value = compensate_double_time(ar_setting.value);
+            FR_INFO("ar_setting.calculated_value: %.2f", ar_setting.calculated_value);
             return;
         }
     }
-    ar_parameter.calculated_value = ar_parameter.value;
-    FR_INFO("ar_parameter.calculated_value: %.2f", ar_parameter.calculated_value);
+    ar_setting.calculated_value = ar_setting.value;
+    FR_INFO("ar_setting.calculated_value: %.2f", ar_setting.calculated_value);
 }
 
 __declspec(naked) void set_approach_rate()
@@ -191,7 +191,7 @@ __declspec(naked) void set_approach_rate()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+OSU_BEATMAP_AR_OFFSET]
-        mov ebx, ar_parameter.calculated_value
+        mov ebx, ar_setting.calculated_value
         mov dword ptr [eax+OSU_BEATMAP_AR_OFFSET], ebx
         jmp [ar_hook_jump_back]
     }
@@ -203,7 +203,7 @@ __declspec(naked) void set_approach_rate_2()
         mov eax,[ebp-0x00000150]
         fld dword ptr [eax+0x38]
         fstp dword ptr [eax+OSU_BEATMAP_AR_OFFSET]
-        mov ebx, ar_parameter.calculated_value
+        mov ebx, ar_setting.calculated_value
         mov dword ptr [eax+OSU_BEATMAP_AR_OFFSET], ebx
         jmp [ar_hook_jump_back]
     }
@@ -214,7 +214,7 @@ __declspec(naked) void set_circle_size()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+OSU_BEATMAP_CS_OFFSET]
-        mov ebx, cs_parameter.calculated_value
+        mov ebx, cs_setting.calculated_value
         mov dword ptr [eax+OSU_BEATMAP_CS_OFFSET], ebx
         jmp [cs_hook_jump_back]
     }
@@ -225,8 +225,13 @@ __declspec(naked) void set_overall_difficulty()
     __asm {
         mov eax, dword ptr [ebp-0x00000150]
         fstp dword ptr [eax+OSU_BEATMAP_OD_OFFSET]
-        mov ebx, od_parameter.calculated_value
+        mov ebx, od_setting.calculated_value
         mov dword ptr [eax+OSU_BEATMAP_OD_OFFSET], ebx
         jmp [od_hook_jump_back]
     }
+}
+
+inline bool is_difficulty_setting_found(DifficultySetting *p)
+{
+    return p->found;
 }

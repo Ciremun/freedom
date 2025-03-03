@@ -210,19 +210,19 @@ static inline bool SliderFloat(const char* label, float* v, float v_min, float v
     return value_changed;
 }
 
-static void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
+static void parameter_slider(uintptr_t selected_song_ptr, DifficultySetting *p)
 {
-    const char *slider_fmt;
+    const char *fmt;
     if (!p->found)
     {
         ImGui::BeginDisabled();
-        slider_fmt = p->error_message;
+        fmt = p->error;
     }
     else
     {
-        slider_fmt = p->slider_fmt;
+        fmt = p->fmt;
     }
-    if (!p->lock)
+    if (!p->enabled)
     {
         if (p->found && selected_song_ptr)
         {
@@ -233,16 +233,16 @@ static void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
                 internal_memory_read(g_process, param_ptr, &p->value);
             }
         }
-        ImGui::PushID(slider_fmt);
+        ImGui::PushID(fmt);
         ImGui::BeginDisabled();
-        SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
+        SliderFloat("", &p->value, .0f, 11.0f, fmt);
         ImGui::EndDisabled();
         ImGui::PopID();
     }
     else
     {
-        ImGui::PushID(slider_fmt);
-        if (SliderFloat("", &p->value, .0f, 11.0f, slider_fmt))
+        ImGui::PushID(fmt);
+        if (SliderFloat("", &p->value, .0f, 11.0f, fmt))
             p->apply_mods();
         ImGui::PopID();
         if (ImGui::IsItemDeactivatedAfterEdit())
@@ -250,9 +250,9 @@ static void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     }
     ImGui::SameLine();
     ImGui::PushID(p->offset);
-    if (ImGui::Checkbox("", &p->lock))
+    if (ImGui::Checkbox("", &p->enabled))
     {
-        p->lock ? p->enable() : p->disable();
+        p->enabled ? p->enable() : p->disable();
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
     ImGui::PopID();
@@ -336,7 +336,7 @@ void update_ui()
             ImGui::EndDisabled();
         };
 
-        update_tab("Difficulty", MenuTab::Difficulty, ar_parameter.lock || cs_parameter.lock || od_parameter.lock);
+        update_tab("Difficulty", MenuTab::Difficulty, ar_setting.enabled || cs_setting.enabled || od_setting.enabled);
 
         beatmap_onload_offset ? update_tab("Relax",  MenuTab::Relax, cfg_relax_lock)  : inactive_tab("Relax");
         beatmap_onload_offset ? update_tab("Aimbot", MenuTab::Aimbot, cfg_aimbot_lock) : inactive_tab("Aimbot");
@@ -361,11 +361,10 @@ void update_ui()
         if (selected_tab == MenuTab::Difficulty)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetFontSize() * .25f, ImGui::GetFontSize() * .25f));
-            parameter_slider(selected_song_ptr, &ar_parameter);
-            parameter_slider(selected_song_ptr, &cs_parameter);
-            parameter_slider(selected_song_ptr, &od_parameter);
+            parameter_slider(selected_song_ptr, &ar_setting);
+            parameter_slider(selected_song_ptr, &cs_setting);
+            parameter_slider(selected_song_ptr, &od_setting);
             ImGui::PopStyleVar();
-            ImGui::Text("Hello!");
         }
         if (selected_tab == MenuTab::Relax)
         {

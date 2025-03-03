@@ -6,23 +6,23 @@
 #include "legacy/scan.h"
 #include "legacy/struct_offsets.h"
 
-struct Parameter
+struct DifficultySetting
 {
-    bool lock;
+    bool enabled;
     float value;
     float calculated_value;
     uintptr_t offset;
-    const char *slider_fmt;
-    const char *error_message;
+    const char *fmt;
+    const char *error;
     void (*enable)();
     void (*disable)();
     void (*apply_mods)();
     bool found = false;
 };
 
-extern Parameter ar_parameter;
-extern Parameter cs_parameter;
-extern Parameter od_parameter;
+extern DifficultySetting ar_setting;
+extern DifficultySetting cs_setting;
+extern DifficultySetting od_setting;
 
 extern Hook<Detour32> ApproachRateHook1;
 extern Hook<Detour32> ApproachRateHook2;
@@ -64,3 +64,5 @@ void set_approach_rate();
 void set_approach_rate_2();
 void set_circle_size();
 void set_overall_difficulty();
+
+inline bool is_difficulty_setting_found(DifficultySetting *p);

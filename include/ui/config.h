@@ -5,10 +5,14 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "freedom.h"
-#include "memory.h"
+#ifdef FR_LAZER
+#include "lazer/features/difficulty.h"
+#else
+#include "legacy/features/difficulty.h"
+#endif // FR_LAZER
 
-#include "legacy/scan.h"
+#include "memory.h"
+#include "freedom.h"
 #include "ui/debug_log.h"
 
 extern int cfg_font_size;

@@ -46,7 +46,7 @@ void process_hitobject()
     {
         char selected_mods[64] = "Unknown";
         FR_INFO("mods updated: %s", selected_mods_ptr ? mods_to_string(*selected_mods_ptr, selected_mods) : "Unknown");
-        ar_parameter.apply_mods();
+        ar_setting.apply_mods();
         mods_updated = false;
     }
 
@@ -67,7 +67,7 @@ void process_hitobject()
             if (song_str_ptr != prev_song_str_ptr)
             {
                 float od = .0f;
-                if (internal_memory_read(g_process, selected_song + od_parameter.offset, &od))
+                if (internal_memory_read(g_process, selected_song + od_setting.offset, &od))
                 {
                     // TODO(Ciremun): check mods here
                     od_window = 80.f - 6.f * od;

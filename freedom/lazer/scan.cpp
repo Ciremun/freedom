@@ -2,8 +2,6 @@
 
 #define PATTERN_SCAN(out, signature, start) if (!out) out = pattern::find<signature>({ start, signature.size() })
 
-uintptr_t on_beatmap_changed_ptr = 0;
-
 struct CodeStart
 {
     const char *name;
@@ -44,21 +42,6 @@ static void scan_for_code_starts()
     }
 }
 
-#include "minhook.h"
-#include <inttypes.h>
-
-typedef void(__fastcall* on_beatmap_changed_t)(void *, void *);
-on_beatmap_changed_t on_beatmap_changed;
-
-void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
-{
-    uintptr_t new_value = *(uintptr_t *)((uintptr_t)_value_changed + 0x10);
-    uintptr_t beatmap_info = *(uintptr_t *)(new_value + 0x08);
-    uintptr_t beatmap_difficulty = *(uintptr_t *)(beatmap_info + 0x28);
-    *(float *)(beatmap_difficulty + 0x34) = 10.0f;
-    on_beatmap_changed(_this, _value_changed);
-}
-
 void init_hooks()
 {
     uintptr_t osu_game_dll_base = GetModuleBaseAddress(L"osu.Game.dll");
@@ -72,22 +55,5 @@ void init_hooks()
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
 
     scan_for_code_starts();
-    // TODO(Ciremun): use print macros
-    FR_INFO("on_beatmap_changed_ptr: %p", (void *)on_beatmap_changed_ptr);
-
-    if (on_beatmap_changed_ptr)
-    {
-        if (MH_CreateHook(reinterpret_cast<void**>(on_beatmap_changed_ptr), &hk_on_beatmap_changed, reinterpret_cast<void**>(&on_beatmap_changed)) != MH_OK) {
-            FR_ERROR("MH_CreateHook on_beatmap_changed_ptr");
-            goto ggs;
-        }
-
-        if (MH_EnableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK) {
-            FR_ERROR("MH_EnableHook on_beatmap_changed_ptr");
-            goto ggs;
-        }
-    }
-
-ggs:
-    return;
+    init_difficulty();
 }

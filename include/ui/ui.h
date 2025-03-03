@@ -5,8 +5,6 @@
 #include <d3d9.h>
 #include <d3d11.h>
 
-#include "legacy/scan.h"
-
 #include "ui/font.h"
 #include "ui/config.h"
 #include "ui/debug_log.h"
@@ -47,5 +45,4 @@ void init_imgui_styles();
 void init_imgui_fonts();
 void update_ui();
 void destroy_ui();
-// void parameter_slider(uintptr_t selected_song_ptr, Parameter *p);
 void draw_debug_log();

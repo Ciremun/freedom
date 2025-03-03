@@ -111,9 +111,9 @@ int main(int, char**)
 
     // Mock
     g_hwnd = glfwGetWin32Window(window);
-    ar_parameter.found = true;
-    cs_parameter.found = true;
-    od_parameter.found = true;
+    ar_setting.found = true;
+    cs_setting.found = true;
+    od_setting.found = true;
     beatmap_onload_offset = 1;
     selected_replay_offset = 1;
     memory_scan_progress = .0f;

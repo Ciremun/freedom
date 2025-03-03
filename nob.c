@@ -7,17 +7,17 @@
 #define NOB_STRIP_PREFIX
 #include "nob.h"
 
-#define LAZER_SOURCES  "freedom/lazer/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/lazer/*.cpp", \
-                       "freedom/lazer/features/*.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/lazer/*.cpp"
+#define LAZER_SOURCES  "freedom/*.cpp", "freedom/lazer/*.cpp", "freedom/lazer/features/*.cpp", \
+                       "vendor/imgui/*.cpp", "vendor/imgui/lazer/*.cpp"
 
-#define LEGACY_SOURCES "freedom/legacy/entrypoint/dll_main.cpp", "freedom/memory.cpp", "freedom/legacy/*.cpp", \
-                       "freedom/legacy/features/*.cpp", "freedom/ui/*.cpp", "vendor/imgui/*.cpp", "vendor/imgui/legacy/*.cpp"
+#define LEGACY_SOURCES "freedom/*.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", \
+                       "vendor/imgui/*.cpp", "vendor/imgui/legacy/*.cpp"
 
 #define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/lazer", "-Ivendor/imgui/legacy", "-Ivendor/minhook/include"
 
 #ifdef _MSC_VER
 #define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
-#define RELEASE_CXXFLAGS COMMON_CXXFLAGS, "-DNDEBUG", INCLUDE_CXXFLAGS, "-w", "-O2", "-MT", "-GL"
+#define RELEASE_CXXFLAGS COMMON_CXXFLAGS, "-DNDEBUG", INCLUDE_CXXFLAGS, "-W3", "-O2", "-MT", "-GL"
 #define DEBUG_CXXFLAGS COMMON_CXXFLAGS, INCLUDE_CXXFLAGS, "-W4", "-Od", "-Z7", "-MTd", "-FS"
 static const char *default_cxx = "cl.exe";
 #else

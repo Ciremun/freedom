@@ -91,7 +91,7 @@ inline bool all_code_starts_found()
 
 static inline bool some_feature_requires_update_mods_hook()
 {
-    return ar_parameter.lock || cs_parameter.lock || od_parameter.lock;
+    return ar_setting.enabled || cs_setting.enabled || od_setting.enabled;
 }
 
 static inline bool some_feature_requires_notify_hooks()
@@ -226,9 +226,9 @@ static void try_find_hook_offsets()
         ar_hook_jump_back = approach_rate_offsets[1] + 0x9;
         cs_hook_jump_back = circle_size_offsets[0] + 0x9;
         od_hook_jump_back = overall_difficulty_offsets[1] + 0x9;
-        ar_parameter.found = approach_rate_offsets[1] > 0 && approach_rate_offsets[2] > 0;
-        cs_parameter.found = circle_size_offsets[2] > 0;
-        od_parameter.found = overall_difficulty_offsets[1] > 0;
+        ar_setting.found = approach_rate_offsets[1] > 0 && approach_rate_offsets[2] > 0;
+        cs_setting.found = circle_size_offsets[2] > 0;
+        od_setting.found = overall_difficulty_offsets[1] > 0;
     }
     if (current_scene_code_start)
     {
