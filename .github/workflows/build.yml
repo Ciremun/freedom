@@ -19,7 +19,7 @@ jobs:
       - name: build
         shell: cmd
         run: |
-          for /f "delims=" %i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%i\VC\Auxiliary\Build\vcvarsall.bat" x64 && cl.exe nob.c && .\nob.exe
+          for /f "delims=" %%i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x64 && cl.exe nob.c && .\nob.exe
       - name: upload-lazer
         uses: actions/upload-artifact@v4
         with:
@@ -34,7 +34,7 @@ jobs:
       - name: build
         shell: cmd
         run: |
-          for /f "delims=" %i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%i\VC\Auxiliary\Build\vcvarsall.bat" x86 && cl.exe nob.c && .\nob.exe
+          for /f "delims=" %%i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x86 && cl.exe nob.c && .\nob.exe
       - name: upload-legacy
         uses: actions/upload-artifact@v4
         with:
