@@ -11,8 +11,10 @@
 #include "ui/colors.h"
 
 #include "imgui.h"
+#ifndef FR_LAZER
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_dx9.h"
+#endif // FR_LAZER
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 #include "imgui_internal.h"

@@ -230,8 +230,3 @@ __declspec(naked) void set_overall_difficulty()
         jmp [od_hook_jump_back]
     }
 }
-
-inline bool is_difficulty_setting_found(DifficultySetting *p)
-{
-    return p->found;
-}

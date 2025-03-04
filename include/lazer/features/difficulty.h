@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "minhook.h"
+#include "minhook/minhook.h"
 
 #include "ui/debug_log.h"
 
@@ -34,5 +34,3 @@ void apply_mods_cs();
 void enable_od_hooks();
 void disable_od_hooks();
 void apply_mods_od();
-
-inline bool is_difficulty_setting_found(DifficultySetting *p);

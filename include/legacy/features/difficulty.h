@@ -64,5 +64,3 @@ void set_approach_rate();
 void set_approach_rate_2();
 void set_circle_size();
 void set_overall_difficulty();
-
-inline bool is_difficulty_setting_found(DifficultySetting *p);

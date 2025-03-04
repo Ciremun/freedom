@@ -13,12 +13,12 @@
 #define LEGACY_SOURCES "freedom/*.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", \
                        "vendor/imgui/*.cpp", "vendor/imgui/legacy/*.cpp"
 
-#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui", "-Ivendor/imgui/lazer", "-Ivendor/imgui/legacy", "-Ivendor/minhook/include"
+#define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui"
 
 #ifdef _MSC_VER
-#define COMMON_CXXFLAGS "-nologo", "-EHsc", "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-std:c++latest"
-#define RELEASE_CXXFLAGS COMMON_CXXFLAGS, "-DNDEBUG", INCLUDE_CXXFLAGS, "-W3", "-O2", "-MT", "-GL"
-#define DEBUG_CXXFLAGS COMMON_CXXFLAGS, INCLUDE_CXXFLAGS, "-W4", "-Od", "-Z7", "-MTd", "-FS"
+#define COMMON_CXXFLAGS "-D_CRT_SECURE_NO_WARNINGS", "-DWIN32_LEAN_AND_MEAN", "-DUNICODE", "-nologo", "-EHsc", "-std:c++latest"
+#define RELEASE_CXXFLAGS COMMON_CXXFLAGS, "-DNDEBUG", "-W3", "-O2", "-MT", "-GL", INCLUDE_CXXFLAGS
+#define DEBUG_CXXFLAGS COMMON_CXXFLAGS, "-W4", "-Od", "-Z7", "-MTd", "-FS", INCLUDE_CXXFLAGS
 static const char *default_cxx = "cl.exe";
 #else
 #define RELEASE_CXXFLAGS "-Wall", "-Wextra", "-pedantic", "-std=c++20", "-O3", "-DNDEBUG", INCLUDE_CXXFLAGS
@@ -77,13 +77,14 @@ static bool build_lazer(Cmd *cmd)
         cmd_append(cmd, RELEASE_CXXFLAGS);
     else
         cmd_append(cmd, DEBUG_CXXFLAGS);
+    cmd_append(cmd, "-Ivendor/imgui/lazer");
     cmd_append(cmd, LAZER_SOURCES);
 #ifdef _MSC_VER
     cmd_append(cmd, "-MP");
     if (!*debug)
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/minhook.x64.mt.lib");
     else
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-DEBUG", "-MACHINE:x64", "vendor/minhook/lib/libMinHook.x64.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-DEBUG", "-MACHINE:x64", "vendor/minhook/minhook.x64.mtd.lib");
 #else
     UNREACHABLE("freedom-lazer: Not Implemented");
 #endif // _MSC_VER
@@ -103,6 +104,7 @@ static bool build_legacy(Cmd *cmd)
         cmd_append(cmd, RELEASE_CXXFLAGS);
     else
         cmd_append(cmd, DEBUG_CXXFLAGS);
+    cmd_append(cmd, "-Ivendor/imgui/legacy");
     cmd_append(cmd, LEGACY_SOURCES);
 #ifdef _MSC_VER
     // cmd_append(cmd, "-MP");

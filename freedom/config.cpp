@@ -73,11 +73,11 @@ const char *get_imgui_ini_filename(HMODULE hMod)
     return (const char *)&module_path_u8;
 }
 
-static void ConfigHandler_ClearAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
-static void ConfigHandler_ApplyAll(ImGuiContext *ctx, ImGuiSettingsHandler *) {}
-static void *ConfigHandler_ReadOpen(ImGuiContext *, ImGuiSettingsHandler *, const char *name) { return (void *)1; }
+static void ConfigHandler_ClearAll(ImGuiContext *, ImGuiSettingsHandler *) {}
+static void ConfigHandler_ApplyAll(ImGuiContext *, ImGuiSettingsHandler *) {}
+static void *ConfigHandler_ReadOpen(ImGuiContext *, ImGuiSettingsHandler *, const char *) { return (void *)1; }
 
-static void ConfigHandler_WriteAll(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf)
+static void ConfigHandler_WriteAll(ImGuiContext *, ImGuiSettingsHandler *handler, ImGuiTextBuffer *buf)
 {
     buf->reserve(buf->size() + (1 + 4) * 2);
     buf->appendf("[%s][%s]\n", handler->TypeName, "Settings");

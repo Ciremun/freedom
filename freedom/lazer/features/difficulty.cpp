@@ -82,8 +82,3 @@ void apply_mods_cs() {}
 void enable_od_hooks() { enable_on_beatmap_changed_hook(); }
 void disable_od_hooks() { disable_on_beatmap_changed_hook(); }
 void apply_mods_od() {}
-
-inline bool is_difficulty_setting_found(DifficultySetting *p)
-{
-    return on_beatmap_changed_ptr != 0;
-}

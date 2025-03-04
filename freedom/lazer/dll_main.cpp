@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "minhook.h"
+#include "minhook/minhook.h"
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
