@@ -476,19 +476,13 @@ void update_ui()
             ImGui::PopID();
             ImGui::Dummy(ImVec2(.0f, 5.f));
             if (!cfg_score_multiplier_enabled)
-            {
-                ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
-            }
+                ImGui::BeginDisabled();
             SliderFloat("##score_multiplier", &cfg_score_multiplier_value, .0f, 100.f, "Score Multiplier: %.0f");
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("Hold Ctrl To Set a Custom Value");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             if (!cfg_score_multiplier_enabled)
-            {
-                ImGui::PopStyleColor();
-                ImGui::PopItemFlag();
-            }
+                ImGui::EndDisabled();
             if (!score_multiplier_found)
                 ImGui::EndDisabled();
         }
