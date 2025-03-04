@@ -96,31 +96,6 @@ inline void init_imgui_fonts()
     }
 }
 
-#ifdef FR_LAZER
-void init_ui(ID3D11Device* p_device, ID3D11DeviceContext* p_context)
-{
-#ifdef FR_DEBUG
-    IMGUI_CHECKVERSION();
-#endif // FR_DEBUG
-    ImGuiContext* ctx = ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-
-    ctx->SettingsHandlers.clear();
-
-    set_imgui_ini_handler();
-    io.IniFilename = get_imgui_ini_filename(g_module);
-    if (io.IniFilename == 0)
-        FR_ERROR("Couldn't get config path");
-    else
-        ImGui::LoadIniSettingsFromDisk(io.IniFilename);
-
-    init_imgui_fonts();
-    init_imgui_styles();
-
-    ImGui_ImplWin32_Init(g_hwnd);
-    ImGui_ImplDX11_Init(p_device, p_context);
-}
-#else
 void init_ui()
 {
     oWndProc = SetWindowsHookExA(WH_GETMESSAGE, &WndProc, GetModuleHandleA(nullptr), GetCurrentThreadId());
@@ -172,7 +147,6 @@ void init_ui(IDirect3DDevice9* pDevice)
     ImGui_ImplWin32_Init(g_hwnd);
     ImGui_ImplDX9_Init(pDevice);
 }
-#endif // FR_LAZER
 
 static void colored_if_null(const char *label, uintptr_t ptr, bool draw_label = true)
 {
@@ -266,7 +240,6 @@ void update_ui()
     if (!cfg_mod_menu_visible)
         return;
 
-#ifndef FR_LAZER
     if (selected_song_ptr)
     {
         uintptr_t song_str_ptr = 0;
@@ -292,7 +265,6 @@ void update_ui()
             }
         }
     }
-#endif // FR_LAZER
 
     ImGui::PushFont(font);
 
