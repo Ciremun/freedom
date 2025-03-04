@@ -37,10 +37,9 @@ static void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
     uintptr_t new_value = *(uintptr_t *)((uintptr_t)_value_changed + 0x10);
     uintptr_t beatmap_info = *(uintptr_t *)(new_value + 0x08);
     uintptr_t beatmap_difficulty = *(uintptr_t *)(beatmap_info + 0x28);
-    if (ar_setting.enabled)
-        *(float *)(beatmap_difficulty + 0x34) = ar_setting.value;
-    else
-        ar_setting.value = *(float *)(beatmap_difficulty + 0x34);
+    ar_setting.enabled ? *(float *)(beatmap_difficulty + 0x34) = ar_setting.value : ar_setting.value = *(float *)(beatmap_difficulty + 0x34);
+    cs_setting.enabled ? *(float *)(beatmap_difficulty + 0x2C) = cs_setting.value : cs_setting.value = *(float *)(beatmap_difficulty + 0x2C);
+    od_setting.enabled ? *(float *)(beatmap_difficulty + 0x30) = od_setting.value : od_setting.value = *(float *)(beatmap_difficulty + 0x30);
     on_beatmap_changed(_this, _value_changed);
 }
 
