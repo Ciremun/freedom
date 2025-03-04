@@ -8,6 +8,7 @@ static on_beatmap_changed_t on_beatmap_changed;
 DifficultySetting ar_setting = {
     true,                   // lock
     10.0f,                  // value
+    "AR",                   // label
     "AR: %.1f",             // fmt
     enable_ar_hooks,        // enable
     disable_ar_hooks,       // disable
@@ -16,6 +17,7 @@ DifficultySetting ar_setting = {
 DifficultySetting cs_setting = {
     false,                  // lock
     4.0f,                   // value
+    "CS",                   // label
     "CS: %.1f",             // fmt
     enable_cs_hooks,        // enable
     disable_cs_hooks,       // disable
@@ -24,6 +26,7 @@ DifficultySetting cs_setting = {
 DifficultySetting od_setting = {
     false,                  // lock
     8.0f,                   // value
+    "OD",                   // label
     "OD: %.1f",             // fmt
     enable_od_hooks,        // enable
     disable_od_hooks,       // disable

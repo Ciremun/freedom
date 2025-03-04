@@ -142,13 +142,13 @@ static void SliderDifficultySetting(DifficultySetting *p)
     }
     ImGui::PopID(); // PushID(p->fmt)
     ImGui::SameLine();
-    // ImGui::PushID(p->fmt);
-    if (ImGui::Checkbox("##ar_change", &p->enabled))
+    ImGui::PushID(p->label);
+    if (ImGui::Checkbox("", &p->enabled))
     {
         p->enabled ? p->enable() : p->disable();
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
     }
-    // ImGui::PopID(); // PushID(p->fmt)
+    ImGui::PopID(); // PushID(p->label)
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
 
@@ -218,25 +218,15 @@ void update_ui()
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetFontSize() * .25f, ImGui::GetFontSize() * .25f));
             SliderDifficultySetting(&ar_setting);
-            // SliderDifficultySetting(&cs_setting);
-            // SliderDifficultySetting(&od_setting);
+            SliderDifficultySetting(&cs_setting);
+            SliderDifficultySetting(&od_setting);
             ImGui::PopStyleVar();
         }
-        if (selected_tab == MenuTab::Relax)
-        {
-        }
-        if (selected_tab == MenuTab::Aimbot)
-        {
-        }
-        if (selected_tab == MenuTab::Timewarp)
-        {
-        }
-        if (selected_tab == MenuTab::Replay)
-        {
-        }
-        if (selected_tab == MenuTab::Mods)
-        {
-        }
+        if (selected_tab == MenuTab::Relax) {}
+        if (selected_tab == MenuTab::Aimbot) {}
+        if (selected_tab == MenuTab::Timewarp) {}
+        if (selected_tab == MenuTab::Replay) {}
+        if (selected_tab == MenuTab::Mods) {}
         if (selected_tab == MenuTab::Misc)
         {
             static char preview_font_size[16] = {0};

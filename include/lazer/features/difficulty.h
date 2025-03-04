@@ -10,6 +10,7 @@ struct DifficultySetting
 {
     bool enabled;
     float value;
+    const char *label;
     const char *fmt;
     void (*enable)();
     void (*disable)();
