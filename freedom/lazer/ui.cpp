@@ -231,6 +231,7 @@ void update_ui()
         {
             static char preview_font_size[16] = {0};
             stbsp_snprintf(preview_font_size, 16, "Font Size: %dpx", (int)ImGui::GetFontSize());
+            ImGui::PushItemWidth(ImGui::GetFontSize() * 16.f);
             if (ImGui::BeginCombo("##font_size", preview_font_size, ImGuiComboFlags_HeightLargest))
             {
                 const ImGuiIO& io = ImGui::GetIO();
