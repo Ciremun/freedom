@@ -76,9 +76,7 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
 
 ### Build options
 
-clean debug build with console log, run osu! and inject
-
-    nob.exe -rebuild -debug -console -run
+    nob.exe -help
 
 ## Thank
 
