@@ -12,18 +12,33 @@ on:
       - 'vendor/**'
 
 jobs:
-  windows-msvc:
+  windows-msvc-lazer:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: build
         shell: cmd
         run: |
-          nobuild.exe
-      - name: freedom
+          for /f "delims=" %i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%i\VC\Auxiliary\Build\vcvarsall.bat" x64 && cl.exe nob.c && .\nob.exe
+      - name: upload-lazer
         uses: actions/upload-artifact@v4
         with:
-          name: freedom
+          name: freedom-lazer
           path: |
-            freedom_injector.exe
-            freedom.dll
+            injector-lazer.exe
+            freedom-lazer.dll
+  windows-msvc-legacy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        shell: cmd
+        run: |
+          for /f "delims=" %i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do call "%i\VC\Auxiliary\Build\vcvarsall.bat" x86 && cl.exe nob.c && .\nob.exe
+      - name: upload-legacy
+        uses: actions/upload-artifact@v4
+        with:
+          name: freedom-legacy
+          path: |
+            injector-legacy.exe
+            freedom-legacy.dll
