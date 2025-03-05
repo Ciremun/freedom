@@ -46,6 +46,9 @@ void init_ui(IDirect3DDevice9* pDevice);
 #endif // FR_LAZER
 void init_imgui_styles();
 void init_imgui_fonts();
-void update_ui();
-void destroy_ui();
 void draw_debug_log();
+void update_ui();
+
+#ifndef FR_LAZER
+void destroy_ui();
+#endif // FR_LAZER

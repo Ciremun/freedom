@@ -248,6 +248,17 @@ void update_ui()
                 ImGui::EndCombo();
             }
             ImGui::PopItemWidth();
+            ImGui::Dummy(ImVec2(.0f, 10.f));
+            // TODO(Ciremun): rescan impl
+            // if (ImGui::Button("Rescan Memory"))
+            // {
+            //     destroy_hooks_except_swap();
+            //     CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0 ,0));
+            // }
+            // ImGui::SameLine(.0f, ImGui::GetFontSize());
+            if (ImGui::Button("Unload DLL"))
+                unload_dll();
+            ImGui::Dummy(ImVec2(.0f, 5.f));
         }
         if (selected_tab == MenuTab::About)
         {
@@ -258,10 +269,6 @@ void update_ui()
     }
     ImGui::End(); // freedom
     ImGui::PopFont();
-}
-
-void destroy_ui()
-{
 }
 
 void draw_debug_log()

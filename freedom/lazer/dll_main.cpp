@@ -20,6 +20,7 @@ typedef HRESULT(__stdcall* ResizeBuffers)(IDXGISwapChain*, UINT, UINT, UINT, DXG
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
+WNDPROC oWndProc = NULL;
 LPVOID g_config_path = NULL;
 
 bool init = false;
@@ -31,6 +32,33 @@ Present oPresent;
 Present pPresent;
 ResizeBuffers oResizeBuffers;
 ResizeBuffers pResizeBuffers;
+
+static DWORD WINAPI unload_dll_impl()
+{
+    Sleep(2000);
+
+    MH_Uninitialize();
+
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
+    if (pRenderTargetView) { pRenderTargetView->Release(); pRenderTargetView = NULL; }
+    if (pContext) { pContext->Release(); pContext = NULL; }
+    if (pDevice) { pDevice->Release(); pDevice = NULL; }
+    SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
+
+#ifdef FR_LOG_TO_CONSOLE
+    FreeConsole();
+#endif // FR_LOG_TO_CONSOLE
+    return 0;
+}
+
+void unload_dll()
+{
+    MH_DisableHook(MH_ALL_HOOKS);
+    CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)unload_dll_impl, 0, 0, 0));
+}
 
 static inline void imgui_new_frame()
 {
@@ -151,7 +179,6 @@ bool get_present_pointer()
     return true;
 }
 
-WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -235,50 +262,29 @@ DWORD WINAPI freedom_main(HMODULE hModule)
 
     MH_STATUS status = MH_Initialize();
     if (status != MH_OK) {
-        FR_ERROR("MH_Initialize");
+        FR_ERROR("Initialize");
         return 1;
     }
 
     if (MH_CreateHook(reinterpret_cast<void**>(pPresent), &hkPresent, reinterpret_cast<void**>(&oPresent)) != MH_OK) {
-        FR_ERROR("MH_CreateHook pPresent");
+        FR_ERROR("CreateHook pPresent");
         return 1;
     }
 
     if (MH_EnableHook(pPresent) != MH_OK) {
-        FR_ERROR("MH_EnableHook pPresent");
+        FR_ERROR("EnableHook pPresent");
         return 1;
     }
 
     if (MH_CreateHook(reinterpret_cast<void**>(pResizeBuffers), &hkResizeBuffers, reinterpret_cast<void**>(&oResizeBuffers)) != MH_OK) {
-        FR_ERROR("MH_CreateHook pResizeBuffers");
+        FR_ERROR("CreateHook pResizeBuffers");
         return 1;
     }
 
     if (MH_EnableHook(pResizeBuffers) != MH_OK) {
-        FR_ERROR("MH_EnableHook pResizeBuffers");
+        FR_ERROR("EnableHook pResizeBuffers");
         return 1;
     }
-
-    // if (MH_DisableHook(MH_ALL_HOOKS) != MH_OK) {
-    //     return 1;
-    // }
-    //
-    // if (MH_Uninitialize() != MH_OK) {
-    //     return 1;
-    // }
-
-    // ImGui_ImplDX11_Shutdown();
-    // ImGui_ImplWin32_Shutdown();
-    // ImGui::DestroyContext();
-
-    // if (pRenderTargetView) { pRenderTargetView->Release(); pRenderTargetView = NULL; }
-    // if (pContext) { pContext->Release(); pContext = NULL; }
-    // if (pDevice) { pDevice->Release(); pDevice = NULL; }
-    // SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
-
-// #ifdef FR_LOG_TO_CONSOLE
-//     FreeConsole();
-// #endif // FR_LOG_TO_CONSOLE
 
     return 0;
 }
