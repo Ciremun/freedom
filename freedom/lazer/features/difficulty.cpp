@@ -6,30 +6,24 @@ typedef void(__fastcall* on_beatmap_changed_t)(void *, void *);
 static on_beatmap_changed_t on_beatmap_changed;
 
 DifficultySetting ar_setting = {
-    true,                   // lock
-    10.0f,                  // value
-    "AR",                   // label
-    "AR: %.1f",             // fmt
-    enable_ar_hooks,        // enable
-    disable_ar_hooks,       // disable
+    true,       // enabled
+    10.0f,      // value
+    "AR",       // label
+    "AR: %.1f", // fmt
 };
 
 DifficultySetting cs_setting = {
-    false,                  // lock
-    4.0f,                   // value
-    "CS",                   // label
-    "CS: %.1f",             // fmt
-    enable_cs_hooks,        // enable
-    disable_cs_hooks,       // disable
+    false,      // enabled
+    4.0f,       // value
+    "CS",       // label
+    "CS: %.1f", // fmt
 };
 
 DifficultySetting od_setting = {
-    false,                  // lock
-    8.0f,                   // value
-    "OD",                   // label
-    "OD: %.1f",             // fmt
-    enable_od_hooks,        // enable
-    disable_od_hooks,       // disable
+    false,      // enabled
+    8.0f,       // value
+    "OD",       // label
+    "OD: %.1f", // fmt
 };
 
 static void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
@@ -43,44 +37,26 @@ static void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
     on_beatmap_changed(_this, _value_changed);
 }
 
-static inline bool some_feature_requires_on_beatmap_changed_hook()
-{
-    return ar_setting.enabled || cs_setting.enabled || od_setting.enabled;
-}
-
-static inline void enable_on_beatmap_changed_hook()
-{
-    if (MH_EnableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
-        FR_ERROR("MH_EnableHook on_beatmap_changed_ptr");
-}
-
-static inline void disable_on_beatmap_changed_hook()
-{
-    if (!some_feature_requires_on_beatmap_changed_hook() && MH_DisableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
-        FR_ERROR("MH_DisableHook on_beatmap_changed_ptr");
-}
-
 void init_difficulty()
 {
-    // TODO(Ciremun): use print macros
-    FR_INFO("on_beatmap_changed_ptr: %p", (void *)on_beatmap_changed_ptr);
+    FR_INFO("on_beatmap_changed_ptr: %" PRIXPTR, on_beatmap_changed_ptr);
     if (on_beatmap_changed_ptr)
     {
         if (MH_CreateHook(reinterpret_cast<void**>(on_beatmap_changed_ptr), &hk_on_beatmap_changed, reinterpret_cast<void**>(&on_beatmap_changed)) != MH_OK)
-            FR_ERROR("MH_CreateHook on_beatmap_changed_ptr");
-        else if (some_feature_requires_on_beatmap_changed_hook())
-            enable_on_beatmap_changed_hook();
+            FR_ERROR("CreateHook on_beatmap_changed_ptr");
+        else
+            enable_difficulty_hook();
     }
 }
 
-void enable_ar_hooks() { enable_on_beatmap_changed_hook(); }
-void disable_ar_hooks() { disable_on_beatmap_changed_hook(); }
-void apply_mods_ar() {}
+void enable_difficulty_hook()
+{
+    if (MH_EnableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
+        FR_ERROR("EnableHook on_beatmap_changed_ptr");
+}
 
-void enable_cs_hooks() { enable_on_beatmap_changed_hook(); }
-void disable_cs_hooks() { disable_on_beatmap_changed_hook(); }
-void apply_mods_cs() {}
-
-void enable_od_hooks() { enable_on_beatmap_changed_hook(); }
-void disable_od_hooks() { disable_on_beatmap_changed_hook(); }
-void apply_mods_od() {}
+void disable_difficulty_hook()
+{
+    if (MH_DisableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
+        FR_ERROR("DisableHook on_beatmap_changed_ptr");
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #include "minhook/minhook.h"
 
@@ -12,8 +13,6 @@ struct DifficultySetting
     float value;
     const char *label;
     const char *fmt;
-    void (*enable)();
-    void (*disable)();
 };
 
 extern DifficultySetting ar_setting;
@@ -23,15 +22,5 @@ extern DifficultySetting od_setting;
 extern uintptr_t on_beatmap_changed_ptr;
 
 void init_difficulty();
-
-void enable_ar_hooks();
-void disable_ar_hooks();
-void apply_mods_ar();
-
-void enable_cs_hooks();
-void disable_cs_hooks();
-void apply_mods_cs();
-
-void enable_od_hooks();
-void disable_od_hooks();
-void apply_mods_od();
+void enable_difficulty_hook();
+void disable_difficulty_hook();

@@ -134,8 +134,6 @@ static void SliderDifficultySetting(DifficultySetting *p)
     }
     else
     {
-        // if (SliderFloat("", &p->value, .0f, 11.0f, p->fmt))
-        //      p->apply_mods();
         SliderFloat("", &p->value, .0f, 11.0f, p->fmt);
         if (ImGui::IsItemDeactivatedAfterEdit())
             ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
@@ -144,10 +142,7 @@ static void SliderDifficultySetting(DifficultySetting *p)
     ImGui::SameLine();
     ImGui::PushID(p->label);
     if (ImGui::Checkbox("", &p->enabled))
-    {
-        p->enabled ? p->enable() : p->disable();
         ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-    }
     ImGui::PopID(); // PushID(p->label)
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
