@@ -223,7 +223,7 @@ int main(int argc, char **argv)
     if (!(cxx = getenv("CXX")))
         cxx = default_cxx;
 
-    Nob_String_Builder file = {0};
+    String_Builder file = {0};
     if (read_entire_file(".git/refs/heads/master", &file)) {
         memcpy(git_commit_hash, file.items, 7);
     }
