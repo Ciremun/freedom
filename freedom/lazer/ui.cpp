@@ -1,7 +1,7 @@
 #include "ui/ui.h"
 
 ImFont *font = 0;
-char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
+char song_name_u8[256] = "Freedom " FR_VERSION;
 
 inline void init_imgui_styles()
 {
