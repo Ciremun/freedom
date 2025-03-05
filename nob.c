@@ -224,7 +224,7 @@ int main(int argc, char **argv)
         cxx = default_cxx;
 
     String_Builder file = {0};
-    if (read_entire_file(".git/refs/heads/master", &file)) {
+    if (read_entire_file(".git/refs/heads/master", &file) && file.count >= 7) {
         memcpy(git_commit_hash, file.items, 7);
     }
 
