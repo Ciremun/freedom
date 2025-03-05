@@ -48,6 +48,34 @@ HMODULE g_module = NULL;
 LPVOID g_config_path = NULL;
 bool compatibility_mode = false;
 IDirect3DDevice9 *g_d3d9_device = 0;
+
+DifficultySetting ar_setting = {
+    true,                   // lock
+    10.0f,                  // value
+    "AR",                   // label
+    "AR: %.1f",             // fmt
+    [](){ FR_INFO("enable ar_setting"); },        // enable
+    [](){ FR_INFO("disable ar_setting"); },       // disable
+};
+
+DifficultySetting cs_setting = {
+    false,                  // lock
+    4.0f,                   // value
+    "CS",                   // label
+    "CS: %.1f",             // fmt
+    [](){ FR_INFO("enable cs_setting"); },        // enable
+    [](){ FR_INFO("disable cs_setting"); },       // disable
+};
+
+DifficultySetting od_setting = {
+    false,                  // lock
+    8.0f,                   // value
+    "OD",                   // label
+    "OD: %.1f",             // fmt
+    [](){ FR_INFO("enable od_setting"); },        // enable
+    [](){ FR_INFO("disable od_setting"); },       // disable
+};
+
 void unload_dll() {}
 
 static void glfw_error_callback(int error, const char* description)
@@ -85,7 +113,7 @@ int main(int, char**)
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Freedom Standalone", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "freedom-ui-demo", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -111,14 +139,6 @@ int main(int, char**)
 
     // Mock
     g_hwnd = glfwGetWin32Window(window);
-    ar_setting.found = true;
-    cs_setting.found = true;
-    od_setting.found = true;
-    beatmap_onload_offset = 1;
-    selected_replay_offset = 1;
-    memory_scan_progress = .0f;
-    od_window = 13.37f;
-    set_playback_rate_code_start = 1;
 
     for (int i = 0; i < (1 << 8); ++i)
         FR_INFO("%s %d\n", "Test Log", i);
@@ -155,28 +175,22 @@ int main(int, char**)
         if (ImGui::IsKeyPressed(ImGuiKey_F11, false))
             cfg_mod_menu_visible = !cfg_mod_menu_visible;
 
-        if (memory_scan_progress < 1.f)
-        {
-            memory_scan_progress += .15f * ImGui::GetIO().DeltaTime;
-            if (memory_scan_progress > 1.f)
-                memory_scan_progress = 1.f;
-        }
-
         draw_debug_log();
         update_ui();
 
-        ImGui::PushFont(debug_font);
-        ImGui::Begin("Style Editor");
-        ImGui::ShowStyleEditor();
-        ImGui::End();
+        // ImGui::PushFont(debug_font);
+        // ImGui::Begin("Style Editor");
+        // ImGui::ShowStyleEditor();
+        // ImGui::End();
 
-        ImGui::ShowAboutWindow();
+        // ImGui::ShowAboutWindow();
 
         static ImVec4 clear_color = BLACK;
-        ImGui::Begin("Background Color");
-        ImGui::ColorPicker4("##Color Picker", (float *)&clear_color);
-        ImGui::End();
-        ImGui::PopFont();
+
+        // ImGui::Begin("Background Color");
+        // ImGui::ColorPicker4("##Color Picker", (float *)&clear_color);
+        // ImGui::End();
+        // ImGui::PopFont();
 
         // Rendering
         ImGui::Render();

@@ -13,6 +13,10 @@
 #define LEGACY_SOURCES "freedom/*.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", \
                        "vendor/imgui/*.cpp", "vendor/imgui/legacy/*.cpp"
 
+#define DEMO_SOURCES "freedom/*.cpp", "freedom/lazer/ui.cpp", "freedom/demo/*.cpp", \
+                     "vendor/imgui/*.cpp", "vendor/imgui/demo/*.cpp", "vendor/imgui/legacy/*.cpp", \
+                     "vendor/imgui/lazer/*.cpp"
+
 #define INCLUDE_CXXFLAGS "-Iinclude", "-Ivendor", "-Ivendor/imgui"
 
 #ifdef _MSC_VER
@@ -72,7 +76,7 @@ static bool build_lazer(Cmd *cmd)
     if (*git_commit_hash) cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
     if (*console) cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
     if (*debug) cmd_append(cmd, "-DFR_DEBUG");
-    if (*lazer) cmd_append(cmd, "-DFR_LAZER");
+    cmd_append(cmd, "-DFR_LAZER");
     if (!*debug)
         cmd_append(cmd, RELEASE_CXXFLAGS);
     else
@@ -99,7 +103,6 @@ static bool build_legacy(Cmd *cmd)
     if (*git_commit_hash) cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
     if (*console) cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
     if (*debug) cmd_append(cmd, "-DFR_DEBUG");
-    if (*lazer) cmd_append(cmd, "-DFR_LAZER");
     if (!*debug)
         cmd_append(cmd, RELEASE_CXXFLAGS);
     else
@@ -118,15 +121,45 @@ static bool build_legacy(Cmd *cmd)
     return cmd_run_sync_and_reset(cmd);
 }
 
+static bool build_ui_demo(Cmd *cmd)
+{
+    nob_log(INFO, "BUILD: freedom-ui-demo");
+    cmd_append(cmd, cxx);
+    if (*git_commit_hash) cmd_append(cmd, temp_sprintf("-DGIT_COMMIT_HASH=%s", git_commit_hash));
+    if (*console) cmd_append(cmd, "-DFR_LOG_TO_CONSOLE");
+    if (*debug) cmd_append(cmd, "-DFR_DEBUG");
+    cmd_append(cmd, "-DFR_LAZER");
+    if (!*debug)
+        cmd_append(cmd, RELEASE_CXXFLAGS);
+    else
+        cmd_append(cmd, DEBUG_CXXFLAGS);
+    cmd_append(cmd, "-Ivendor/imgui/demo", "-Ivendor/imgui/legacy", "-Ivendor/imgui/lazer");
+    cmd_append(cmd, DEMO_SOURCES);
+#ifdef _MSC_VER
+    cmd_append(cmd, "-MP");
+    if (!*debug)
+        cmd_append(cmd, "-link", "-OUT:freedom-ui-demo.exe", "-LTCG", "-MACHINE:x64", "vendor/GLFW/glfw3.x64.mt.lib");
+    else
+        cmd_append(cmd, "-link", "-OUT:freedom-ui-demo.exe", "-DEBUG", "-MACHINE:x64", "vendor/GLFW/glfw3.x64.mt.lib");
+#else
+    UNREACHABLE("freedom-ui-demo: Not Implemented");
+#endif // _MSC_VER
+    return cmd_run_sync_and_reset(cmd);
+}
+
 static bool build()
 {
     Cmd cmd = {0};
+#ifndef _MSC_VER
     if (*lazer && *legacy)
         return build_lazer(&cmd) && build_legacy(&cmd);
+#endif // _MSC_VER
     if (*lazer)
         return build_lazer(&cmd);
     if (*legacy)
         return build_legacy(&cmd);
+    if (*demo)
+        return build_ui_demo(&cmd);
     UNREACHABLE("build");
 }
 
@@ -176,7 +209,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!*lazer && !*legacy) {
+    if (!*lazer && !*legacy && !*demo) {
 #if defined(_WIN64)
         *lazer = true;
 #elif defined(_WIN32)
@@ -195,9 +228,9 @@ int main(int argc, char **argv)
         memcpy(git_commit_hash, file.items, 7);
     }
 
-    build();
+    bool ok = build();
 
-    if (*run) {
+    if (*run && ok) {
         if (*lazer)
             run_executable("injector-lazer");
         if (*legacy)
