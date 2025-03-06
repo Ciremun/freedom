@@ -49,7 +49,7 @@ void init_hooks()
     {
         // TODO(Ciremun): offsets header
         BYTE ff = (BYTE)0xFF;
-        internal_memory_patch((BYTE *)(osu_game_dll_base + 0xBD38), &ff, sizeof(BYTE));
+        internal_memory_patch((BYTE *)(osu_game_dll_base + 0xBE84), &ff, sizeof(BYTE));
     }
     else
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
