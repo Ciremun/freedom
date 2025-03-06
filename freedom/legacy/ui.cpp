@@ -1,13 +1,13 @@
 #include "ui/ui.h"
 
 ImFont *font = 0;
+HHOOK oWndProc = 0;
 char song_name_u8[256] = "Freedom " FR_VERSION " is Loading!";
 
-HHOOK oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
 {
-    if (code > 0)
+    if (code < 0)
         return CallNextHookEx(oWndProc, code, wparam, lparam);
 
     MSG *message = (MSG *)lparam;
@@ -17,7 +17,7 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
         if (ImGui_ImplWin32_WndProcHandler(message->hwnd, message->message, message->wParam, message->lParam))
         {
             message->message = WM_NULL;
-            return 1;
+            return CallNextHookEx(oWndProc, code, wparam, lparam);
         }
     }
 
@@ -31,7 +31,7 @@ LRESULT __stdcall WndProc(int code, WPARAM wparam, LPARAM lparam)
          && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
         message->message = WM_NULL;
-        return 1;
+        return CallNextHookEx(oWndProc, code, wparam, lparam);
     }
 
     return CallNextHookEx(oWndProc, code, wparam, lparam);

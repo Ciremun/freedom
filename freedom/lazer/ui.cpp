@@ -1,7 +1,7 @@
 #include "ui/ui.h"
 
-HHOOK oWndProc;
 ImFont *font = 0;
+HHOOK oWndProc = 0;
 char song_name_u8[256] = "Freedom " FR_VERSION;
 
 static inline DWORD FindMessageLoopThread(DWORD processID) {
@@ -32,7 +32,7 @@ static inline DWORD FindMessageLoopThread(DWORD processID) {
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc(int code, WPARAM wparam, LPARAM lparam)
 {
-    if (code > 0)
+    if (code < 0)
         return CallNextHookEx(oWndProc, code, wparam, lparam);
 
     MSG *message = (MSG *)lparam;
@@ -42,13 +42,14 @@ LRESULT CALLBACK WndProc(int code, WPARAM wparam, LPARAM lparam)
         if (ImGui_ImplWin32_WndProcHandler(message->hwnd, message->message, message->wParam, message->lParam))
         {
             message->message = WM_NULL;
-            return 1;
+            return CallNextHookEx(oWndProc, code, wparam, lparam);
         }
     }
 
     if (message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
     {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+        ImGuiIO &io = ImGui::GetIO();
+        io.MouseDrawCursor = false;
         ImGui::ClosePopupsOverWindow(0, false);
     }
 
@@ -56,7 +57,7 @@ LRESULT CALLBACK WndProc(int code, WPARAM wparam, LPARAM lparam)
          && ((message->message >= WM_MOUSEFIRST && message->message <= WM_MOUSELAST) || message->message == WM_CHAR))
     {
         message->message = WM_NULL;
-        return 1;
+        return CallNextHookEx(oWndProc, code, wparam, lparam);
     }
 
     return CallNextHookEx(oWndProc, code, wparam, lparam);

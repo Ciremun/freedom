@@ -69,11 +69,12 @@ static inline void imgui_new_frame()
     }
 
     draw_debug_log();
-    ImGui::SetMouseCursor(ImGui::GetIO().WantCaptureMouse ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
+    ImGuiIO &io = ImGui::GetIO();
+    io.MouseDrawCursor = io.WantCaptureMouse;
 
     update_ui();
     if (!cfg_mod_menu_visible && !cfg_show_debug_log)
-        ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+        io.MouseDrawCursor = false;
 
     ImGui::EndFrame();
     ImGui::Render();
