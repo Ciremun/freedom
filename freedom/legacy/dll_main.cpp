@@ -25,18 +25,21 @@ void *pDeviceTable[D3DDEV9_LEN];
 
 bool compatibility_mode = false;
 
-static void unload_module()
+static DWORD WINAPI unload_dll_impl()
 {
     Sleep(2000);
-    VirtualFree(wglSwapBuffersGateway, 0, MEM_RELEASE);
-    FreeLibrary(g_module);
+    destroy_ui();
+    // FreeLibrary(g_module);
+#ifdef FR_LOG_TO_CONSOLE
+    FreeConsole();
+#endif // FR_LOG_TO_CONSOLE
+    return 0;
 }
 
 void unload_dll()
 {
-    destroy_ui();
     destroy_hooks();
-    std::thread(unload_module).detach();
+    CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)unload_dll_impl, 0, 0, 0));
 }
 
 static inline void imgui_new_frame()
