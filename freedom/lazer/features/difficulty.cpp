@@ -40,6 +40,7 @@ static inline bool system_string_u8(uintptr_t string, char *out, int size)
     return true;
 }
 
+// TODO(Ciremun): draw unicode stuff
 static inline bool update_song_name(uintptr_t difficulty_name, uintptr_t metadata)
 {
     assert(difficulty_name);
@@ -51,16 +52,16 @@ static inline bool update_song_name(uintptr_t difficulty_name, uintptr_t metadat
 
     char title[100] = {0};
     uintptr_t title_ = *(uintptr_t *)(metadata + 0x18);
-    uintptr_t title_unicode = *(uintptr_t *)(metadata + 0x20);
-    if (!system_string_u8(title_, title, IM_ARRAYSIZE(title)) &&
-        !system_string_u8(title_unicode, title, IM_ARRAYSIZE(title)))
+    // uintptr_t title_unicode = *(uintptr_t *)(metadata + 0x20);
+    if (!system_string_u8(title_, title, IM_ARRAYSIZE(title)))
+    // && !system_string_u8(title_unicode, title, IM_ARRAYSIZE(title)))
         return false;
 
     char artist[100] = {0};
     uintptr_t artist_ = *(uintptr_t *)(metadata + 0x28);
-    uintptr_t artist_unicode = *(uintptr_t *)(metadata + 0x30);
-    if (!system_string_u8(artist_, artist, IM_ARRAYSIZE(artist)) &&
-        !system_string_u8(artist_unicode, artist, IM_ARRAYSIZE(artist)))
+    // uintptr_t artist_unicode = *(uintptr_t *)(metadata + 0x30);
+    if (!system_string_u8(artist_, artist, IM_ARRAYSIZE(artist)))
+    // && !system_string_u8(artist_unicode, artist, IM_ARRAYSIZE(artist)))
         return false;
 
     ImFormatString(song_name_u8, IM_ARRAYSIZE(song_name_u8), "%s - %s [%s]", artist, title, difficulty);
