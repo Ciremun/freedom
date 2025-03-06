@@ -20,7 +20,6 @@ typedef HRESULT(__stdcall* ResizeBuffers)(IDXGISwapChain*, UINT, UINT, UINT, DXG
 HWND g_hwnd = NULL;
 HANDLE g_process = NULL;
 HMODULE g_module = NULL;
-WNDPROC oWndProc = NULL;
 LPVOID g_config_path = NULL;
 
 bool init = false;
@@ -39,14 +38,10 @@ static DWORD WINAPI unload_dll_impl()
 
     MH_Uninitialize();
 
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-
+    destroy_ui();
     if (pRenderTargetView) { pRenderTargetView->Release(); pRenderTargetView = NULL; }
     if (pContext) { pContext->Release(); pContext = NULL; }
     if (pDevice) { pDevice->Release(); pDevice = NULL; }
-    SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)(oWndProc));
 
 #ifdef FR_LOG_TO_CONSOLE
     FreeConsole();
@@ -179,15 +174,6 @@ bool get_present_pointer()
     return true;
 }
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
-        return true;
-
-    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-}
-
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
     if (!init)
     {
@@ -201,7 +187,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
         pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
         pDevice->CreateRenderTargetView(pBackBuffer, NULL, &pRenderTargetView);
         pBackBuffer->Release();
-        oWndProc = (WNDPROC)SetWindowLongPtr(g_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
         g_process = GetCurrentProcess();
         init_ui(pDevice, pContext);
         CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init_hooks, 0, 0, 0));

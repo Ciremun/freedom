@@ -48,7 +48,4 @@ void init_imgui_styles();
 void init_imgui_fonts();
 void draw_debug_log();
 void update_ui();
-
-#ifndef FR_LAZER
 void destroy_ui();
-#endif // FR_LAZER

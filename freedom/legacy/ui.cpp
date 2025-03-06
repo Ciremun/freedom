@@ -579,10 +579,10 @@ void update_ui()
 
 void destroy_ui()
 {
-    // ImGui_ImplOpenGL3_Shutdown();
-    // ImGui_ImplWin32_Shutdown();
-    // ImGui::DestroyContext();
     UnhookWindowsHookEx(oWndProc);
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void draw_debug_log()
