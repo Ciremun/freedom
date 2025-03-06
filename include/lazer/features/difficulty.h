@@ -5,6 +5,7 @@
 
 #include "minhook/minhook.h"
 
+#include "ui/ui.h"
 #include "ui/debug_log.h"
 
 struct DifficultySetting
