@@ -7,6 +7,7 @@
 
 #include "ui/ui.h"
 #include "ui/debug_log.h"
+#include "lazer/struct_offsets.h"
 
 struct DifficultySetting
 {
