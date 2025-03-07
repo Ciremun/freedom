@@ -26,6 +26,13 @@ DifficultySetting od_setting = {
     "OD: %.1f", // fmt
 };
 
+DifficultySetting hp_setting = {
+    false,      // enabled
+    8.0f,       // value
+    "HP",       // label
+    "HP: %.1f", // fmt
+};
+
 static inline bool system_string_u8(uintptr_t string, char *out, int size)
 {
     assert(string);
@@ -80,6 +87,7 @@ static void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
     ar_setting.enabled ? *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_AR_OFFSET) = ar_setting.value : ar_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_AR_OFFSET);
     cs_setting.enabled ? *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_CS_OFFSET) = cs_setting.value : cs_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_CS_OFFSET);
     od_setting.enabled ? *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_OD_OFFSET) = od_setting.value : od_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_OD_OFFSET);
+    hp_setting.enabled ? *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_HP_OFFSET) = hp_setting.value : hp_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_HP_OFFSET);
     on_beatmap_changed(_this, _value_changed);
 }
 

@@ -20,6 +20,7 @@ struct DifficultySetting
 extern DifficultySetting ar_setting;
 extern DifficultySetting cs_setting;
 extern DifficultySetting od_setting;
+extern DifficultySetting hp_setting;
 
 extern uintptr_t on_beatmap_changed_ptr;
 

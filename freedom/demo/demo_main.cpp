@@ -50,30 +50,31 @@ bool compatibility_mode = false;
 IDirect3DDevice9 *g_d3d9_device = 0;
 
 DifficultySetting ar_setting = {
-    true,                   // lock
+    true,                   // enabled
     10.0f,                  // value
     "AR",                   // label
     "AR: %.1f",             // fmt
-    [](){ FR_INFO("enable ar_setting"); },        // enable
-    [](){ FR_INFO("disable ar_setting"); },       // disable
 };
 
 DifficultySetting cs_setting = {
-    false,                  // lock
+    false,                  // enabled
     4.0f,                   // value
     "CS",                   // label
     "CS: %.1f",             // fmt
-    [](){ FR_INFO("enable cs_setting"); },        // enable
-    [](){ FR_INFO("disable cs_setting"); },       // disable
 };
 
 DifficultySetting od_setting = {
-    false,                  // lock
+    false,                  // enabled
     8.0f,                   // value
     "OD",                   // label
     "OD: %.1f",             // fmt
-    [](){ FR_INFO("enable od_setting"); },        // enable
-    [](){ FR_INFO("disable od_setting"); },       // disable
+};
+
+DifficultySetting hp_setting = {
+    false,                  // enabled
+    8.0f,                   // value
+    "HP",                   // label
+    "HP: %.1f",             // fmt
 };
 
 void unload_dll() {}

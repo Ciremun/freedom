@@ -290,6 +290,7 @@ void update_ui()
             SliderDifficultySetting(&ar_setting);
             SliderDifficultySetting(&cs_setting);
             SliderDifficultySetting(&od_setting);
+            SliderDifficultySetting(&hp_setting);
             ImGui::PopStyleVar();
         }
         if (selected_tab == MenuTab::Relax) {}
