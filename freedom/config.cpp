@@ -35,8 +35,6 @@ const char *get_imgui_ini_filename(HMODULE hMod)
     DWORD module_path_length = GetModuleFileNameW(hMod, module_path, MAX_PATH * 2);
     if (module_path_length == 0)
     {
-        FR_ERROR("GetModuleFileName (0x%X)", GetLastError());
-
         // NOTE(Ciremun): config path from freedom_injector
         extern LPVOID g_config_path;
         if (g_config_path == NULL)

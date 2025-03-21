@@ -70,7 +70,7 @@ DifficultySetting od_setting = {
     "OD: %.1f",             // fmt
 };
 
-DifficultySetting hp_setting = {
+DifficultySetting dr_setting = {
     false,                  // enabled
     8.0f,                   // value
     "HP",                   // label

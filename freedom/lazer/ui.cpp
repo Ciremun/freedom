@@ -262,7 +262,8 @@ void update_ui()
             ImGui::EndDisabled();
         };
 
-        update_tab("Difficulty", MenuTab::Difficulty, ar_setting.enabled || cs_setting.enabled || od_setting.enabled);
+        bool highlight_difficulty = ar_setting.enabled || cs_setting.enabled || od_setting.enabled || dr_setting.enabled;
+        update_tab("Difficulty", MenuTab::Difficulty, highlight_difficulty);
 
         false ? update_tab("Relax",  MenuTab::Relax, cfg_relax_lock)  : inactive_tab("Relax");
         false ? update_tab("Aimbot", MenuTab::Aimbot, cfg_aimbot_lock) : inactive_tab("Aimbot");
@@ -290,7 +291,7 @@ void update_ui()
             SliderDifficultySetting(&ar_setting);
             SliderDifficultySetting(&cs_setting);
             SliderDifficultySetting(&od_setting);
-            SliderDifficultySetting(&hp_setting);
+            SliderDifficultySetting(&dr_setting);
             ImGui::PopStyleVar();
         }
         if (selected_tab == MenuTab::Relax) {}

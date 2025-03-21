@@ -7,7 +7,7 @@
 #define NOB_STRIP_PREFIX
 #include "nob.h"
 
-#define LAZER_SOURCES  "freedom/*.cpp", "freedom/lazer/*.cpp", "freedom/lazer/features/*.cpp", \
+#define LAZER_SOURCES  "freedom/*.cpp", "freedom/lazer/*.cpp", "freedom/lazer/features/*.cpp", "freedom/lazer/events/*.cpp", \
                        "vendor/imgui/*.cpp", "vendor/imgui/lazer/*.cpp"
 
 #define LEGACY_SOURCES "freedom/*.cpp", "freedom/legacy/*.cpp", "freedom/legacy/features/*.cpp", \

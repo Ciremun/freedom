@@ -22,7 +22,7 @@ inline bool all_code_starts_found()
 
 static void scan_for_code_starts()
 {
-    int alignment = 16;
+    SIZE_T alignment = 16;
     _MEMORY_BASIC_INFORMATION mbi;
     for (uint8_t *p = (uint8_t *)0x700000000000; VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
     {
@@ -32,7 +32,7 @@ static void scan_for_code_starts()
         if (mbi.Protect != PAGE_EXECUTE_READ)
             continue;
 
-        for (unsigned int idx = 0; idx != mbi.RegionSize / alignment; ++idx)
+        for (SIZE_T idx = 0; idx != mbi.RegionSize / alignment; ++idx)
         {
             uint8_t *opcodes = (uint8_t *)((uintptr_t)mbi.BaseAddress + idx * alignment);
             PATTERN_SCAN(on_beatmap_changed_ptr, on_beatmap_changed_sig, opcodes);
@@ -42,18 +42,22 @@ static void scan_for_code_starts()
     }
 }
 
+static inline void patch_osu_game_dll(uintptr_t base)
+{
+    if (!base)
+        return;
+    // TODO(Ciremun): offsets header
+    BYTE ff = (BYTE)0xFF;
+    internal_memory_patch((BYTE *)(base + 0xBE84), &ff, sizeof(BYTE));
+}
+
 void init_hooks()
 {
     uintptr_t osu_game_dll_base = GetModuleBaseAddress(L"osu.Game.dll");
-    if (osu_game_dll_base != NULL)
-    {
-        // TODO(Ciremun): offsets header
-        BYTE ff = (BYTE)0xFF;
-        internal_memory_patch((BYTE *)(osu_game_dll_base + 0xBE84), &ff, sizeof(BYTE));
-    }
-    else
+    if (!osu_game_dll_base)
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
-
+    init_difficulty(osu_game_dll_base);
+    patch_osu_game_dll(osu_game_dll_base);
     scan_for_code_starts();
-    init_difficulty();
+    init_on_beatmap_changed();
 }
