@@ -77,7 +77,6 @@ static inline void imgui_new_frame()
         io.MouseDrawCursor = false;
 
     ImGui::EndFrame();
-    ImGui::Render();
 }
 
 bool get_present_pointer()
@@ -196,7 +195,11 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
     ImGui_ImplDX11_NewFrame();
     imgui_new_frame();
     pContext->OMSetRenderTargets(1, &pRenderTargetView, NULL);
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    if (cfg_mod_menu_visible || cfg_show_debug_log)
+    {
+        ImGui::Render();
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
     return oPresent(pSwapChain, SyncInterval, Flags);
 }
 
