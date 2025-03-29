@@ -56,10 +56,10 @@ static __declspec(noinline) void __fastcall hk_on_beatmap_changed(void *_this, v
     uintptr_t metadata = *(uintptr_t *)(beatmap_info + OSU_BEATMAP_INFO_METADATA_OFFSET);
     if (!update_song_name(difficulty_name, metadata))
         FR_ERROR("update_song_name failed");
-    // if (!ar_setting->enabled) ar_setting->value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_AR_OFFSET);
-    // if (!cs_setting->enabled) cs_setting->value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_CS_OFFSET);
-    // if (!od_setting->enabled) od_setting->value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_OD_OFFSET);
-    // if (!dr_setting->enabled) dr_setting->value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_HP_OFFSET);
+    if (!ar_setting.enabled) ar_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_AR_OFFSET);
+    if (!cs_setting.enabled) cs_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_CS_OFFSET);
+    if (!od_setting.enabled) od_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_OD_OFFSET);
+    if (!dr_setting.enabled) dr_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_DR_OFFSET);
     o_on_beatmap_changed(_this, _value_changed);
 }
 

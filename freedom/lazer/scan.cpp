@@ -47,6 +47,7 @@ static inline void patch_osu_game_dll(uintptr_t base)
     if (!base)
         return;
     // TODO(Ciremun): offsets header
+    // TODO(Ciremun): RVA Offset
     BYTE ff = (BYTE)0xFF;
     internal_memory_patch((BYTE *)(base + 0xBE84), &ff, sizeof(BYTE));
 }
