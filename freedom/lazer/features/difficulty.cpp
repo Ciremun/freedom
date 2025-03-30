@@ -82,7 +82,7 @@ void init_difficulty(uintptr_t base)
     ext[0].Pointer = &req;
 
     // TODO(Ciremun): VirtualAlloc2 alternative
-    uintptr_t methodBodyLoc = (uintptr_t)VirtualAlloc2(g_process, 0, sizeof(methodBody), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ, ext, 1);
+    uintptr_t methodBodyLoc = (uintptr_t)VirtualAlloc2(0, 0, sizeof(methodBody), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ, ext, 1);
     if (methodBodyLoc == NULL)
     {
         FR_ERROR("VirtualAlloc2: %d", GetLastError());
@@ -92,7 +92,7 @@ void init_difficulty(uintptr_t base)
     internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody));
 
     // TODO(Ciremun): RVA C header
-    // GetPlayableBeatmap RVA
+    // NOTE(Ciremun): GetPlayableBeatmap RVA
     DWORD *oldRVA = (DWORD *)(base + 0x2F4062);
     DWORD newRVA = (DWORD)(methodBodyLoc - base);
     FR_INFO("GetPlayableBeatmap old RVA: 0x%08" PRIX32, *oldRVA);
