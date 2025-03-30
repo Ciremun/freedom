@@ -1,3 +1,5 @@
+#pragma comment(lib, "onecore.lib")
+
 #include <windows.h>
 
 #include "minhook/minhook.h"
