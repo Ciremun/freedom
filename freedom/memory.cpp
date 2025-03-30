@@ -24,7 +24,7 @@ uintptr_t GetModuleBaseAddress(const wchar_t* modName)
     return modBaseAddr;
 }
 
-void internal_memory_patch(BYTE* dst, BYTE* src, unsigned int size)
+void internal_memory_patch(void *dst, void *src, unsigned int size)
 {
     DWORD oldprotect;
     VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);

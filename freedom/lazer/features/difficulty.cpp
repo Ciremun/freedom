@@ -51,6 +51,7 @@ void init_difficulty(uintptr_t base)
     }
 
     // NOTE(Ciremun): RVA boundcheck offset
+    // TODO(Ciremun): Patch it somewhere else
     // TODO(Ciremun): C header
     BYTE nop[] = { 0x90, 0x90 };
     internal_memory_patch((BYTE *)(coreclr_dll_base + 0x34F84), nop, sizeof(nop));
@@ -82,20 +83,20 @@ void init_difficulty(uintptr_t base)
     ext[0].Pointer = &req;
 
     // TODO(Ciremun): VirtualAlloc2 alternative
-    BYTE *methodBodyLoc = (BYTE *)VirtualAlloc2(g_process, 0, sizeof(methodBody), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ, ext, 1);
+    uintptr_t methodBodyLoc = (uintptr_t)VirtualAlloc2(g_process, 0, sizeof(methodBody), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ, ext, 1);
     if (methodBodyLoc == NULL)
     {
         FR_ERROR("VirtualAlloc2: %d", GetLastError());
         return;
     }
-    FR_INFO("GetPlayableBeatmap method body: %p", methodBodyLoc);
-    internal_memory_patch(methodBodyLoc, methodBody, sizeof(methodBody));
+    FR_INFO("GetPlayableBeatmap method body: %" PRIXPTR, methodBodyLoc);
+    internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody));
 
     // TODO(Ciremun): RVA C header
     // GetPlayableBeatmap RVA
-    BYTE *oldRVA = (BYTE *)((BYTE *)(base) + 0x2F4062);
-    DWORD newRVA = (DWORD)(methodBodyLoc - (BYTE *)(base));
-    FR_INFO("GetPlayableBeatmap old RVA: %04X", *(DWORD *)oldRVA);
-    FR_INFO("GetPlayableBeatmap new RVA: %04X", newRVA);
-    internal_memory_patch(oldRVA, (BYTE *)&newRVA, sizeof(DWORD));
+    DWORD *oldRVA = (DWORD *)(base + 0x2F4062);
+    DWORD newRVA = (DWORD)(methodBodyLoc - base);
+    FR_INFO("GetPlayableBeatmap old RVA: 0x%08" PRIX32, *oldRVA);
+    FR_INFO("GetPlayableBeatmap new RVA: 0x%08" PRIX32, newRVA);
+    internal_memory_patch(oldRVA, &newRVA, sizeof(DWORD));
 }

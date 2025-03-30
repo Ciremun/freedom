@@ -5,9 +5,10 @@
 #include <psapi.h>
 
 #include <stdint.h>
+#include <inttypes.h>
 
 uintptr_t GetModuleBaseAddress(const wchar_t* modName);
-void internal_memory_patch(BYTE *dst, BYTE *src, unsigned int size);
+void internal_memory_patch(void *dst, void *src, unsigned int size);
 
 template <typename T>
 int internal_memory_read(HANDLE hProc, uintptr_t base, T *buffer)
