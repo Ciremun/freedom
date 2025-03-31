@@ -29,13 +29,10 @@ static bool patch_rva_boundcheck()
         return false;
     }
     _MEMORY_BASIC_INFORMATION mbi;
-    for (uint8_t *p = (uint8_t *)(coreclr_dll_base + 0x30000); VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
+    for (uint8_t *p = (uint8_t *)(coreclr_dll_base + 0x30000); VirtualQuery(p, &mbi, sizeof(mbi)) && p < (uint8_t *)(coreclr_dll_base + 0x3FFFF); p += mbi.RegionSize)
     {
         if (mbi.State != MEM_COMMIT || mbi.Protect != PAGE_EXECUTE_READ)
             continue;
-
-        if (p >= (uint8_t *)(coreclr_dll_base + 0x3FFFF))
-            break;
 
         for (SIZE_T idx = 0; idx != mbi.RegionSize; ++idx)
         {
@@ -44,13 +41,13 @@ static bool patch_rva_boundcheck()
             constexpr auto test_rdi { pattern::build<"F6 47 14 01"> };
             if (pattern::find<test_rdi>({ opcodes, test_rdi.size() }))
             {
-                for (int cmd_rax_idx = 6; cmd_rax_idx < 32; ++cmd_rax_idx)
+                for (int cmp_rax_idx = 6; cmp_rax_idx < 32; ++cmp_rax_idx)
                 {
-                    if (pattern::find<cmp_rax>({ opcodes - cmd_rax_idx, cmp_rax.size() }))
+                    if (pattern::find<cmp_rax>({ opcodes - cmp_rax_idx, cmp_rax.size() }))
                     {
                         BYTE nop[] = { 0x90, 0x90 };
-                        internal_memory_patch(opcodes - cmd_rax_idx + cmp_rax.size(), nop, sizeof(nop));
-                        FR_INFO("RVA boundcheck found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmd_rax_idx + cmp_rax.size() - coreclr_dll_base));
+                        internal_memory_patch(opcodes - cmp_rax_idx + cmp_rax.size(), nop, sizeof(nop));
+                        FR_INFO("RVA boundcheck found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmp_rax_idx + cmp_rax.size() - coreclr_dll_base));
                         return true;
                     }
                 }
