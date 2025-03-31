@@ -20,16 +20,54 @@ inline bool all_code_starts_found()
     return true;
 }
 
+static bool patch_rva_boundcheck()
+{
+    uintptr_t coreclr_dll_base = GetModuleBaseAddress(L"coreclr.dll");
+    if (!coreclr_dll_base)
+    {
+        FR_ERROR("GetModuleBaseAddress coreclr.dll");
+        return false;
+    }
+    _MEMORY_BASIC_INFORMATION mbi;
+    for (uint8_t *p = (uint8_t *)(coreclr_dll_base + 0x30000); VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
+    {
+        if (mbi.State != MEM_COMMIT || mbi.Protect != PAGE_EXECUTE_READ)
+            continue;
+
+        if (p >= (uint8_t *)(coreclr_dll_base + 0x3FFFF))
+            break;
+
+        for (SIZE_T idx = 0; idx != mbi.RegionSize; ++idx)
+        {
+            uint8_t *opcodes = (uint8_t *)((uintptr_t)mbi.BaseAddress + idx);
+            constexpr auto cmp_rax { pattern::build<"48 83 38 00"> };
+            constexpr auto test_rdi { pattern::build<"F6 47 14 01"> };
+            if (pattern::find<test_rdi>({ opcodes, test_rdi.size() }))
+            {
+                for (int cmd_rax_idx = 6; cmd_rax_idx < 32; ++cmd_rax_idx)
+                {
+                    if (pattern::find<cmp_rax>({ opcodes - cmd_rax_idx, cmp_rax.size() }))
+                    {
+                        BYTE nop[] = { 0x90, 0x90 };
+                        internal_memory_patch(opcodes - cmd_rax_idx + cmp_rax.size(), nop, sizeof(nop));
+                        FR_INFO("RVA boundcheck found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmd_rax_idx + cmp_rax.size() - coreclr_dll_base));
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    FR_ERROR("patch_rva_boundcheck scan failed");
+    return false;
+}
+
 static void scan_for_code_starts()
 {
     SIZE_T alignment = 16;
     _MEMORY_BASIC_INFORMATION mbi;
     for (uint8_t *p = (uint8_t *)0x700000000000; VirtualQuery(p, &mbi, sizeof(mbi)); p += mbi.RegionSize)
     {
-        if (mbi.State != MEM_COMMIT)
-            continue;
-
-        if (mbi.Protect != PAGE_EXECUTE_READ)
+        if (mbi.State != MEM_COMMIT || mbi.Protect != PAGE_EXECUTE_READ)
             continue;
 
         for (SIZE_T idx = 0; idx != mbi.RegionSize / alignment; ++idx)
@@ -42,6 +80,7 @@ static void scan_for_code_starts()
     }
 }
 
+// NOTE(Ciremun): Breaks tiered compilation
 static inline void patch_osu_game_dll(uintptr_t base)
 {
     if (!base)
@@ -57,8 +96,13 @@ void init_hooks()
     uintptr_t osu_game_dll_base = GetModuleBaseAddress(L"osu.Game.dll");
     if (!osu_game_dll_base)
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
-    init_difficulty(osu_game_dll_base);
+
+    // NOTE(Ciremun): IL patches
+    if (patch_rva_boundcheck())
+        init_difficulty(osu_game_dll_base);
     patch_osu_game_dll(osu_game_dll_base);
+
+    // NOTE(Ciremun): Hooks
     scan_for_code_starts();
     init_on_beatmap_changed();
 }
