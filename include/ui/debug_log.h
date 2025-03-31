@@ -8,18 +8,18 @@
 
 #ifdef FR_LOG_TO_CONSOLE
     #define FR_INFO(fmt, ...) fprintf(stdout, fmt "\n", __VA_ARGS__)
-    #ifdef NDEBUG
+    #ifdef FR_DEBUG
         #define FR_ERROR(fmt, ...) fprintf(stderr, "[!] " fmt "\n", __VA_ARGS__)
     #else
         #define FR_ERROR(fmt, ...) fprintf(stderr, "[!] (%s) %s:%d: " fmt "\n", __FILE__, __FUNCSIG__, __LINE__, __VA_ARGS__)
-    #endif // NDEBUG
+    #endif // FR_DEBUG
 #else
-    #define FR_INFO(fmt, ...) debug_log.add(fmt, __VA_ARGS__)
-    #ifdef NDEBUG
-        #define FR_ERROR(fmt, ...) debug_log.add("[!] " fmt, __VA_ARGS__)
+    #define FR_INFO(fmt, ...) debug_log.add(false, fmt, __VA_ARGS__)
+    #ifdef FR_DEBUG
+        #define FR_ERROR(fmt, ...) debug_log.add(true, "[!] " fmt, __VA_ARGS__)
     #else
-        #define FR_ERROR(fmt, ...) debug_log.add("[!] (%s) %s:%d: " fmt, __FILE__, __FUNCSIG__, __LINE__, __VA_ARGS__)
-    #endif // NDEBUG
+        #define FR_ERROR(fmt, ...) debug_log.add(true, "[!] (%s) %s:%d: " fmt, __FILE__, __FUNCSIG__, __LINE__, __VA_ARGS__)
+    #endif // FR_DEBUG
 #endif // FR_LOG_TO_CONSOLE
 
 #define FR_PTR_INFO(...) FR_INFO("%-35.35s 0x%X", __VA_ARGS__)
@@ -35,7 +35,7 @@ struct ImGuiLogger
 
     void clear();
     void resize(const ImVec2 &new_size);
-    void add(const char *fmt, ...);
+    void add(bool error, const char *fmt, ...);
     void draw();
 };
 
