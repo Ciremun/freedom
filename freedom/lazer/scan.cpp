@@ -46,15 +46,14 @@ static bool patch_rva_boundcheck()
                     if (pattern::find<cmp_rax>({ opcodes - cmp_rax_idx, cmp_rax.size() }))
                     {
                         BYTE nop[] = { 0x90, 0x90 };
-                        internal_memory_patch(opcodes - cmp_rax_idx + cmp_rax.size(), nop, sizeof(nop));
-                        FR_INFO("RVA boundcheck found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmp_rax_idx + cmp_rax.size() - coreclr_dll_base));
-                        return true;
+                        FR_INFO("RVA boundcheck: found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmp_rax_idx + cmp_rax.size() - coreclr_dll_base));
+                        return internal_memory_patch(opcodes - cmp_rax_idx + cmp_rax.size(), nop, sizeof(nop));
                     }
                 }
             }
         }
     }
-    FR_ERROR("patch_rva_boundcheck scan failed");
+    FR_ERROR("RVA boundcheck: scan failed");
     return false;
 }
 
@@ -85,7 +84,8 @@ static inline void patch_osu_game_dll(uintptr_t base)
     // TODO(Ciremun): offsets header
     // TODO(Ciremun): RVA Offset
     BYTE ff = (BYTE)0xFF;
-    internal_memory_patch((BYTE *)(base + 0xBE84), &ff, sizeof(BYTE));
+    if (!internal_memory_patch((BYTE *)(base + 0xBE84), &ff, sizeof(BYTE)))
+        FR_ERROR("Failed to patch osu.Game.dll");
 }
 
 void init_hooks()
@@ -95,7 +95,9 @@ void init_hooks()
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
 
     // NOTE(Ciremun): IL patches
-    if (patch_rva_boundcheck())
+    if (!patch_rva_boundcheck())
+        FR_ERROR("Failed to patch RVA boundcheck");
+    else
         init_difficulty(osu_game_dll_base);
     patch_osu_game_dll(osu_game_dll_base);
 

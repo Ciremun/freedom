@@ -22,4 +22,4 @@ extern DifficultySetting cs_setting;
 extern DifficultySetting od_setting;
 extern DifficultySetting dr_setting;
 
-void init_difficulty(uintptr_t base);
+bool init_difficulty(uintptr_t base);

@@ -8,17 +8,17 @@
 #include <inttypes.h>
 
 uintptr_t GetModuleBaseAddress(const wchar_t* modName);
-void internal_memory_patch(void *dst, void *src, unsigned int size);
+bool internal_memory_patch(void *dst, void *src, unsigned int size);
 
 template <typename T>
-int internal_memory_read(HANDLE hProc, uintptr_t base, T *buffer)
+bool internal_memory_read(HANDLE hProc, uintptr_t base, T *buffer)
 {
     PSAPI_WORKING_SET_EX_INFORMATION info;
     info.VirtualAddress = (PVOID)base;
     if (QueryWorkingSetEx(hProc, &info, sizeof(info)) == 0)
-        return 0;
+        return false;
     if (!info.VirtualAttributes.Valid)
-        return 0;
+        return false;
     *buffer = *(T *)base;
-    return 1;
+    return true;
 }

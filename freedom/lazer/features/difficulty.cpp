@@ -38,7 +38,7 @@ DifficultySetting dr_setting = {
     "DR: %.1f", // fmt
 };
 
-void init_difficulty(uintptr_t base)
+bool init_difficulty(uintptr_t base)
 {
     if (!base)
         return;
@@ -73,10 +73,11 @@ void init_difficulty(uintptr_t base)
     if (methodBodyLoc == NULL)
     {
         FR_ERROR("VirtualAlloc2 failed: %d", GetLastError());
-        return;
+        return false;
     }
     FR_INFO("GetPlayableBeatmap method body: %" PRIXPTR, methodBodyLoc);
-    internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody));
+    if (!internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody)))
+        return false;
 
     // TODO(Ciremun): RVA C header
     // NOTE(Ciremun): GetPlayableBeatmap RVA
@@ -84,5 +85,8 @@ void init_difficulty(uintptr_t base)
     DWORD newRVA = (DWORD)(methodBodyLoc - base);
     FR_INFO("GetPlayableBeatmap old RVA: 0x%08" PRIX32, *oldRVA);
     FR_INFO("GetPlayableBeatmap new RVA: 0x%08" PRIX32, newRVA);
-    internal_memory_patch(oldRVA, &newRVA, sizeof(DWORD));
+    if (!internal_memory_patch(oldRVA, &newRVA, sizeof(DWORD)))
+        return false;
+
+    return true;
 }

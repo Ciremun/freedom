@@ -155,7 +155,8 @@ void init_ui(ID3D11Device* p_device, ID3D11DeviceContext* p_context)
 
 void destroy_ui()
 {
-    UnhookWindowsHookEx(oWndProc);
+    if (oWndProc)
+        UnhookWindowsHookEx(oWndProc);
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

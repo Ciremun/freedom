@@ -24,10 +24,13 @@ uintptr_t GetModuleBaseAddress(const wchar_t* modName)
     return modBaseAddr;
 }
 
-void internal_memory_patch(void *dst, void *src, unsigned int size)
+bool internal_memory_patch(void *dst, void *src, unsigned int size)
 {
     DWORD oldprotect;
-    VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect);
+    if (VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldprotect) == 0)
+        return false;
     memcpy(dst, src, size);
-    VirtualProtect(dst, size, oldprotect, &oldprotect);
+    if (VirtualProtect(dst, size, oldprotect, &oldprotect) == 0)
+        return false;
+    return true;
 }
