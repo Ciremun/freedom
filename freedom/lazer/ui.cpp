@@ -46,7 +46,7 @@ LRESULT CALLBACK WndProc(int code, WPARAM wparam, LPARAM lparam)
         }
     }
 
-    if (message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
+    if (cfg_mod_menu_visible && message->message == WM_LBUTTONUP && !ImGui::IsAnyItemHovered() && !ImGui::IsAnyItemFocused() && !ImGui::IsAnyItemActive())
     {
         ImGuiIO &io = ImGui::GetIO();
         io.MouseDrawCursor = false;
