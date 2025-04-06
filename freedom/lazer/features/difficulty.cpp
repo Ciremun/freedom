@@ -41,7 +41,7 @@ DifficultySetting dr_setting = {
 bool init_difficulty(uintptr_t base)
 {
     if (!base)
-        return;
+        return false;
 
     // TODO(Ciremun): Append instructions, Fix alignment
     BYTE methodBody[] = {
@@ -75,18 +75,31 @@ bool init_difficulty(uintptr_t base)
         FR_ERROR("VirtualAlloc2 failed: %d", GetLastError());
         return false;
     }
+
     FR_INFO("GetPlayableBeatmap method body: %" PRIXPTR, methodBodyLoc);
     if (!internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody)))
+    {
+        FR_ERROR("GetPlayableBeatmap method body patch failed");
         return false;
+    }
 
-    // TODO(Ciremun): RVA C header
-    // NOTE(Ciremun): GetPlayableBeatmap RVA
-    DWORD *oldRVA = (DWORD *)(base + 0x2F4062);
+    // TODO(Ciremun): C header
+    // NOTE(Ciremun): GetPlayableBeatmap Token
+    DWORD *oldRVA = (DWORD *)token_to_rva(base, 0x0600A290);
+    if (!oldRVA)
+    {
+        FR_ERROR("GetPlayableBeatmap Token to RVA failed");
+        return false;
+    }
     DWORD newRVA = (DWORD)(methodBodyLoc - base);
+
     FR_INFO("GetPlayableBeatmap old RVA: 0x%08" PRIX32, *oldRVA);
     FR_INFO("GetPlayableBeatmap new RVA: 0x%08" PRIX32, newRVA);
     if (!internal_memory_patch(oldRVA, &newRVA, sizeof(DWORD)))
+    {
+        FR_ERROR("GetPlayableBeatmap RVA patch failed");
         return false;
+    }
 
     return true;
 }

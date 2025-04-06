@@ -95,11 +95,14 @@ void init_hooks()
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
 
     // NOTE(Ciremun): IL patches
-    if (!patch_rva_boundcheck())
-        FR_ERROR("Failed to patch RVA boundcheck");
-    else
-        init_difficulty(osu_game_dll_base);
     patch_osu_game_dll(osu_game_dll_base);
+    if (patch_rva_boundcheck())
+    {
+        if (!init_difficulty(osu_game_dll_base))
+            FR_ERROR("Init Difficulty failed");
+    }
+    else
+        FR_ERROR("Failed to patch RVA boundcheck");
 
     // NOTE(Ciremun): Hooks
     scan_for_code_starts();
