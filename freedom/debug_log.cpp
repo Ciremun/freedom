@@ -20,13 +20,9 @@ void ImGuiLogger::clear()
     lines.clear();
 }
 
-void ImGuiLogger::add(bool error, const char *fmt, ...)
+void ImGuiLogger::add(const char *fmt, ...)
 {
     extern bool cfg_show_debug_log;
-#ifdef FR_DEBUG
-    if (error)
-        cfg_show_debug_log = true;
-#endif // FR_DEBUG
     if (!cfg_show_debug_log)
         return;
     if (lines.size() >= 1024)
