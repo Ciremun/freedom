@@ -151,7 +151,7 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "jump_window=%d", &jump_window_i) == 1)             cfg_jumping_window = jump_window_i;
     else if (sscanf(line, "show_debug=%d", &show_debug_i) == 1)               cfg_show_debug_log = show_debug_i;
 
-#ifdef FR_DEBUG
+#if defined(FR_DEBUG) && !defined(FR_LOG_TO_CONSOLE)
     cfg_show_debug_log = true;
 #endif // FR_DEBUG
 }
