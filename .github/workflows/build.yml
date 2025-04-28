@@ -2,14 +2,16 @@ name: build-freedom
 on:
   push:
     paths:
+    - 'nob.c'
     - 'freedom/**'
     - 'include/**'
     - 'vendor/**'
   workflow_dispatch:
     paths:
-      - 'freedom/**'
-      - 'include/**'
-      - 'vendor/**'
+    - 'nob.c'
+    - 'freedom/**'
+    - 'include/**'
+    - 'vendor/**'
 
 jobs:
   windows-msvc-lazer:
