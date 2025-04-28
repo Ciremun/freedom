@@ -108,8 +108,6 @@ static bool build_legacy(Cmd *cmd)
     else
         cmd_append(cmd, DEBUG_CXXFLAGS);
     cmd_append(cmd, "-Ivendor/imgui/legacy");
-    Cmd no_sources;
-    memcpy(&no_sources, cmd, sizeof(Cmd));
     cmd_append(cmd, LEGACY_SOURCES);
 #ifdef _MSC_VER
     // NOTE(Ciremun): Build compatible sources in parallel
@@ -123,8 +121,9 @@ static bool build_legacy(Cmd *cmd)
     if (!cmd_run_sync_and_reset(cmd))
         return false;
     // NOTE(Ciremun): Build incompatible CLR stuff
-    cmd_append(&no_sources, "-c", "freedom/legacy/clr/*.cpp");
-    if (!cmd_run_sync_and_reset(&no_sources))
+    cmd->count = 17;
+    cmd_append(cmd, "-c", "freedom/legacy/clr/*.cpp");
+    if (!cmd_run_sync_and_reset(cmd))
         return false;
     // NOTE(Ciremun): Link
     if (!*debug)
