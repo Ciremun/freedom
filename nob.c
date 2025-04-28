@@ -59,7 +59,7 @@ static bool build_injector(Cmd *cmd, const char *filename)
         if (!*debug)
             cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-LTCG");
         else
-            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-DEBUG");
+            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename));
 #else
         UNREACHABLE("build_injector: Not Implemented");
 #endif // _MSC_VER
@@ -88,7 +88,7 @@ static bool build_lazer(Cmd *cmd)
     if (!*debug)
         cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/minhook.x64.mt.lib");
     else
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-DEBUG", "-MACHINE:x64", "vendor/minhook/minhook.x64.mtd.lib");
+        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-lazer.dll", "-LTCG", "-MACHINE:x64", "vendor/minhook/minhook.x64.mtd.lib");
 #else
     UNREACHABLE("freedom-lazer: Not Implemented");
 #endif // _MSC_VER
@@ -108,13 +108,30 @@ static bool build_legacy(Cmd *cmd)
     else
         cmd_append(cmd, DEBUG_CXXFLAGS);
     cmd_append(cmd, "-Ivendor/imgui/legacy");
+    Cmd no_sources;
+    memcpy(&no_sources, cmd, sizeof(Cmd));
     cmd_append(cmd, LEGACY_SOURCES);
 #ifdef _MSC_VER
-    // cmd_append(cmd, "-MP");
+    // NOTE(Ciremun): Build compatible sources in parallel
+    File_Paths children = {0};
+    if (!read_entire_dir(".", &children))
+        return false;
+    for (size_t i = 0; i < children.count; ++i)
+        if (sv_end_with(sv_from_cstr(children.items[i]), ".obj"))
+            delete_file(children.items[i]);
+    cmd_append(cmd, "-MP", "-c");
+    if (!cmd_run_sync_and_reset(cmd))
+        return false;
+    // NOTE(Ciremun): Build incompatible CLR stuff
+    cmd_append(&no_sources, "-c", "freedom/legacy/clr/*.cpp");
+    if (!cmd_run_sync_and_reset(&no_sources))
+        return false;
+    // NOTE(Ciremun): Link
     if (!*debug)
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-legacy.dll", "-LTCG", "-MACHINE:x86");
+        cmd_append(cmd, "LINK", "*.obj", "-DLL", "-OUT:freedom-legacy.dll", "-LTCG", "-MACHINE:x86");
     else
-        cmd_append(cmd, "-link", "-DLL", "-OUT:freedom-legacy.dll", "-DEBUG", "-MACHINE:x86");
+        cmd_append(cmd, "LINK", "*.obj", "-DLL", "-OUT:freedom-legacy.dll", "-MACHINE:x86");
+    return cmd_run_sync_and_reset(cmd);
 #else
     UNREACHABLE("freedom-legacy: Not Implemented");
 #endif // _MSC_VER
@@ -140,7 +157,7 @@ static bool build_ui_demo(Cmd *cmd)
     if (!*debug)
         cmd_append(cmd, "-link", "-OUT:freedom-ui-demo.exe", "-LTCG", "-MACHINE:x64", "vendor/GLFW/glfw3.x64.mt.lib");
     else
-        cmd_append(cmd, "-link", "-OUT:freedom-ui-demo.exe", "-DEBUG", "-MACHINE:x64", "vendor/GLFW/glfw3.x64.mt.lib");
+        cmd_append(cmd, "-link", "-OUT:freedom-ui-demo.exe", "-MACHINE:x64", "vendor/GLFW/glfw3.x64.mt.lib");
 #else
     UNREACHABLE("freedom-ui-demo: Not Implemented");
 #endif // _MSC_VER
