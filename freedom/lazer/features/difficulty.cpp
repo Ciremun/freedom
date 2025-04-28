@@ -77,7 +77,7 @@ bool init_difficulty(uintptr_t base)
         return false;
     }
 
-    FR_INFO("GetPlayableBeatmap method body: %" PRIXPTR, methodBodyLoc);
+    FR_INFO("GetPlayableBeatmap new method body: %" PRIXPTR, methodBodyLoc);
     if (!internal_memory_patch((BYTE *)methodBodyLoc, methodBody, sizeof(methodBody)))
     {
         FR_ERROR("GetPlayableBeatmap method body patch failed");
