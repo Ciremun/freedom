@@ -50,16 +50,10 @@ static bool build_injector(Cmd *cmd, const char *filename)
     {
         nob_log(INFO, temp_sprintf("BUILD: %s", filename));
         cmd_append(cmd, cxx);
-        if (!*debug)
-            cmd_append(cmd, RELEASE_CXXFLAGS);
-        else
-            cmd_append(cmd, DEBUG_CXXFLAGS);
+        cmd_append(cmd, RELEASE_CXXFLAGS);
         cmd_append(cmd, "injector.cpp");
 #ifdef _MSC_VER
-        if (!*debug)
-            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-LTCG");
-        else
-            cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename));
+        cmd_append(cmd, "-link", temp_sprintf("-OUT:%s", filename), "-LTCG");
 #else
         UNREACHABLE("build_injector: Not Implemented");
 #endif // _MSC_VER
