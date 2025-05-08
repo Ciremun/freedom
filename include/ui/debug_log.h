@@ -8,14 +8,14 @@
 
 #ifdef FR_LOG_TO_CONSOLE
     #define FR_INFO(fmt, ...) fprintf(stdout, fmt "\n", __VA_ARGS__)
-    #ifdef FR_DEBUG
+    #ifndef FR_DEBUG
         #define FR_ERROR(fmt, ...) fprintf(stderr, "[!] " fmt "\n", __VA_ARGS__)
     #else
         #define FR_ERROR(fmt, ...) fprintf(stderr, "[!] (%s) %s:%d: " fmt "\n", __FILE__, __FUNCSIG__, __LINE__, __VA_ARGS__)
     #endif // FR_DEBUG
 #else
     #define FR_INFO(fmt, ...) debug_log.add(fmt, __VA_ARGS__)
-    #ifdef FR_DEBUG
+    #ifndef FR_DEBUG
         #define FR_ERROR(fmt, ...) debug_log.add("[!] " fmt, __VA_ARGS__)
     #else
         #define FR_ERROR(fmt, ...) debug_log.add("[!] (%s) %s:%d: " fmt, __FILE__, __FUNCSIG__, __LINE__, __VA_ARGS__)
