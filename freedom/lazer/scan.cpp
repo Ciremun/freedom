@@ -84,7 +84,7 @@ static inline void patch_osu_game_dll(uintptr_t base)
     // TODO(Ciremun): offsets header
     // TODO(Ciremun): RVA Offset
     BYTE ff = (BYTE)0xFF;
-    if (!internal_memory_patch((BYTE *)(base + 0xBE84), &ff, sizeof(BYTE)))
+    if (!internal_memory_patch((BYTE *)(base + 0xC36C), &ff, sizeof(BYTE)))
         FR_ERROR("Failed to patch osu.Game.dll");
 }
 
