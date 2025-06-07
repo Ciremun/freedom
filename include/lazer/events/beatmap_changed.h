@@ -14,5 +14,5 @@
 
 extern uintptr_t on_beatmap_changed_ptr;
 
-void init_on_beatmap_changed();
+void init_on_beatmap_changed(uintptr_t base);
 void enable_beatmap_changed_hook();

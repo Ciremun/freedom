@@ -76,18 +76,6 @@ static void scan_for_code_starts()
     }
 }
 
-// NOTE(Ciremun): Breaks tiered compilation
-static inline void patch_osu_game_dll(uintptr_t base)
-{
-    if (!base)
-        return;
-    // TODO(Ciremun): offsets header
-    // TODO(Ciremun): RVA Offset
-    BYTE ff = (BYTE)0xFF;
-    if (!internal_memory_patch((BYTE *)(base + 0xC36C), &ff, sizeof(BYTE)))
-        FR_ERROR("Failed to patch osu.Game.dll");
-}
-
 void init_hooks()
 {
     uintptr_t osu_game_dll_base = GetModuleBaseAddress(L"osu.Game.dll");
@@ -95,7 +83,6 @@ void init_hooks()
         FR_ERROR("GetModuleBaseAddress osu.Game.dll");
 
     // NOTE(Ciremun): IL patches
-    // patch_osu_game_dll(osu_game_dll_base);
     if (patch_rva_boundcheck())
     {
         if (!init_difficulty(osu_game_dll_base))
@@ -105,6 +92,6 @@ void init_hooks()
         FR_ERROR("Failed to patch RVA boundcheck");
 
     // NOTE(Ciremun): Hooks
-    // scan_for_code_starts();
-    // init_on_beatmap_changed();
+    scan_for_code_starts();
+    init_on_beatmap_changed(osu_game_dll_base);
 }

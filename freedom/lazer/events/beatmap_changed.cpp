@@ -4,6 +4,17 @@ typedef void(__fastcall* on_beatmap_changed_t)(void *, void *);
 static on_beatmap_changed_t o_on_beatmap_changed;
 uintptr_t on_beatmap_changed_ptr = 0;
 
+static inline void break_tiered_compilation(uintptr_t base)
+{
+    if (!base)
+        return;
+    // TODO(Ciremun): offsets header
+    // TODO(Ciremun): RVA Offset
+    BYTE ff = (BYTE)0xFF;
+    if (!internal_memory_patch((BYTE *)(base + 0xC36C), &ff, sizeof(BYTE)))
+        FR_ERROR("Failed break tiered compilation");
+}
+
 static inline bool system_string_u8(uintptr_t string, char *out, int size)
 {
     assert(string);
@@ -48,14 +59,15 @@ static inline bool update_song_name(uintptr_t difficulty_name, uintptr_t metadat
 // osu.Game.OsuGameBase, ValueChangedEvent<WorkingBeatmap>
 static __declspec(noinline) void __fastcall hk_on_beatmap_changed(void *_this, void *_value_changed)
 {
-    assert(_value_changed);
-    uintptr_t new_value = *(uintptr_t *)((uintptr_t)_value_changed + OSU_VALUE_CHANGED_NEW_VALUE_OFFSET); assert(new_value);
-    uintptr_t beatmap_info = *(uintptr_t *)(new_value + OSU_NEW_VALUE_BEATMAP_INFO_OFFSET); assert(beatmap_info);
+    assert(_this);
+    uintptr_t bindable = *(uintptr_t *)((uintptr_t)_this + OSU_GAME_BASE_BEATMAP_BINDABLE_OFFSET); assert(bindable);
+    uintptr_t value = *(uintptr_t *)((uintptr_t)bindable + OSU_BEATMAP_BINDABLE_VALUE_OFFSET); assert(value);
+    uintptr_t beatmap_info = *(uintptr_t *)(value + OSU_VALUE_BEATMAP_INFO_OFFSET); assert(beatmap_info);
     uintptr_t beatmap_difficulty = *(uintptr_t *)(beatmap_info + OSU_BEATMAP_INFO_BEATMAP_DIFFICULTY_OFFSET); assert(beatmap_difficulty);
     uintptr_t difficulty_name = *(uintptr_t *)(beatmap_info + OSU_BEATMAP_INFO_DIFFICULTY_NAME_OFFSET);
     uintptr_t metadata = *(uintptr_t *)(beatmap_info + OSU_BEATMAP_INFO_METADATA_OFFSET);
     if (!update_song_name(difficulty_name, metadata))
-        FR_ERROR("update_song_name failed");
+        FR_ERROR("on_beatmap_changed: update_song_name failed");
     if (!ar_setting.enabled) ar_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_AR_OFFSET);
     if (!cs_setting.enabled) cs_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_CS_OFFSET);
     if (!od_setting.enabled) od_setting.value = *(float *)(beatmap_difficulty + OSU_BEATMAP_DIFFICULTY_OD_OFFSET);
@@ -63,13 +75,14 @@ static __declspec(noinline) void __fastcall hk_on_beatmap_changed(void *_this, v
     o_on_beatmap_changed(_this, _value_changed);
 }
 
-void init_on_beatmap_changed()
+void init_on_beatmap_changed(uintptr_t base)
 {
-    FR_INFO("on_beatmap_changed_ptr: %" PRIXPTR, on_beatmap_changed_ptr);
+    FR_INFO("onBeatmapChanged: %" PRIXPTR, on_beatmap_changed_ptr);
     if (on_beatmap_changed_ptr)
     {
+        break_tiered_compilation(base);
         if (MH_CreateHook(reinterpret_cast<void**>(on_beatmap_changed_ptr), &hk_on_beatmap_changed, reinterpret_cast<void**>(&o_on_beatmap_changed)) != MH_OK)
-            FR_ERROR("CreateHook on_beatmap_changed_ptr");
+            FR_ERROR("onBeatmapChanged: CreateHook");
         else
             enable_beatmap_changed_hook();
     }
@@ -78,5 +91,5 @@ void init_on_beatmap_changed()
 void enable_beatmap_changed_hook()
 {
     if (MH_EnableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
-        FR_ERROR("EnableHook on_beatmap_changed_ptr");
+        FR_ERROR("onBeatmapChanged: EnableHook");
 }
