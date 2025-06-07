@@ -27,6 +27,12 @@ typedef struct {
 } TABLES_HEADER;
 #pragma pack(pop)
 
+typedef struct
+{
+    uint8_t *method_table;
+    size_t row_size;
+} SharpCTX;
+
 static inline size_t table_row_size(int table_idx, uint8_t heap_sizes)
 {
     bool string_heap = (heap_sizes & 0x01) != 0;
@@ -46,26 +52,30 @@ static inline size_t table_row_size(int table_idx, uint8_t heap_sizes)
     }
 }
 
-uint32_t *token_to_rva(uintptr_t base, uint32_t token)
+#include <stdio.h>
+
+SharpCTX method_table(uintptr_t base)
 {
+    SharpCTX ctx = {0};
+
     IMAGE_DOS_HEADER *dos_header = (IMAGE_DOS_HEADER *)base;
     if (dos_header->e_magic != IMAGE_DOS_SIGNATURE)
-        return 0;
+        return ctx;
 
     IMAGE_NT_HEADERS64 *nt_headers = (IMAGE_NT_HEADERS64 *)((uint8_t *)base + dos_header->e_lfanew);
     if (nt_headers->Signature != IMAGE_NT_SIGNATURE)
-        return 0;
+        return ctx;
 
     uint32_t cli_rva = nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress;
     if (!cli_rva)
-        return 0;
+        return ctx;
 
     IMAGE_COR20_HEADER *cli_header = (IMAGE_COR20_HEADER *)((uint8_t *)base + cli_rva);
     uint8_t *metadata_root = (uint8_t *)base + cli_header->MetaData.VirtualAddress;
 
     METADATA_HEADER *metadata_header = (METADATA_HEADER *)metadata_root;
     if (metadata_header->Signature != 0x424A5342)
-        return 0;
+        return ctx;
 
     STREAM_HEADER *stream = (STREAM_HEADER *)((uint8_t *)metadata_header + sizeof(METADATA_HEADER) + metadata_header->VersionLength);
     TABLES_HEADER *tables = 0;
@@ -83,12 +93,7 @@ uint32_t *token_to_rva(uintptr_t base, uint32_t token)
     }
 
     if (!tables)
-        return 0;
-
-    uint8_t table_idx = (token >> 24) & 0x3F;
-    uint32_t row_idx = token & 0x00FFFFFF;
-    if (table_idx != 0x06 || row_idx == 0)
-        return 0;
+        return ctx;
 
     size_t offset = 0;
     uint8_t *m_rows = (uint8_t *)tables + sizeof(TABLES_HEADER);
@@ -100,9 +105,28 @@ uint32_t *token_to_rva(uintptr_t base, uint32_t token)
         m_rows += sizeof(uint32_t);
     }
 
-    uint8_t *method_table = m_rows + offset;
     bool string_heap = (tables->HeapSizes & 0x01) != 0;
     bool blob_heap = (tables->HeapSizes & 0x04) != 0;
-    size_t method_table_row_size = 4 + 2 + 2 + (string_heap ? 4 : 2) + (blob_heap ? 4 : 2) + 2;
-    return (uint32_t *)(method_table + (row_idx - 1) * method_table_row_size);
+
+    ctx.method_table = m_rows + offset;
+    ctx.row_size = 4 + 2 + 2 + (string_heap ? 4 : 2) + (blob_heap ? 4 : 2) + 2;
+
+    FR_INFO("Sharp method table: %" PRIXPTR, (uintptr_t)ctx.method_table);
+    FR_INFO("Sharp row size: %zu", ctx.row_size);
+
+    return ctx;
+}
+
+uint32_t *token_to_rva(uintptr_t base, uint32_t token)
+{
+    static SharpCTX ctx = {0};
+    if (!ctx.method_table)
+        ctx = method_table(base);
+
+    uint8_t table_idx = (token >> 24) & 0x3F;
+    uint32_t row_idx = token & 0x00FFFFFF;
+    if (table_idx != 0x06 || row_idx == 0)
+        return 0;
+
+    return (uint32_t *)(ctx.method_table + (row_idx - 1) * ctx.row_size);
 }
