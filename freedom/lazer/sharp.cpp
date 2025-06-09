@@ -52,8 +52,6 @@ static inline size_t table_row_size(int table_idx, uint8_t heap_sizes)
     }
 }
 
-#include <stdio.h>
-
 SharpCTX method_table(uintptr_t base)
 {
     SharpCTX ctx = {0};
