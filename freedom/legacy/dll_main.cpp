@@ -72,7 +72,7 @@ HRESULT __stdcall d3d9_update(IDirect3DDevice9 *pDevice)
     {
         init = true;
 
-        srand(time(NULL));
+        srand((unsigned int)time(NULL));
         g_process = GetCurrentProcess();
         g_d3d9_device = pDevice;
 
@@ -93,7 +93,7 @@ __declspec(naked) void opengl_update()
     {
         init = true;
 
-        srand(time(NULL));
+        srand((unsigned int)time(NULL));
         g_process = GetCurrentProcess();
         g_hwnd = WindowFromDC(wglGetCurrentDC());
 

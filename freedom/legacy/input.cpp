@@ -58,14 +58,14 @@ Vector2<float> mouse_position()
     return mouse_pos;
 }
 
-void move_mouse_to(int x, int y)
+void move_mouse_to(float x, float y)
 {
     x += client_offset.x;
     y += client_offset.y;
     INPUT inputs[1];
     inputs[0].type = INPUT_MOUSE;
-    inputs[0].mi.dx = (x * (0xFFFF / primary_monitor.x));
-    inputs[0].mi.dy = (y * (0xFFFF / primary_monitor.y));
+    inputs[0].mi.dx = (LONG)(x * (0xFFFF / primary_monitor.x));
+    inputs[0].mi.dy = (LONG)(y * (0xFFFF / primary_monitor.y));
     inputs[0].mi.mouseData = 0;
     inputs[0].mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
     inputs[0].mi.time = 0;

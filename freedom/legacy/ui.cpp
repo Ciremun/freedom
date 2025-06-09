@@ -89,8 +89,8 @@ inline void init_imgui_fonts()
 
     for (int size = 40; size >= 18; size -= 2)
     {
-        config.SizePixels = size;
-        ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, size, &config);
+        config.SizePixels = (float)size;
+        ImFont *f = io.Fonts->AddFontFromMemoryCompressedBase85TTF(victor_mono_font_compressed_data_base85, config.SizePixels, &config);
         if (size == cfg_font_size)
             font = f;
     }
@@ -362,17 +362,6 @@ void update_ui()
                 FR_INFO("Alternate Mode");
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
-            ImGui::Dummy(ImVec2(.0f, 5.f));
-            if (ImGui::Checkbox("Variable Unstable Rate", &cfg_relax_checks_od))
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-            ImGui::Dummy(ImVec2(.0f, 5.f));
-            bool relax_checks_od = cfg_relax_checks_od;
-            if (!relax_checks_od)
-                ImGui::BeginDisabled();
-            if (ImGui::Checkbox("Jumping Unstable Rate Window", &cfg_jumping_window))
-                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
-            if (!relax_checks_od)
-                ImGui::EndDisabled();
         }
         if (selected_tab == MenuTab::Aimbot)
         {

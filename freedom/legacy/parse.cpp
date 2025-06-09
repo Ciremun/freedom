@@ -131,34 +131,6 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
     FR_INFO("Hit Object Radius: %f", beatmap_data.hit_object_radius);
     FR_INFO("Scaled Hit Object Radius: %f", beatmap_data.scaled_hit_object_radius);
 
-    // TODO(Ciremun): refactor
-    uintptr_t selected_song_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_BEATMAP_OFFSET);
-    float od = *(float *)(selected_song_ptr + OSU_BEATMAP_OD_OFFSET);
-
-    if (beatmap_data.mods & Mods::HardRock)  od = fmin(od * 1.4f, 10.f);
-    else if (beatmap_data.mods & Mods::Easy) od /= 2.f;
-
-    extern float od_window;
-
-    od_window = 80.f - 6.f * od;
-    od_window -= .5f;
-
-    if (beatmap_data.mods & Mods::DoubleTime)    od_window *= 0.67f;
-    else if (beatmap_data.mods & Mods::HalfTime) od_window *= 1.33f;
-
-    // FIXME(Ciremun): refactor
-    const auto rand_range_f = [](float f_min, float f_max) -> float
-    {
-        float scale = rand() / (float)RAND_MAX;
-        return f_min + scale * (f_max - f_min);
-    };
-
-    extern float od_window_left_offset;
-    extern float od_window_right_offset;
-    srand(time(NULL));
-    od_window_left_offset = -(od_window * rand_range_f(0.35f, 0.65f));
-    od_window_right_offset = od_window * rand_range_f(0.15f, 0.85f);
-
     beatmap_data.ready = true;
     return true;
 }

@@ -59,10 +59,10 @@ void update_aimbot(Circle &circle, const int32_t audio_time)
         static float angle = .0f;
         Vector2 next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
         move_mouse_to_target(next_point_on_circle, cursor_pos);
-        float three_pi = 3 * PI;
+        float three_pi = 3.0 * PI;
         if (cfg_timewarp_enabled)
         {
-            auto timewarp_playback_rate = cfg_timewarp_playback_rate / 100.0;
+            float timewarp_playback_rate = (float)cfg_timewarp_playback_rate / 100.0f;
             if (timewarp_playback_rate > 1.0)
                 three_pi /= timewarp_playback_rate;
         }

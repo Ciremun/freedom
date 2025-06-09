@@ -15,7 +15,6 @@ bool cfg_drpc_enabled = false;
 bool cfg_flashlight_enabled = false;
 bool cfg_timewarp_enabled = false;
 double cfg_timewarp_playback_rate = 200.0;
-bool cfg_relax_checks_od = true;
 bool cfg_jumping_window = false;
 bool cfg_relax_lock = false;
 bool cfg_aimbot_lock = false;
@@ -89,7 +88,6 @@ static void ConfigHandler_WriteAll(ImGuiContext *, ImGuiSettingsHandler *handler
     buf->appendf("font_size=%d\n", cfg_font_size);
     buf->appendf("relax=%d\n", cfg_relax_lock);
     buf->appendf("relax_style=%c\n", (char)cfg_relax_style);
-    buf->appendf("relax_checks_od=%d\n", (int)cfg_relax_checks_od);
     buf->appendf("aimbot=%d\n", cfg_aimbot_lock);
     buf->appendf("spins_per_minute=%d\n", cfg_spins_per_minute);
     buf->appendf("fraction_modifier=%.2f\n", cfg_fraction_modifier);
@@ -115,7 +113,7 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
 {
     int ar_lock_i, cs_lock_i, od_lock_i, mod_menu_visible_i, font_size_i,
         relax_lock_i, aimbot_lock_i, spins_per_minute_i, drpc_enabled_i,
-        hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i, relax_checks_od_i,
+        hidden_remover_enabled_i, flashlight_enabled_i, timewarp_enabled_i,
         jump_window_i, replay_i, replay_aim_i, replay_keys_i, score_multiplier_i,
         show_debug_i;
     float ar_value_f, cs_value_f, od_value_f, fraction_modifier_f, score_multiplier_value_f;
@@ -131,7 +129,6 @@ static void ConfigHandler_ReadLine(ImGuiContext *, ImGuiSettingsHandler *, void 
     else if (sscanf(line, "font_size=%d", &font_size_i) == 1)                 cfg_font_size = font_size_i;
     else if (sscanf(line, "relax=%d", &relax_lock_i) == 1)                    cfg_relax_lock = relax_lock_i;
     else if (sscanf(line, "relax_style=%c", &relax_style_c) == 1)             cfg_relax_style = (int)relax_style_c;
-    else if (sscanf(line, "relax_checks_od=%d", &relax_checks_od_i) == 1)     cfg_relax_checks_od = relax_checks_od_i;
     else if (sscanf(line, "aimbot=%d", &aimbot_lock_i) == 1)                  cfg_aimbot_lock = aimbot_lock_i;
     else if (sscanf(line, "spins_per_minute=%d", &spins_per_minute_i) == 1)   cfg_spins_per_minute = spins_per_minute_i;
     else if (sscanf(line, "fraction_modifier=%f", &fraction_modifier_f) == 1) cfg_fraction_modifier = fraction_modifier_f;

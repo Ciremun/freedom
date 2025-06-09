@@ -56,28 +56,6 @@ void process_hitobject()
         start_parse_replay = false;
     }
 
-    // NOTE(Ciremun): Hack. Make a hook to improve performance
-    if (selected_song_ptr && cfg_relax_lock && cfg_relax_checks_od)
-    {
-        uintptr_t selected_song = 0;
-        if (internal_memory_read(g_process, selected_song_ptr, &selected_song))
-        {
-            uintptr_t song_str_ptr = selected_song + OSU_BEATMAP_SONG_STR_OFFSET;
-            static uintptr_t prev_song_str_ptr = 0;
-            if (song_str_ptr != prev_song_str_ptr)
-            {
-                float od = .0f;
-                if (internal_memory_read(g_process, selected_song + od_setting.offset, &od))
-                {
-                    // TODO(Ciremun): check mods here
-                    od_window = 80.f - 6.f * od;
-                    od_window -= .5f;
-                }
-            }
-            prev_song_str_ptr = song_str_ptr;
-        }
-    }
-
     if ((cfg_relax_lock || cfg_aimbot_lock || cfg_replay_enabled) && scene_is_game(current_scene_ptr) && is_playing(audio_time_ptr) && !is_replay_mode(osu_manager_ptr))
     {
         if (cfg_replay_enabled && current_replay.ready)
@@ -92,7 +70,7 @@ void process_hitobject()
             update_relax(circle, audio_time);
 
             // NOTE(Ciremun): Advance HitObject Index
-            if (audio_time + od_check_ms >= circle.end_time)
+            if (audio_time >= circle.end_time)
             {
                 current_beatmap.hit_object_idx++;
                 aimbot_on_advance_hit_object();

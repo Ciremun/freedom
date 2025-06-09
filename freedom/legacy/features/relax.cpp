@@ -1,50 +1,7 @@
 #include "legacy/features/relax.h"
 #include "legacy/window.h"
 
-float od_window = 5.f;
-float od_window_left_offset = .0f;
-float od_window_right_offset = .0f;
-float od_check_ms = .0f;
-
-float jumping_window_offset = .0f;
-
-int wait_hitobjects_min = 2;
-int wait_hitobjects_max = 5;
-
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
-
-void calc_od_timing()
-{
-    const auto rand_range_f = [](float f_min, float f_max) -> float
-    {
-        float scale = rand() / (float)RAND_MAX;
-        return f_min + scale * (f_max - f_min);
-    };
-    const auto rand_range_i = [](int i_min, int i_max) -> int
-    {
-        return rand() % (i_max + 1 - i_min) + i_min;
-    };
-    if (cfg_relax_checks_od && (od_check_ms == .0f))
-    {
-        od_check_ms = rand_range_f(od_window_left_offset, od_window_right_offset);
-        if (cfg_jumping_window)
-        {
-            static uint32_t hit_objects_passed = current_beatmap.hit_object_idx;
-            static int wait_hitojects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
-            if (current_beatmap.hit_object_idx - hit_objects_passed >= wait_hitojects_count)
-            {
-                // NOTE(Ciremun): move od window to the left
-                if (rand_range_i(0, 1) >= 1)
-                    jumping_window_offset = rand_range_f(.1337f, od_window - od_window_left_offset);
-                else
-                    jumping_window_offset = -rand_range_f(.1337f, od_window_right_offset);
-                hit_objects_passed = current_beatmap.hit_object_idx;
-                wait_hitojects_count = rand_range_i(wait_hitobjects_min, wait_hitobjects_max);
-            }
-            od_check_ms += jumping_window_offset;
-        }
-    }
-}
 
 void update_relax(Circle &circle, const int32_t audio_time)
 {
@@ -53,9 +10,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
 
     if (cfg_relax_lock)
     {
-        calc_od_timing();
-
-        auto current_time = audio_time + od_check_ms;
+        auto current_time = audio_time;
         auto valid_timing = current_time >= circle.start_time;
         // auto mouse_pos = mouse_position();
         // Vector2 screen_pos = playfield_to_screen(circle.position);
@@ -87,7 +42,6 @@ void update_relax(Circle &circle, const int32_t audio_time)
                 }
                 keydown_time = ImGui::GetTime();
                 circle.clicked = true;
-                od_check_ms = .0f;
             }
         }
     }
