@@ -45,7 +45,7 @@ static bool patch_rva_boundcheck()
                 {
                     if (pattern::find<cmp_rax>({ opcodes - cmp_rax_idx, cmp_rax.size() }))
                     {
-                        BYTE nop[] = { 0x90, 0x90 };
+                        BYTE nop[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
                         FR_INFO("RVA boundcheck found at coreclr.dll + 0x%08" PRIXPTR, (uintptr_t)(opcodes - cmp_rax_idx + cmp_rax.size() - coreclr_dll_base));
                         return internal_memory_patch(opcodes - cmp_rax_idx + cmp_rax.size(), nop, sizeof(nop));
                     }

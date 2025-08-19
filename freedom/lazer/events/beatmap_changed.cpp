@@ -6,6 +6,7 @@ uintptr_t on_beatmap_changed_ptr = 0;
 
 static inline void break_tiered_compilation(uintptr_t base)
 {
+    return;
     if (!base)
         return;
     // TODO(Ciremun): offsets header
