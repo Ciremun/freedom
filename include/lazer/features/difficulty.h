@@ -6,7 +6,6 @@
 #include "minhook/minhook.h"
 
 #include "ui/ui.h"
-#include "ui/debug_log.h"
 
 #include "lazer/sharp.h"
 #include "lazer/struct_offsets.h"

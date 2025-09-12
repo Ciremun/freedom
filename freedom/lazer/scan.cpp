@@ -85,6 +85,7 @@ void init_hooks()
     // NOTE(Ciremun): IL patches
     if (patch_rva_boundcheck())
     {
+        // init_on_exception_submit(osu_game_dll_base);
         if (!init_difficulty(osu_game_dll_base))
             FR_ERROR("Init Difficulty failed");
     }

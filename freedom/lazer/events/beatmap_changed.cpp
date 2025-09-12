@@ -78,12 +78,12 @@ static __declspec(noinline) void __fastcall hk_on_beatmap_changed(void *_this, v
 
 void init_on_beatmap_changed(uintptr_t base)
 {
-    FR_INFO("onBeatmapChanged: %" PRIXPTR, on_beatmap_changed_ptr);
+    FR_INFO("on_beatmap_changed: %" PRIXPTR, on_beatmap_changed_ptr);
     if (on_beatmap_changed_ptr)
     {
         break_tiered_compilation(base);
-        if (MH_CreateHook(reinterpret_cast<void**>(on_beatmap_changed_ptr), &hk_on_beatmap_changed, reinterpret_cast<void**>(&o_on_beatmap_changed)) != MH_OK)
-            FR_ERROR("onBeatmapChanged: CreateHook");
+        if (MH_CreateHook((void **)on_beatmap_changed_ptr, &hk_on_beatmap_changed, (void **)&o_on_beatmap_changed) != MH_OK)
+            FR_ERROR("on_beatmap_changed: CreateHook");
         else
             enable_beatmap_changed_hook();
     }
@@ -91,6 +91,6 @@ void init_on_beatmap_changed(uintptr_t base)
 
 void enable_beatmap_changed_hook()
 {
-    if (MH_EnableHook((LPVOID)on_beatmap_changed_ptr) != MH_OK)
-        FR_ERROR("onBeatmapChanged: EnableHook");
+    if (MH_EnableHook((void *)on_beatmap_changed_ptr) != MH_OK)
+        FR_ERROR("on_beatmap_changed: EnableHook");
 }
