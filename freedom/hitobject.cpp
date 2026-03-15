@@ -24,7 +24,7 @@ bool is_replay_mode(uintptr_t osu_manager_ptr)
     if (osu_manager_ptr == 0) return false;
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
     if (osu_manager == 0) return false;
-    return *(bool *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET);
+    return *(uint8_t *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET) == (uint8_t)0x01;
 }
 
 void process_hitobject()

@@ -60,7 +60,7 @@ bool parse_beatmap(uintptr_t osu_manager_ptr, BeatmapData &beatmap_data)
         return false;
     }
 
-    bool replay_mode = *(bool *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET);
+    uint8_t replay_mode = *(uint8_t *)(osu_manager + OSU_MANAGER_IS_REPLAY_MODE_OFFSET) == (uint8_t)0x01;
     if (replay_mode)
     {
         FR_INFO("Skipping current beatmap: replay mode");
