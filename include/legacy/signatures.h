@@ -31,7 +31,7 @@ constexpr auto circle_size_sig              { pattern::build<"8B 85 B0 FE FF FF 
 constexpr auto overall_difficulty_sig       { pattern::build<"8B 85 B0 FE FF FF D9 58 38"> };
 constexpr auto beatmap_onload_sig           { pattern::build<"0F 94 C2"> };
 constexpr auto current_scene_sig            { pattern::build<"A1....A3....A1....A3"> };
-constexpr auto selected_song_sig            { pattern::build<"D9 EE DD 5C 24 10 83 3D"> };
+constexpr auto selected_song_sig            { pattern::build<"D9 EE DD 5C 24 10 . ."> };
 constexpr auto audio_time_sig               { pattern::build<"F7 DA 3B C2"> };
 constexpr auto osu_manager_sig              { pattern::build<"85 C9"> };
 constexpr auto binding_manager_sig          { pattern::build<"8D 45 D8 50 8B 0D"> };
