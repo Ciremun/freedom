@@ -356,8 +356,8 @@ static void try_find_hook_offsets()
     {
         // D9 E8 DE F1 DE C9
         check_timewarp_offset = pattern::find<check_timewarp_sig>({ (uint8_t *)check_timewarp_code_start, 0x16EA + 0x1000});
-        check_timewarp_hook_1 = (uintptr_t)(check_timewarp_offset - 0x24);
-        check_timewarp_hook_2 = (uintptr_t)(check_timewarp_sig.size() + check_timewarp_offset + 0x5);
+        check_timewarp_hook_1 = (uintptr_t)(check_timewarp_offset - 0x21);
+        check_timewarp_hook_2 = (uintptr_t)(check_timewarp_offset + check_timewarp_sig.size() + 0x5);
         check_timewarp_hook_1_jump_back = check_timewarp_hook_1 + 0x6;
         check_timewarp_hook_2_jump_back = check_timewarp_hook_2 + 0x6;
     }

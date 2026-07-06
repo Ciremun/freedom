@@ -13,7 +13,7 @@ constexpr auto binding_manager_func_sig     { pattern::build<"55 8B EC 57 56 83 
 constexpr auto selected_replay_func_sig     { pattern::build<"55 8B EC 57 56 53 81 EC A0 00 00 00 8B F1 8D BD 68 FF FF FF B9 22 00 00 00 33 C0 F3 AB 8B CE 8B F1 8D 7D E0"> };
 constexpr auto window_manager_func_sig      { pattern::build<"55 8B EC 57 56 53 50 8B 15 . . . . 8B 7A 04 8B 05"> };
 constexpr auto update_timing_func_sig       { pattern::build<"55 8B EC 83 E4 F8 57 56 83 EC 18 8B F9 8B 0D"> };
-constexpr auto check_timewarp_func_sig      { pattern::build<"55 8B EC 57 56 53 81 EC B0 01 00 00 8B F1 8D BD 50 FE FF FF B9 68 00 00 00 33 C0"> };
+constexpr auto check_timewarp_func_sig      { pattern::build<"55 8B EC 57 56 53 81 EC . . . . 8B F1 8D BD . . . . B9 55 00 00 00 33 C0 F3 AB 8B CE"> };
 constexpr auto osu_client_id_func_sig       { pattern::build<"8B F1 8D 7D C4 B9 0C 00 00 00 33 C0 F3 AB 8B CE 89 4D C0 8B 15"> };
 constexpr auto username_func_sig            { pattern::build<"55 8B EC 57 56 53 83 EC 08 33 C0 89 45 EC 89 45 F0 8B F2 8B CE 8B 01 8B 40 30"> };
 constexpr auto update_flashlight_func_sig   { pattern::build<"55 8B EC 56 83 EC 14 8B F1 8B 56 5C"> };
