@@ -29,7 +29,7 @@ static bool patch_rva_boundcheck()
         return false;
     }
     _MEMORY_BASIC_INFORMATION mbi;
-    for (uint8_t *p = (uint8_t *)(coreclr_dll_base + 0x30000); VirtualQuery(p, &mbi, sizeof(mbi)) && p < (uint8_t *)(coreclr_dll_base + 0x3FFFF); p += mbi.RegionSize)
+    for (uint8_t *p = (uint8_t *)(coreclr_dll_base + 0x10000); VirtualQuery(p, &mbi, sizeof(mbi)) && p < (uint8_t *)(coreclr_dll_base + 0x3FFFF); p += mbi.RegionSize)
     {
         if (mbi.State != MEM_COMMIT || mbi.Protect != PAGE_EXECUTE_READ)
             continue;
@@ -38,7 +38,7 @@ static bool patch_rva_boundcheck()
         {
             uint8_t *opcodes = (uint8_t *)((uintptr_t)mbi.BaseAddress + idx);
             constexpr auto cmp_rax { pattern::build<"48 83 38 00"> };
-            constexpr auto test_rdi { pattern::build<"F6 47 14 01"> };
+            constexpr auto test_rdi { pattern::build<"F6 46 14 01"> };
             if (pattern::find<test_rdi>({ opcodes, test_rdi.size() }))
             {
                 for (int cmp_rax_idx = 6; cmp_rax_idx < 32; ++cmp_rax_idx)
